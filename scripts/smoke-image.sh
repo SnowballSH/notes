@@ -44,6 +44,11 @@ grep -q '<title>Notes</title>' "${body}" || {
   printf 'FAIL the home page has no Notes title\n' >&2
   exit 1
 }
+expect /special-topics/walsh-hadamard 200
+grep -q 'Hidden XOR periods' "${body}" || {
+  printf 'FAIL the Walsh-Hadamard outline is not served\n' >&2
+  exit 1
+}
 expect /absent 404
 grep -q 'Not Found' "${body}" || grep -q '_app/' "${body}" || {
   printf 'FAIL the 404 is not the site page\n' >&2
