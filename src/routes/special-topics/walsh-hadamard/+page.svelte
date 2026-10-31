@@ -4,7 +4,7 @@ import { walshHadamard as outline } from "$lib/outlines/walsh-hadamard";
 </script>
 
 <svelte:head>
-	<title>{outline.title} · Notes</title>
+	<title>{outline.title} Notes</title>
 	<meta name="description" content={outline.description} />
 </svelte:head>
 
