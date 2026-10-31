@@ -5,9 +5,9 @@ lecture notes, as a static SvelteKit site styled with
 [Foundation UI](https://github.com/SnowballSH/foundationui).
 
 ```bash
-npm ci
-npm run dev
-npm run check && npm run lint && npm run build
+pnpm install
+pnpm run dev
+pnpm run check && pnpm run lint && pnpm run build
 ```
 
 Pushing to `main` publishes `ghcr.io/snowballsh/notes`. The image is Caddy
