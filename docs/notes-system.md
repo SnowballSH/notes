@@ -3,7 +3,7 @@
 A note is one Typst file, compiled to static HTML when the site builds. Notes
 are files in git and render the same for every reader; anything interactive
 runs in the browser as a widget. This is the prototype of that pipeline, with
-`notes/demo/monoids.typ` as its sample.
+`notes/walsh-hadamard/bitstrings-and-parity.typ` as its first page.
 
 ## Writing a note
 
@@ -12,16 +12,16 @@ the page. Names are lowercase words joined by hyphens.
 
 ```typst
 #import "/lib/notes.typ": *
-#show: note.with(title: "Monoids", summary: "One line for search engines.", order: 1)
+#show: note.with(title: "Bitstrings", summary: "One line for search engines.", order: 1)
 
 Plain text with $x + 0 = x$ inline and display math:
 $ e * x = x * e = x $
 
-#definition(title: "Monoid")[...] <def-monoid>
+#definition(title: "Bitstring")[...] <def-bitstring>
 #proof[...]
-#example(title: "Strings", collapsed: true)[...]
-See @def-monoid.
-#widget("cayley-table", size: 4)[Shown until the widget loads.]
+#example(title: "XOR by hand", collapsed: true)[...]
+See @def-bitstring.
+#widget("parity-explorer", size: 4)[Shown until the widget loads.]
 ```
 
 `notes/lib/notes.typ` provides:

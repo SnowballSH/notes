@@ -3,7 +3,7 @@ import type { Component } from "svelte";
 type WidgetLoader = () => Promise<{ default: Component<Record<string, unknown>> }>;
 
 const registry: Record<string, WidgetLoader> = {
-	"cayley-table": () => import("./CayleyTable.svelte"),
+	"parity-explorer": () => import("./ParityExplorer.svelte"),
 };
 
 export const widgetNames = Object.keys(registry);
