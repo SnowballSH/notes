@@ -1,13 +1,16 @@
 FROM docker.io/library/node:26.11.1-trixie@sha256:32fa97f3363975684b08bf4e8a68a47c7905175cc20275b50b974bbd02aba731 AS site
+COPY --from=ghcr.io/typst/typst:0.15.1@sha256:032e292249bcd378480cc7c142cfa324b63ef8aadeb88d7e7230320c4c9c422f /bin/typst /usr/local/bin/typst
 WORKDIR /src
-RUN chown node:node /src
+COPY package.json ./
+RUN npm install --global --no-audit --no-fund "$(node -p "require('./package.json').packageManager")"
+RUN chown -R node:node /src
 USER node
-COPY --chown=node:node package.json package-lock.json .npmrc ./
-RUN npm ci --no-audit --no-fund
+COPY --chown=node:node pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY --chown=node:node . .
-RUN npm run check
-RUN npm run lint
-RUN npm run build
+RUN pnpm run check
+RUN pnpm run lint
+RUN pnpm run build
 
 FROM docker.io/library/caddy:2.11.7@sha256:36c24ad91a7ff7bc4c87fe22bfa8df3c4b18da0773d73fc12ee2c52b98c0bb7e
 ARG SOURCE_COMMIT=unknown
