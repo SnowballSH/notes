@@ -27,6 +27,9 @@ jobs:
         with:
           node-version-file: package.json
           cache: pnpm
+      - uses: typst-community/setup-typst@6a2cfaf0b28d636b00148f965e315bae81079aaa # v5.3.1
+        with:
+          typst-version: 0.15.1
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
       - run: pnpm run lint

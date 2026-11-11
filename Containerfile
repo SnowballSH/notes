@@ -1,4 +1,5 @@
 FROM docker.io/library/node:26.11.1-trixie@sha256:32fa97f3363975684b08bf4e8a68a47c7905175cc20275b50b974bbd02aba731 AS site
+COPY --from=ghcr.io/typst/typst:0.15.1@sha256:032e292249bcd378480cc7c142cfa324b63ef8aadeb88d7e7230320c4c9c422f /bin/typst /usr/local/bin/typst
 WORKDIR /src
 COPY package.json ./
 RUN npm install --global --no-audit --no-fund "$(node -p "require('./package.json').packageManager")"
