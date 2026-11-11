@@ -1,0 +1,124 @@
+/* The package's own stylesheet limits this font to Latin, which excludes the math glyphs. */
+@font-face {
+	font-family: "STIX Two Math";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2") format("woff2");
+}
+
+.note {
+	color: var(--fui-ink);
+	line-height: var(--fui-leading-prose);
+}
+
+.note > * + * {
+	margin-top: 1.25rem;
+}
+
+.note h2 {
+	margin-top: 2.5rem;
+	font-family: var(--fui-font-display);
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.note h3 {
+	margin-top: 2rem;
+	font-family: var(--fui-font-display);
+	font-size: 1.0625rem;
+	font-weight: 600;
+}
+
+.note :is(.card, details, li, notes-widget) > * + * {
+	margin-top: 0.75rem;
+}
+
+.note ul,
+.note ol {
+	padding-left: 1.5rem;
+}
+
+.note ul {
+	list-style: disc;
+}
+
+.note ol {
+	list-style: decimal;
+}
+
+.note li + li {
+	margin-top: 0.25rem;
+}
+
+.note table:not(notes-widget *) {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+}
+
+.note :is(th, td):not(notes-widget *) {
+	padding: 0.25rem 0.75rem;
+	border: 1px solid var(--fui-line);
+}
+
+.note a {
+	color: var(--fui-accent-strong);
+	text-decoration: underline dotted;
+	text-underline-offset: 0.2em;
+}
+
+.note math {
+	font-family: "STIX Two Math", math;
+	font-size: 1.1em;
+}
+
+.note [id] {
+	scroll-margin-top: 5rem;
+}
+
+.note math[display="block"] {
+	max-width: 100%;
+	margin-block: 0.75rem;
+	overflow-x: auto;
+}
+
+.note .card {
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--fui-line);
+	border-radius: var(--fui-radius-md);
+	background: var(--fui-surface-raised);
+}
+
+.note .card-remark {
+	padding-inline: 0;
+	border: 0;
+	background: none;
+}
+
+.note .card > header {
+	margin-bottom: 0.5rem;
+	color: var(--fui-accent-strong);
+}
+
+.note details {
+	padding-block: 0.25rem;
+}
+
+.note summary {
+	cursor: pointer;
+	color: var(--fui-accent-strong);
+}
+
+.note details[open] > summary {
+	margin-bottom: 0.5rem;
+}
+
+.note notes-widget {
+	display: block;
+}
+
+.note notes-widget:not([data-mounted]) {
+	color: var(--fui-ink-secondary);
+}
