@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Link } from "foundationui/svelte";
-import { widgets } from "$lib/widgets/mount";
+import { widgets } from "#lib/widgets/mount.ts";
 
 const { data } = $props();
 const note = $derived(data.note);

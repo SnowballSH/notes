@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import type { CompiledNote, NoteMeta, NoteRef } from "$lib/notes/types";
-import { widgetNames } from "$lib/widgets/registry";
+import type { CompiledNote, NoteMeta, NoteRef } from "#lib/notes/types.ts";
+import { widgetNames } from "#lib/widgets/registry.ts";
 import { compileHtml, queryOne, TypstError } from "./cli";
 
 const notesRoot = resolve("notes");

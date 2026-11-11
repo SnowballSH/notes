@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Link } from "foundationui/svelte";
-import { walshHadamard as outline } from "$lib/outlines/walsh-hadamard";
+import { walshHadamard as outline } from "#lib/outlines/walsh-hadamard.ts";
 </script>
 
 <svelte:head>
