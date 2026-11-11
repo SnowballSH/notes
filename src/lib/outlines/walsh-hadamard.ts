@@ -10,6 +10,7 @@ export const walshHadamard: NotesOutline = {
 				{
 					title: "Bitstrings and parity functions",
 					summary: "Bitstrings, XOR, and the simple functions everything else is built from.",
+					href: "/walsh-hadamard/bitstrings-and-parity",
 				},
 				{
 					title: "Hadamard matrices and their recursive construction",

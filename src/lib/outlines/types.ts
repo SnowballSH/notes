@@ -1,6 +1,7 @@
 export interface OutlineSection {
 	title: string;
 	summary: string;
+	href?: string;
 }
 
 export interface OutlineChapter {

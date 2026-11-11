@@ -23,7 +23,12 @@ import { walshHadamard as outline } from "$lib/outlines/walsh-hadamard";
 				{#each chapter.sections as section, sectionIndex (section.title)}
 					<li>
 						<h3 class="font-medium text-ink">
-							{chapterIndex + 1}.{sectionIndex + 1} {section.title}
+							{chapterIndex + 1}.{sectionIndex + 1}
+							{#if section.href}
+								<Link href={section.href}>{section.title}</Link>
+							{:else}
+								{section.title}
+							{/if}
 						</h3>
 						<p class="mt-1 text-sm text-ink-secondary">{section.summary}</p>
 					</li>
