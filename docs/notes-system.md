@@ -30,6 +30,7 @@ See @def-bitstring.
 |---|---|
 | `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. |
 | `proof`, `solution` | A collapsible block, closed unless `collapsed: false`. |
+| `gallery(columns: n, ..items)` | Items laid out in `n` columns (two on narrow screens). Use it in place of `grid`, which Typst drops in HTML export. |
 | `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. |
 
 ## Pipeline
@@ -47,6 +48,17 @@ See @def-bitstring.
 
 `pnpm run dev` reloads the page when a `.typ` file changes.
 
+## Editor preview
+
+`.vscode/settings.json` points tinymist at `notes/` as the Typst root and
+passes `--input preview=true`. Tinymist's preview panel renders pages, where
+HTML elements are dropped, so with that input `notes/lib/notes.typ` draws
+cards, proofs and widgets as framed blocks instead. The site build never sets
+the input and its output is unaffected. The preview shows the content and
+structure, not the site's styling, and a widget appears as a named placeholder.
+
+Leave `tinymist.exportTarget` at its default: set to `html`, the panel is blank.
+
 ## Widgets
 
 A widget is a Svelte component registered by name in
@@ -55,6 +67,22 @@ A widget is a Svelte component registered by name in
 `src/lib/widgets/mount.ts` replaces it in the browser and loads the component
 only on pages that use it. Props are the named arguments of `#widget`, passed
 as JSON.
+
+### hadamard-tiling
+
+`#widget("hadamard-tiling", start: 1, max: 6)` shows the Walsh-Hadamard matrix
+of order 2^n as a tiling (+1 white, -1 black) and animates the recursive
+construction between consecutive n.
+
+It draws four canvases, each holding the matrix of order 2^level, one pixel per
+entry. A stage says how far those copies are along the construction: stacked at
+full size, shrunk into the top-left quarter, spread into the four quarters, and
+finally with the bottom-right copy inverted. The last stage of one level is the
+same picture as the first stage of the next, so each press first regroups to
+whichever of the two it needs and then plays three stages. Regrouping repaints
+and repositions the canvases with transitions switched off, inside the click,
+so the swap is never visible. `max` is capped at 6 so every entry covers a
+whole number of pixels on the 320px board.
 
 ## Not built yet
 

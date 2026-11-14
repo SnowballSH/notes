@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
-  title: "Bitstrings and parity functions",
-  summary: "Bitstrings, XOR, and the simple functions everything else is built from.",
+  title: "Boolean functions",
+  summary: "Boolean functions and Fourier analysis.",
   order: 1,
 )
 

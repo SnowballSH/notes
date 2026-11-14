@@ -8,13 +8,14 @@ export const walshHadamard: NotesOutline = {
 			title: "The Walsh-Hadamard Transform",
 			sections: [
 				{
-					title: "Bitstrings and parity functions",
-					summary: "Bitstrings, XOR, and the simple functions everything else is built from.",
-					href: "/walsh-hadamard/bitstrings-and-parity",
+					title: "Boolean Functions",
+					summary: "Boolean functions and Fourier analysis.",
+					href: "/walsh-hadamard/boolean-functions",
 				},
 				{
 					title: "Hadamard matrices and their recursive construction",
 					summary: "How to build the matrix behind the transform, one step at a time.",
+					href: "/walsh-hadamard/walsh-hadamard",
 				},
 				{
 					title: "Walsh characters and Fourier expansions",

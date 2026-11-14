@@ -3,6 +3,7 @@ import type { Component } from "svelte";
 type WidgetLoader = () => Promise<{ default: Component<Record<string, unknown>> }>;
 
 const registry: Record<string, WidgetLoader> = {
+	"hadamard-tiling": () => import("./HadamardTiling.svelte"),
 	"parity-explorer": () => import("./ParityExplorer.svelte"),
 };
 
