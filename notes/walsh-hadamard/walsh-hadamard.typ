@@ -28,7 +28,7 @@
   )
 }
 
-To compute Fourier coefficients efficiently, we can discuss a specific family of matrices that are closely related to boolean functions.
+To compute Fourier coefficients efficiently, we can discuss a specific family of matrices that are closely related to Boolean functions.
 
 = Hadamard Matrix
 
@@ -85,7 +85,7 @@ Here is a small interactive widget that shows the construction of the matrix, wh
 
 Interestingly, families of Hadamard matrices were actually first constructed by James Joseph Sylvester in 1867 under the name of anallagmatic pavements, 26 years before Hadamard (1893) considered them.
 
-The rows of the Walsh-Hadamard matrices, when viewed as boolean functions, are often used by electrical engineers to find transpositions of wires that minimized crosstalk, and Walsh introduced the idea formally into mathematics in 1923.
+The rows of the Walsh-Hadamard matrices, when viewed as Boolean functions, are often used by electrical engineers to find transpositions of wires that minimized crosstalk, and Walsh introduced the idea formally into mathematics in 1923.
 
 Despite being called the Walsh-Hadamard matrices, it is not entirely obvious that they are even Hadamard matrices. We can show that this is indeed true.
 
@@ -178,7 +178,7 @@ With this idea, let us prove a crucial property about the entries of the Walsh-H
   $
 ]
 
-This is an amazing result, because it reminds us of the idea of parity functions. In some sense, $H_(2^n) [x, gamma]$ computes the parity of the vector $arrow(x) dot arrow(gamma)$. In fact, if we view $arrow(gamma)$ as a subset $S subset.eq [n]$, this entry, or dot product, precisely computes $chi_S (arrow(x))$! This observation yields the following theorem, the Walsh-Hadamard transform.
+This is an amazing result, because it reminds us of the idea of parity functions. The entry $H_(2^n) [gamma, x] = (-1)^(arrow(gamma) dot arrow(x))$ is precisely $chi_(arrow(gamma)) (arrow(x))$ from the previous chapter, the parity of the bits of $x$ selected by $gamma$! This observation yields the following theorem, the Walsh-Hadamard transform.
 
 #theorem(title: "Walsh-Hadamard Transform (WHT)")[
   Let $f : FF_2^n -> RR$, and view $f$ and $hat(f)$ as column vectors indexed by $FF_2^n$ vectors. Then,
@@ -204,7 +204,7 @@ This is an amazing result, because it reminds us of the idea of parity functions
 
 = Efficiently Computing the Fourier Expansion
 
-Recall that in a previous chapter, we showed that we can compute the Fourier expansion of a Boolean function $f : {-1,1}^n -> RR$ by writing
+Recall that in the previous chapter, we showed that we can compute the Fourier expansion of a function $f : {-1,1}^n -> RR$ by writing
 $
   f(x) = 1/2^n sum_(alpha in {-1, 1}^n) f(alpha) product_(i=1)^n (1 + alpha_i x_i).
 $

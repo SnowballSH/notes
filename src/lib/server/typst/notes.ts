@@ -61,13 +61,28 @@ function assertKnownWidgets(html: string, file: string): void {
 	}
 }
 
+// Chromium often fails to paint a combining mark that stands alone in an inline <mo>.
+const spacingAccents: Readonly<Record<string, string>> = {
+	"\u0302": "\u02c6",
+	"\u0303": "\u02dc",
+	"\u0307": "\u02d9",
+	"\u0308": "\u00a8",
+};
+
+function withSpacingAccents(html: string): string {
+	return html.replace(/<mo>([\u0300-\u036f])<\/mo>/g, (accent, mark: string) => {
+		const spacing = spacingAccents[mark];
+		return spacing === undefined ? accent : `<mo>${spacing}</mo>`;
+	});
+}
+
 export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const [document, meta] = await Promise.all([
 		compileHtml(notesRoot, file),
 		queryOne(notesRoot, file, "<note-meta>"),
 	]);
-	const html = extract(document, /<body>([\s\S]*)<\/body>/, file);
+	const html = withSpacingAccents(extract(document, /<body>([\s\S]*)<\/body>/, file));
 	assertKnownWidgets(html, file);
 	return {
 		...ref,

@@ -1,159 +1,197 @@
 #import "/lib/notes.typ": *
 #show: note.with(
-  title: "Boolean functions",
-  summary: "Boolean functions and Fourier analysis.",
+  title: "Boolean functions and Fourier expansions",
+  summary: "Boolean functions as multilinear polynomials: parity functions, the Fourier expansion, and the formula for its coefficients.",
   order: 1,
 )
 
-The Walsh-Hadamard transform works on functions whose inputs are strings of
-bits. Before we can define it, we need three things: the strings themselves, a
-way to add them, and a family of very simple functions called parity functions.
-Nothing here needs more than arithmetic with $0$ and $1$.
+Every Boolean function can be written as a polynomial, and the coefficients of that polynomial tell us a lot about the function. This chapter sets up that polynomial, the _Fourier expansion_, and the tools for working with its coefficients. The next chapter shows how to compute all of the coefficients at once.
 
-= Bitstrings
+= Boolean Functions
 
-#definition(title: "Bitstring")[
-  A _bitstring_ of length $n$ is a sequence $x = x_1 x_2 dots.c x_n$ in which
-  every $x_i$ is $0$ or $1$. The set of all bitstrings of length $n$ is written
-  ${0, 1}^n$.
-] <def-bitstring>
+#definition(title: "Boolean Function")[
+  A _Boolean function_ is a function $f : {0, 1}^n -> {0, 1}$. We call $n$ the _arity_ of $f$.
+] <def-boolean-function>
 
-Each of the $n$ positions can be filled in two ways, so there are $2^n$
-bitstrings of length $n$. For $n = 2$ they are $00$, $01$, $10$ and $11$.
+We will write the two bits in whichever way is most convenient:
 
-= Adding bitstrings with XOR
+- As elements of the field $FF_2$, so that the inputs form the vector space $FF_2^n$ and adding two inputs is taking their bitwise XOR.
+- As the signs $1$ and $-1$, where the bit $b in FF_2$ becomes $(-1)^b$. So $0$ (false) becomes $1$, and $1$ (true) becomes $-1$.
 
-For single bits, _XOR_ (exclusive or), written $xor$, is addition where we
-only keep whether the result is even or odd:
+The sign encoding turns addition in $FF_2$ into multiplication of real numbers, since $(-1)^(a + b) = (-1)^a (-1)^b$. This is what lets us write Boolean functions as polynomials. For that reason we will mostly work with functions
+$
+  f : {-1, 1}^n -> {-1, 1},
+$
+and more generally with real-valued functions $f : {-1, 1}^n -> RR$, which we can add and scale.
 
-$ 0 xor 0 = 0, quad 0 xor 1 = 1, quad 1 xor 0 = 1, quad 1 xor 1 = 0. $
+#example(title: "AND of Two Bits")[
+  In the sign encoding, the AND of two bits outputs $-1$ (true) only when both inputs are $-1$. We can check on all four inputs that
+  $
+    "AND"_2 (x_1, x_2) = 1/2 + 1/2 x_1 + 1/2 x_2 - 1/2 x_1 x_2.
+  $
+] <ex-and>
 
-In other words, $a xor b$ is $1$ exactly when $a$ and $b$ differ. The only
-surprise compared with ordinary addition is $1 xor 1 = 0$.
-
-#definition(title: "XOR of bitstrings")[
-  For $x, y in {0, 1}^n$, the bitstring $x xor y$ is formed by XORing the two
-  strings one position at a time: its $i$-th bit is $x_i xor y_i$.
-] <def-xor>
-
-#example(title: "XOR by hand")[
-  To compute $1011 xor 0110$, compare the strings position by position and
-  write $1$ wherever they differ: the answer is $1101$.
+#example(title: "Majority of Three Bits")[
+  The majority function outputs the sign that appears most often among its inputs. For three bits,
+  $
+    "Maj"_3 (x_1, x_2, x_3) = 1/2 x_1 + 1/2 x_2 + 1/2 x_3 - 1/2 x_1 x_2 x_3.
+  $
 ]
 
-XOR behaves like addition in the ways we will rely on:
+Both polynomials are _multilinear_: no variable appears squared or to a higher power. This is no loss, because $x_i^2 = 1$ for $x_i in {-1, 1}$.
 
-- The order does not matter: $x xor y = y xor x$.
-- Grouping does not matter: $(x xor y) xor z = x xor (y xor z)$.
-- The all-zero string changes nothing: $x xor 00 dots.c 0 = x$.
-- Every string undoes itself: $x xor x = 00 dots.c 0$.
+= The Fourier Expansion
 
-The last property is the unusual one. It means that adding and subtracting are
-the same operation, so we never need a minus sign.
+The monomials that appear in a multilinear polynomial are products of distinct variables, one for each subset of the variables.
 
-= The dot product
-
-#definition(title: "Dot product")[
-  For $a, x in {0, 1}^n$, the _dot product_ is the single bit
-  $ a dot x = a_1 x_1 xor a_2 x_2 xor dots.c xor a_n x_n. $
-] <def-dot>
-
-The product $a_i x_i$ is $x_i$ when $a_i = 1$ and $0$ when $a_i = 0$. So it
-helps to read $a$ as a _mask_ that selects some positions of $x$. Then $a dot x$
-answers one question: among the selected positions, is the number of $1$s odd?
-
-#example(title: "Dot product by hand")[
-  Let $a = 1010$ and $x = 1110$. The mask $a$ selects positions $1$ and $3$,
-  where $x$ has the bits $1$ and $1$. That is two $1$s, an even number, so
-  $a dot x = 0$.
-]
-
-= Parity functions
-
-#definition(title: "Parity function")[
-  Fix a mask $a in {0, 1}^n$. The _parity function_ for $a$ takes a bitstring
-  $x$ and returns the bit $a dot x$.
+#definition(title: "Parity Function")[
+  For a subset $S subset.eq [n] = {1, 2, ..., n}$, the _parity function_ $chi_S : {-1, 1}^n -> {-1, 1}$ is
+  $
+    chi_S (x) = product_(i in S) x_i.
+  $
+  In particular, $chi_emptyset (x) = 1$.
 ] <def-parity>
 
-There is one parity function for each mask, so there are $2^n$ of them. The
-mask $00 dots.c 0$ selects nothing and gives the function that is always $0$.
-The mask $11 dots.c 1$ selects everything and tells us whether $x$ has an odd
-number of $1$s.
+The name comes from the other encoding. Let $x in FF_2^n$, and let $gamma in FF_2^n$ be the indicator vector of $S$, so that $gamma_i = 1$ exactly when $i in S$. Applying $chi_S$ to the signs $((-1)^(x_1), ..., (-1)^(x_n))$ gives
+$
+  product_(i in S) (-1)^(x_i) = (-1)^(sum_(i in S) x_i) = (-1)^(gamma dot x),
+$
+where $gamma dot x = sum_(i=1)^n gamma_i x_i$ is the dot product in $FF_2^n$. So $chi_S$ computes the parity of the bits of $x$ selected by $S$. When the inputs are in $FF_2^n$, we index the parity functions by vectors and write
+$
+  chi_gamma (x) = (-1)^(gamma dot x).
+$
 
-Try it: click the bits to change the mask $a$ and the input $x$.
+There are $2^n$ parity functions, one for each subset of $[n]$. Our first theorem says that they are enough to build every function.
 
-#widget("parity-explorer", size: 4)[
-  The interactive parity explorer needs JavaScript.
-]
-
-Parity functions get along with XOR. This one fact is the reason they are the
-right building blocks for everything that follows.
-
-#proposition(title: "Parity functions are linear")[
-  For every mask $a$ and all bitstrings $x$ and $y$,
-  $ a dot (x xor y) = (a dot x) xor (a dot y). $
-] <prop-linear>
+#theorem(title: "Fourier Expansion")[
+  Every function $f : {-1, 1}^n -> RR$ can be written uniquely as a multilinear polynomial
+  $
+    f(x) = sum_(S subset.eq [n]) hat(f)(S) chi_S (x),
+  $
+  where each $hat(f)(S)$ is a real number. This is the _Fourier expansion_ of $f$, and $hat(f)(S)$ is the _Fourier coefficient_ of $f$ on $S$.
+] <thm-fourier-expansion>
 
 #proof[
-  Look at one position $i$. If $a_i = 0$, both sides contribute $0$. If
-  $a_i = 1$, the left side contributes $x_i xor y_i$ and the right side
-  contributes $x_i$ and $y_i$ separately, which XOR to the same thing. Since
-  order and grouping do not matter for XOR, combining all positions gives the
-  same bit on both sides.
+  We first show that such a polynomial exists, by interpolation. For each point $alpha in {-1, 1}^n$, consider the polynomial
+  $
+    1_alpha (x) = product_(i=1)^n (1 + alpha_i x_i) / 2.
+  $
+  If $x = alpha$, every factor is $(1 + 1) / 2 = 1$, so $1_alpha (x) = 1$. If $x != alpha$, then $x_i != alpha_i$ for some $i$, and that factor is $(1 - 1) / 2 = 0$, so $1_alpha (x) = 0$. Therefore,
+  $
+    f(x) = sum_(alpha in {-1, 1}^n) f(alpha) 1_alpha (x) = 1/2^n sum_(alpha in {-1, 1}^n) f(alpha) product_(i=1)^n (1 + alpha_i x_i).
+  $
+  Expanding each product gives a sum of monomials $chi_S (x)$ with real coefficients, and collecting the terms for each $S$ gives the expansion.
+
+  Uniqueness follows from @prop-coefficient-formula below, which computes each coefficient directly from $f$. $square$
 ]
 
-= The $plus.minus 1$ convention
-
-It is often more convenient to record a bit as a sign: write $+1$ for the bit
-$0$ and $-1$ for the bit $1$. A bit $b$ becomes $(-1)^b$.
-
-#definition(title: "Parity function, sign form")[
-  For a mask $a in {0, 1}^n$, define
-  $ chi_a (x) = (-1)^(a dot x). $
-  So $chi_a (x) = +1$ when $a dot x = 0$, and $chi_a (x) = -1$ when
-  $a dot x = 1$.
-] <def-chi>
-
-Why bother? Because signs turn XOR into ordinary multiplication:
-$(+1)(+1) = +1$, $(+1)(-1) = -1$ and $(-1)(-1) = +1$ match the XOR table
-exactly. In sign form, @prop-linear becomes
-
-$ chi_a (x xor y) = chi_a (x) chi_a (y). $
-
-#example(title: "All parity functions for two bits")[
-  Each row is a mask $a$, each column is an input $x$, and each entry is
-  $chi_a (x)$.
-
-  #table(
-    columns: 5,
-    [], [$x = 00$], [$x = 01$], [$x = 10$], [$x = 11$],
-    [$a = 00$], [$+1$], [$+1$], [$+1$], [$+1$],
-    [$a = 01$], [$+1$], [$-1$], [$+1$], [$-1$],
-    [$a = 10$], [$+1$], [$+1$], [$-1$], [$-1$],
-    [$a = 11$], [$+1$], [$-1$], [$-1$], [$+1$],
-  )
-
-  Keep this table in mind. On the next page it reappears as a Hadamard matrix.
+#example(title: "Expanding AND by Interpolation")[
+  The function $"AND"_2$ is $-1$ at the point $(-1, -1)$ and $1$ at the other three points. The four polynomials $1_alpha$ sum to $1$, so
+  $
+    "AND"_2 (x) & = 1 - 2 dot 1_((-1, -1)) (x) \
+                & = 1 - 2 dot ((1 - x_1) (1 - x_2)) / 4 \
+                & = 1/2 + 1/2 x_1 + 1/2 x_2 - 1/2 x_1 x_2,
+  $
+  which matches @ex-and. Its Fourier coefficients are $hat(f)(emptyset) = hat(f)({1}) = hat(f)({2}) = 1/2$ and $hat(f)({1, 2}) = -1/2$.
 ]
 
-= Check your understanding
+= Orthonormality of the Parity Functions
 
-+ Compute $0111 xor 1101$.
-+ Compute $a dot x$ and $chi_a (x)$ for $a = 0110$ and $x = 1011$.
-+ Using the table above, multiply the rows for $a = 01$ and $a = 10$ entry by
-  entry. Which row do you get?
+The functions $f : {-1, 1}^n -> RR$ form a real vector space of dimension $2^n$, since a function is determined by its $2^n$ values. We can give this space an inner product.
 
-#solution[
-  + The strings differ in positions $1$ and $3$, so the answer is $1010$.
-  + The mask selects positions $2$ and $3$, where $x$ has the bits $0$ and $1$.
-    That is one $1$, an odd number, so $a dot x = 1$ and $chi_a (x) = -1$.
-  + The products are $+1, -1, -1, +1$, which is the row for $a = 11$. This is
-    no accident: $01 xor 10 = 11$, and in general
-    $chi_a (x) chi_b (x) = chi_(a xor b) (x)$.
+#definition(title: "Inner Product")[
+  For $f, g : {-1, 1}^n -> RR$, define
+  $
+    chevron.l f, g chevron.r = 1/2^n sum_(x in {-1, 1}^n) f(x) g(x) = EE_x [f(x) g(x)],
+  $
+  where the expectation is over a uniformly random $x in {-1, 1}^n$.
+] <def-inner-product>
+
+Under this inner product, the parity functions are as nice as a basis can be.
+
+#lemma(title: "Products and Averages of Parity Functions")[
+  Let $S, T subset.eq [n]$. Then:
+  + $chi_S chi_T = chi_(S Delta T)$, where $S Delta T$ is the symmetric difference of $S$ and $T$.
+  + $EE_x [chi_S (x)] = 1$ if $S = emptyset$, and $EE_x [chi_S (x)] = 0$ otherwise.
+] <lem-parity-facts>
+
+#proof[
+  For the first claim, an index in $S inter T$ contributes $x_i^2 = 1$ to the product, so
+  $
+    chi_S (x) chi_T (x) = product_(i in S) x_i product_(i in T) x_i = product_(i in S Delta T) x_i = chi_(S Delta T) (x).
+  $
+
+  For the second claim, $chi_emptyset = 1$ has average $1$. If $S != emptyset$, the coordinates of a uniformly random $x$ are independent and each has average $0$, so
+  $
+    EE_x [chi_S (x)] = product_(i in S) EE_x [x_i] = 0. quad square
+  $
 ]
 
-#remark(title: "Where this is going")[
-  Bitstrings with XOR form what is called a vector space over the two-element
-  field $FF_2$, and parity functions are its linear functions. We will not need
-  that language yet, but it is why the words "linear" and "dot product" appear.
+#theorem(title: "The Parity Functions are Orthonormal")[
+  For all $S, T subset.eq [n]$,
+  $
+    chevron.l chi_S, chi_T chevron.r = cases(1 & quad "if" S = T, 0 & quad "otherwise".)
+  $
+] <thm-orthonormal>
+
+#proof[
+  By @lem-parity-facts,
+  $
+    chevron.l chi_S, chi_T chevron.r = EE_x [chi_S (x) chi_T (x)] = EE_x [chi_(S Delta T) (x)],
+  $
+  which is $1$ if $S Delta T = emptyset$ and $0$ otherwise. Finally, $S Delta T = emptyset$ exactly when $S = T$. $square$
+]
+
+Orthonormality gives a direct formula for each Fourier coefficient.
+
+#proposition(title: "Formula for the Fourier Coefficients")[
+  Let $f : {-1, 1}^n -> RR$ and $S subset.eq [n]$. Then,
+  $
+    hat(f)(S) = chevron.l f, chi_S chevron.r = 1/2^n sum_(x in {-1, 1}^n) f(x) chi_S (x).
+  $
+] <prop-coefficient-formula>
+
+#proof[
+  Suppose $f = sum_(T subset.eq [n]) c_T chi_T$ for some real numbers $c_T$. By linearity of the inner product and @thm-orthonormal,
+  $
+    chevron.l f, chi_S chevron.r = sum_(T subset.eq [n]) c_T chevron.l chi_T, chi_S chevron.r = c_S.
+  $
+  So the coefficients of any such expression are determined by $f$, which proves both the formula and the uniqueness claimed in @thm-fourier-expansion. $square$
+]
+
+In the $FF_2^n$ notation, the same formula reads
+$
+  hat(f)(gamma) = chevron.l f, chi_gamma chevron.r = 1/2^n sum_(x in FF_2^n) f(x) (-1)^(gamma dot x)
+$
+for $f : FF_2^n -> RR$ and $gamma in FF_2^n$. This is the form we will use in the next chapter.
+
+The inner product of two functions can also be computed from their coefficients.
+
+#theorem(title: "Plancherel and Parseval")[
+  For all $f, g : {-1, 1}^n -> RR$,
+  $
+    chevron.l f, g chevron.r = sum_(S subset.eq [n]) hat(f)(S) hat(g)(S).
+  $
+  In particular, if $f : {-1, 1}^n -> {-1, 1}$, then
+  $
+    sum_(S subset.eq [n]) hat(f)(S)^2 = 1.
+  $
+] <thm-plancherel>
+
+#proof[
+  Expanding both functions and using @thm-orthonormal,
+  $
+    chevron.l f, g chevron.r
+    & = sum_(S subset.eq [n]) sum_(T subset.eq [n]) hat(f)(S) hat(g)(T) chevron.l chi_S, chi_T chevron.r \
+    & = sum_(S subset.eq [n]) hat(f)(S) hat(g)(S).
+  $
+  For the second claim, take $g = f$. If $f$ only takes the values $1$ and $-1$, then $chevron.l f, f chevron.r = EE_x [f(x)^2] = 1$. $square$
+]
+
+= Conclusion
+
+In this chapter, we wrote Boolean functions as functions on ${-1, 1}^n$ and showed that each one is a unique linear combination of the $2^n$ parity functions. The parity functions are orthonormal, so the coefficient on $chi_S$ is the inner product $chevron.l f, chi_S chevron.r$, an average over all $2^n$ inputs. Computing all $2^n$ coefficients this way takes about $2^n dot 2^n$ operations, and the next chapter shows how to do better.
+
+#remark[
+  The material from this chapter follows Sections 1.2 to 1.4 of O'Donnell's _Analysis of Boolean Functions_.
 ]

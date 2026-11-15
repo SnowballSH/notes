@@ -3,7 +3,7 @@
 A note is one Typst file, compiled to static HTML when the site builds. Notes
 are files in git and render the same for every reader; anything interactive
 runs in the browser as a widget. This is the prototype of that pipeline, with
-`notes/walsh-hadamard/bitstrings-and-parity.typ` as its first page.
+`notes/walsh-hadamard/boolean-functions.typ` as its first page.
 
 ## Writing a note
 
@@ -41,6 +41,9 @@ See @def-bitstring.
 2. `src/lib/server/typst/notes.ts` lists the notes, compiles one to an HTML
    fragment, reads its metadata from the `<note-meta>` label, and rejects
    widgets that are not registered.
+   It also replaces the combining accents Typst emits for `hat`, `tilde`,
+   `dot` and `dot.double` with their spacing forms, because Chromium often
+   does not paint a combining mark that stands alone in inline math.
 3. `src/routes/[course]/[slug]` prerenders each note. The build fails on a
    Typst error, a broken reference, bad metadata or an unknown widget.
 4. `src/lib/styles/notes.css` styles the compiled markup. Math is native
