@@ -1,0 +1,4 @@
+{
+	"tinymist.rootPath": "${workspaceFolder}/notes",
+	"tinymist.typstExtraArgs": ["--features=html", "--input", "preview=true"]
+}
