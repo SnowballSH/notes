@@ -17,10 +17,19 @@ export interface NoteHeading {
 	level: number;
 }
 
+/** A numbered card of a note, such as "Theorem 3" with the title "Plancherel and Parseval". */
+export interface NoteCard {
+	id: string;
+	name: string;
+	/** Empty when the card has no title. */
+	title: string;
+}
+
 export interface CompiledNote extends NoteRef {
 	meta: NoteMeta;
 	html: string;
 	headings: NoteHeading[];
+	cards: NoteCard[];
 	/** What Typst warned about, such as an element it left out of the page. */
 	warnings: string[];
 	styles: string;

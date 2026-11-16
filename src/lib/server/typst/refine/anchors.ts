@@ -1,3 +1,4 @@
+import type { NoteCard } from "#lib/notes/types.ts";
 import {
 	addClass,
 	append,
@@ -43,23 +44,31 @@ function appendAnchor(target: Element, id: string, name: string): void {
 /**
  * Gives every card an address and shows a link to it, and to each section heading, so that
  * a reader can point someone at "Theorem 3". A card the author labelled keeps its label as
- * its id; the others are named after their kind and number.
+ * its id; the others are named after their kind and number. Returns the cards, in order.
  */
-export function addAnchors(root: ParentNode): void {
+export function addAnchors(root: ParentNode): NoteCard[] {
 	const taken = new Set(descendants(root).flatMap((element) => attribute(element, "id") ?? []));
-	for (const card of descendants(root).filter(isCard)) {
-		const name = cardName(card);
-		const heading = childElements(card)[0];
-		if (!name || !heading) continue;
-		const wanted = idFrom(name);
-		const id = attribute(card, "id") ?? (taken.has(wanted) ? undefined : wanted);
-		if (id === undefined) continue;
-		taken.add(id);
-		setAttribute(card, "id", id);
-		appendAnchor(heading, id, name);
-	}
+	const cards = descendants(root)
+		.filter(isCard)
+		.flatMap((card) => {
+			const name = cardName(card);
+			const heading = childElements(card)[0];
+			if (!name || !heading) return [];
+			const wanted = idFrom(name);
+			const id = attribute(card, "id") ?? (taken.has(wanted) ? undefined : wanted);
+			if (id === undefined) return [];
+			taken.add(id);
+			setAttribute(card, "id", id);
+			const title = textOf(heading)
+				.replace(name, "")
+				.trim()
+				.replace(/^\((.*)\)$/, "$1");
+			appendAnchor(heading, id, name);
+			return [{ id, name, title }];
+		});
 	for (const heading of elementsNamed(root, "h2", "h3")) {
 		const id = attribute(heading, "id");
 		if (id) appendAnchor(heading, id, `the section ${textOf(heading).trim()}`);
 	}
+	return cards;
 }

@@ -133,20 +133,47 @@ function extract(document: string, pattern: RegExp, file: string): string {
 	return captured;
 }
 
-export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
+/** Changes whenever a file the note may read does: the note's course directory and the library. */
+async function sourceStamp(ref: NoteRef): Promise<string> {
+	const directories = [join(notesRoot, ref.course), join(notesRoot, libraryDirectory)];
+	const files = (
+		await Promise.all(
+			directories.map(async (directory) =>
+				(await readdir(directory)).map((file) => join(directory, file)),
+			),
+		)
+	).flat();
+	const modified = await Promise.all(files.map(async (file) => (await stat(file)).mtimeMs));
+	return modified.join(",");
+}
+
+const compiledByFile = new Map<string, { stamp: string; note: Promise<CompiledNote> }>();
+
+async function compile(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const [{ stdout: document, warnings }, meta] = await Promise.all([
 		compileHtml(notesRoot, file),
 		readMeta(ref),
 	]);
-	const { html, headings } = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
-	assertValidWidgets(html, file);
+	const refined = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
+	assertValidWidgets(refined.html, file);
 	return {
 		...ref,
 		meta,
-		html,
-		headings,
+		...refined,
 		warnings,
 		styles: /<style>([\s\S]*?)<\/style>/.exec(document)?.[1] ?? "",
 	};
+}
+
+/** A note compiled to HTML, compiled again only when one of its sources has changed. */
+export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
+	const file = sourcePath(ref);
+	const stamp = await sourceStamp(ref);
+	const cached = compiledByFile.get(file);
+	if (cached?.stamp === stamp) return cached.note;
+	const note = compile(ref);
+	compiledByFile.set(file, { stamp, note });
+	note.catch(() => compiledByFile.delete(file));
+	return note;
 }

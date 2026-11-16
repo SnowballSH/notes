@@ -140,6 +140,19 @@ follow the `order` metadata of its notes, and two of them may not share an
 site name. `src/routes/+error.svelte` is the page for an address that does not
 exist.
 
+## Search
+
+`src/routes/search.json` is prerendered at build time from every published
+note: one entry for the note, one for each section, and one for each numbered
+card with its title ("Theorem 3: Plancherel and Parseval"). The Search button
+in the header, `Ctrl+K`, `Cmd+K` or `/` opens a dialog that loads the index
+once and lists the entries containing every word typed
+(`src/lib/search/match.ts`). It finds where something is; the browser's own
+find covers the text of the page being read.
+
+A compiled note is kept in memory until one of its sources changes, so the
+index and the pages do not compile a note twice.
+
 ## Collapsible blocks
 
 `src/lib/notes/blocks.ts` keeps, for the browser session, which proofs and
