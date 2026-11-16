@@ -3,6 +3,7 @@ import type { NoteCard, NoteHeading } from "#lib/notes/types.ts";
 import { addAnchors } from "./anchors";
 import { classifyCodeTokens } from "./code";
 import { identifyHeadings } from "./headings";
+import { describeImages } from "./images";
 import { refineMath } from "./math";
 import { keepMathWithAttachedText } from "./prose";
 import { reserveWidgetSpace } from "./widgets";
@@ -20,6 +21,7 @@ export function refineNoteHtml(html: string): RefinedNote {
 	keepMathWithAttachedText(fragment);
 	reserveWidgetSpace(fragment);
 	classifyCodeTokens(fragment);
+	describeImages(fragment);
 	const headings = identifyHeadings(fragment);
 	const cards = addAnchors(fragment);
 	return { html: serialize(fragment), headings, cards };

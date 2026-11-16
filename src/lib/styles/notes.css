@@ -318,6 +318,11 @@
 		no-repeat scroll;
 }
 
+.note .equation:focus-visible {
+	outline: 2px solid var(--fui-accent);
+	outline-offset: 2px;
+}
+
 .note .equation > math {
 	width: max-content;
 	min-width: 100%;
