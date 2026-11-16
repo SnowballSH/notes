@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Link } from "foundationui/svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
+import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
@@ -22,6 +23,7 @@ const course = $derived(data.course);
 	trail={[{ label: siteName, href: "/" }, ...(course ? [{ label: course.title, href: course.href }] : [])]}
 />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{note.meta.title}</h1>
+<NoteContents headings={note.headings} />
 
 {#key note.html}
 	<article class="note mt-8" {@attach widgets}>

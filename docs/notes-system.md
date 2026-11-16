@@ -28,8 +28,8 @@ See @def-bitstring.
 
 | Function | Renders as |
 |---|---|
-| `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. |
-| `proof`, `solution` | A collapsible block, closed unless `collapsed: false`. |
+| `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. Definitions and results are filled boxes, an example is an outlined box, and a remark is an aside with a rule down its side. |
+| `proof`, `solution` | A collapsible block with a rule down its side, closed unless `collapsed: false`. |
 | `gallery(columns: n, ..items)` | Items laid out in `n` columns (two on narrow screens). Use it in place of `grid`, which Typst drops in HTML export. |
 | `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. |
 
@@ -72,8 +72,12 @@ checked in Chromium and Firefox.
 `notes.css` also restores the table cell padding that the Tailwind reset
 removes.
 
-Known gap: Typst 0.15 drops `overline` and `underline` in HTML export, so they
-do not appear on the site.
+The same pass gives every second- and third-level heading an id made from its
+text, unique on the page, and returns the headings. A note with at least two
+of them lists them under "On this page": below the title on a narrow window,
+and pinned beside the text on a wide one. The section being read is marked.
+The list shows a heading's plain text, so a formula in a section heading
+appears there as its bare symbols.
 
 ## Courses and navigation
 
@@ -132,7 +136,7 @@ whole number of pixels on the 320px board.
 
 ## Not built yet
 
-- Course index pages generated from the notes, and a table of contents.
+- Course index pages generated from the notes.
 - Hover previews for references, and references between notes.
 - Code block colours that follow the theme: Typst emits fixed light-theme
   colours.

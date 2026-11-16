@@ -9,9 +9,16 @@ export interface NoteMeta {
 	order: number;
 }
 
+export interface NoteHeading {
+	id: string;
+	text: string;
+	level: number;
+}
+
 export interface CompiledNote extends NoteRef {
 	meta: NoteMeta;
 	html: string;
+	headings: NoteHeading[];
 	styles: string;
 }
 
