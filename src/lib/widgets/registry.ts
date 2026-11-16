@@ -1,30 +1,31 @@
 import type { Component } from "svelte";
+import type { PropValue, WidgetDefinition } from "./contract.ts";
+import { componentName } from "./names.ts";
 
-type WidgetComponent = Component<Record<string, unknown>>;
+export type WidgetComponent = Component<Record<string, PropValue>>;
 
-interface Widget {
-	load: () => Promise<{ default: WidgetComponent }>;
-	/**
-	 * The height the widget takes once mounted, as a CSS length, reserved beforehand so the
-	 * page does not jump. It may depend on the window width, less the 2rem page gutter.
-	 */
-	height?: string;
-}
+const definitionModules = import.meta.glob<WidgetDefinition>("./*/definition.ts", {
+	eager: true,
+	import: "default",
+});
 
-const registry: Record<string, Widget> = {
-	"hadamard-tiling": {
-		load: () => import("./HadamardTiling.svelte"),
-		height: "calc(3.5rem + min(100vw - 2rem, 20rem + 2px))",
-	},
-	"parity-explorer": { load: () => import("./ParityExplorer.svelte") },
-};
+const componentLoaders = import.meta.glob<WidgetComponent>("./*/*.svelte", { import: "default" });
 
-export const widgetNames = Object.keys(registry);
+/** Every widget by the name a note uses, which is the name of its directory. */
+export const widgetDefinitions: Readonly<Record<string, WidgetDefinition>> = Object.fromEntries(
+	Object.entries(definitionModules)
+		.map(([path, definition]) => [path.split("/")[1] ?? "", definition] as const)
+		.sort(([a], [b]) => a.localeCompare(b)),
+);
 
-export const widgetHeight = (name: string): string | undefined => registry[name]?.height;
+export const widgetNames: readonly string[] = Object.keys(widgetDefinitions);
+
+export const componentPath = (name: string): string => `./${name}/${componentName(name)}.svelte`;
+
+export const hasComponent = (name: string): boolean => componentPath(name) in componentLoaders;
 
 export function loadWidget(name: string): Promise<WidgetComponent> {
-	const widget = registry[name];
-	if (!widget) return Promise.reject(new Error(`unknown widget ${name}`));
-	return widget.load().then((module) => module.default);
+	const load = componentLoaders[componentPath(name)];
+	if (!load) return Promise.reject(new Error(`no component at ${componentPath(name)}`));
+	return load();
 }

@@ -1,5 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { isName } from "#lib/notes/names.ts";
 import type {
 	CompiledNote,
 	NoteLink,
@@ -7,13 +8,12 @@ import type {
 	NoteNeighbours,
 	NoteRef,
 } from "#lib/notes/types.ts";
-import { widgetNames } from "#lib/widgets/registry.ts";
 import { compileHtml, queryOne, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
+import { assertValidWidgets } from "./widgets";
 
 const notesRoot = resolve("notes");
 const libraryDirectory = "lib";
-const namePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function sourcePath({ course, slug }: NoteRef): string {
 	return join(notesRoot, course, `${slug}.typ`);
@@ -34,7 +34,7 @@ export async function listNotes(): Promise<NoteRef[]> {
 }
 
 export async function hasNote(ref: NoteRef): Promise<boolean> {
-	if (!namePattern.test(ref.course) || !namePattern.test(ref.slug)) return false;
+	if (!isName(ref.course) || !isName(ref.slug)) return false;
 	return (await listNotes()).some((note) => note.course === ref.course && note.slug === ref.slug);
 }
 
@@ -118,16 +118,6 @@ function extract(document: string, pattern: RegExp, file: string): string {
 	return captured;
 }
 
-function assertKnownWidgets(html: string, file: string): void {
-	const used = [...html.matchAll(/<notes-widget\b[^>]*?\bname="([^"]*)"/g)].map(
-		(match) => match[1] ?? "",
-	);
-	const unknown = used.filter((name) => !widgetNames.includes(name));
-	if (unknown.length > 0) {
-		throw new TypstError(`${file}: unknown widget ${unknown.join(", ")}`);
-	}
-}
-
 export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const [{ stdout: document, warnings }, meta] = await Promise.all([
@@ -135,7 +125,7 @@ export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 		readMeta(ref),
 	]);
 	const { html, headings } = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
-	assertKnownWidgets(html, file);
+	assertValidWidgets(html, file);
 	return {
 		...ref,
 		meta,

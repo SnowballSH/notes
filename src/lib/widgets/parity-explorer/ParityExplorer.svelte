@@ -1,13 +1,11 @@
 <script lang="ts">
 import { untrack } from "svelte";
+import type { WidgetProps } from "../contract.ts";
+import WidgetFrame from "../WidgetFrame.svelte";
+import type definition from "./definition.ts";
 
-interface Props {
-	size?: number;
-}
-
-const { size = 4 }: Props = $props();
-const maxSize = 8;
-const length = untrack(() => Math.min(Math.max(Math.round(size), 1), maxSize));
+const { size }: WidgetProps<typeof definition> = $props();
+const length = untrack(() => size);
 
 let mask = $state(Array.from({ length }, (_, index) => index % 2 === 0));
 let input = $state(Array.from({ length }, (_, index) => index < 3));
@@ -33,10 +31,12 @@ const dot = $derived(selected % 2);
 	</div>
 {/snippet}
 
-<figure class="parity">
-	{@render row("a", "Mask a", mask)}
-	{@render row("x", "Input x", input)}
-	<figcaption aria-live="polite">
+<WidgetFrame>
+	<div class="rows">
+		{@render row("a", "Mask a", mask)}
+		{@render row("x", "Input x", input)}
+	</div>
+	{#snippet caption()}
 		<p>
 			The mask selects {mask.filter(Boolean).length} of {length} positions, and x has
 			{selected} one{selected === 1 ? "" : "s"} there: an {dot === 1 ? "odd" : "even"} number.
@@ -44,15 +44,13 @@ const dot = $derived(selected % 2);
 		<p class="result">
 			a &middot; x = {dot}, so the sign form gives {dot === 1 ? "-1" : "+1"}.
 		</p>
-	</figcaption>
-</figure>
+	{/snippet}
+</WidgetFrame>
 
 <style>
-.parity {
-	margin: 0;
+.rows {
 	display: grid;
 	gap: 0.5rem;
-	justify-items: start;
 }
 .row {
 	display: flex;
@@ -83,11 +81,6 @@ button.selected {
 button:focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
-}
-figcaption {
-	margin-top: 0.25rem;
-	font-size: 0.875rem;
-	color: var(--fui-ink-secondary);
 }
 .result {
 	color: var(--fui-ink);
