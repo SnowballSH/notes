@@ -7,7 +7,7 @@ lecture notes, as a static SvelteKit site styled with
 ```bash
 pnpm install
 pnpm run dev
-pnpm run check && pnpm run lint && pnpm run build
+pnpm run check && pnpm run lint && pnpm run test && pnpm run build
 ```
 
 Pushing to `main` publishes `ghcr.io/snowballsh/notes`. The image is Caddy

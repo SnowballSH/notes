@@ -1,0 +1,284 @@
+import { describe, expect, it } from "vitest";
+import { refineNoteHtml } from "./index";
+
+const math = (inner: string): string => `<math>${inner}</math>`;
+const display = (inner: string): string => `<math display="block">${inner}</math>`;
+const equation = (inner: string): string => `<div class="equation">${display(inner)}</div>`;
+
+describe("accents", () => {
+	it("replaces a combining accent with its spacing form", () => {
+		const hat = math('<mover accent="true"><mi>f</mi><mo>̂</mo></mover>');
+		expect(refineNoteHtml(hat)).toContain("<mo>ˆ</mo>");
+	});
+
+	it("draws a vector arrow as a fixed-size arrow over one letter", () => {
+		const vector = math('<mover accent="true"><mi>x</mi><mo stretchy="true">⃗</mo></mover>');
+		expect(refineNoteHtml(vector)).toContain('<mo stretchy="false" class="vector-arrow">→</mo>');
+	});
+
+	it("leaves the arrow stretchy over a longer base", () => {
+		const vector = math(
+			'<mover accent="true"><mrow><mi>A</mi><mi>B</mi></mrow><mo stretchy="true">⃗</mo></mover>',
+		);
+		expect(refineNoteHtml(vector)).toContain('<mo stretchy="true" class="vector-arrow">→</mo>');
+	});
+
+	it("leaves a mark it does not know and an operator that is not an accent", () => {
+		const unknown = math('<mover accent="true"><mi>x</mi><mo>⃛</mo></mover>');
+		const limit = math("<mover><mi>x</mi><mo>̂</mo></mover>");
+		expect(refineNoteHtml(unknown)).toBe(unknown);
+		expect(refineNoteHtml(limit)).toBe(limit);
+	});
+});
+
+describe("primes", () => {
+	const prime = '<mo form="postfix" lspace="0em" rspace="0em">\u2032</mo>';
+
+	it("sets a prime beside its base instead of as a superscript", () => {
+		expect(refineNoteHtml(math("<msup><mi>x</mi><mo>′</mo></msup>"))).toBe(
+			math('<mrow><mi>x</mi><mo form="postfix" lspace="0em" rspace="0em">′</mo></mrow>'),
+		);
+	});
+
+	it("keeps the subscript of a primed symbol", () => {
+		expect(refineNoteHtml(math("<msubsup><mi>x</mi><mn>1</mn><mo>′</mo></msubsup>"))).toBe(
+			math(
+				'<msub><mrow><mi>x</mi><mo form="postfix" lspace="0em" rspace="0em">′</mo></mrow><mn>1</mn></msub>',
+			),
+		);
+	});
+
+	it("moves a prime that leads a superscript onto the base", () => {
+		const squared = math('<msup><mi>A</mi><mrow><mo form="postfix">′</mo><mn>2</mn></mrow></msup>');
+		expect(refineNoteHtml(squared)).toBe(
+			math(
+				'<msup><mrow><mi>A</mi><mo form="postfix" lspace="0em" rspace="0em">′</mo></mrow><mrow><mn>2</mn></mrow></msup>',
+			),
+		);
+	});
+
+	it("sets a prime beside an accented base", () => {
+		const accented = math(
+			'<msup><mover accent="true"><mi>x</mi><mo>\u02c6</mo></mover><mo>\u2032</mo></msup>',
+		);
+		expect(refineNoteHtml(accented)).toBe(
+			math(`<mrow><mover accent="true"><mi>x</mi><mo>\u02c6</mo></mover>${prime}</mrow>`),
+		);
+	});
+
+	it("handles a primed symbol inside the base of another prime", () => {
+		const nested = math(
+			"<msup><mrow><msup><mi>x</mi><mo>\u2032</mo></msup><mi>y</mi></mrow><mo>\u2032</mo></msup>",
+		);
+		expect(refineNoteHtml(nested)).toBe(
+			math(`<mrow><mrow><mrow><mi>x</mi>${prime}</mrow><mi>y</mi></mrow>${prime}</mrow>`),
+		);
+	});
+
+	it("moves a prime that leads the superscript of a subscripted symbol", () => {
+		const scripted = math(
+			"<msubsup><mi>x</mi><mn>1</mn><mrow><mo>\u2032</mo><mn>2</mn></mrow></msubsup>",
+		);
+		expect(refineNoteHtml(scripted)).toBe(
+			math(`<msubsup><mrow><mi>x</mi>${prime}</mrow><mn>1</mn><mrow><mn>2</mn></mrow></msubsup>`),
+		);
+	});
+
+	it("leaves an ordinary superscript", () => {
+		const power = math("<msup><mi>x</mi><mn>2</mn></msup>");
+		expect(refineNoteHtml(power)).toBe(power);
+	});
+});
+
+describe("fences", () => {
+	it("stops a bracket around short content from stretching", () => {
+		expect(refineNoteHtml(math("<mi>f</mi><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow>"))).toBe(
+			math(
+				'<mi>f</mi><mrow><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow>',
+			),
+		);
+	});
+
+	it.each([
+		["a fraction", "<mfrac><mi>a</mi><mi>b</mi></mfrac>"],
+		["a matrix", "<mtable><mtr><mtd><mn>1</mn></mtd></mtr></mtable>"],
+		["a sum with limits", "<munderover><mo>∑</mo><mi>i</mi><mi>n</mi></munderover>"],
+		[
+			"a nested fraction",
+			"<msup><mrow><mfrac><mi>a</mi><mi>b</mi></mfrac></mrow><mn>2</mn></msup>",
+		],
+		["an inline sum", "<msubsup><mo>∑</mo><mi>i</mi><mi>n</mi></msubsup>"],
+	])("lets a bracket grow around %s", (_name, tall) => {
+		const fenced = math(`<mrow><mo>(</mo>${tall}<mo>)</mo></mrow>`);
+		expect(refineNoteHtml(fenced)).toBe(fenced);
+	});
+
+	it.each([
+		["floor", "\u230a", "\u230b"],
+		["ceiling", "\u2308", "\u2309"],
+		["norm", "\u2016", "\u2016"],
+		["angle", "\u27e8", "\u27e9"],
+		["absolute value", "|", "|"],
+	])("covers %s brackets", (_name, open, close) => {
+		const refined = refineNoteHtml(
+			math(`<mrow><mo>${open}</mo><mi>x</mi><mo>${close}</mo></mrow>`),
+		);
+		expect(refined.match(/stretchy="false"/g)).toHaveLength(2);
+	});
+
+	it("judges a bracket directly under the formula by the whole formula", () => {
+		const short = refineNoteHtml(math("<mo>(</mo><mi>x</mi><mo>)</mo>"));
+		const tall = math("<mo>(</mo><mi>x</mi><mo>)</mo><mfrac><mi>a</mi><mi>b</mi></mfrac>");
+		expect(short.match(/stretchy="false"/g)).toHaveLength(2);
+		expect(refineNoteHtml(tall)).toBe(tall);
+	});
+
+	it("respects a stretchy attribute that Typst set", () => {
+		const fixed = math(
+			'<mrow><mo stretchy="true">(</mo><mi>x</mi><mo stretchy="true">)</mo></mrow>',
+		);
+		expect(refineNoteHtml(fixed)).toBe(fixed);
+	});
+
+	it("treats an accent as short and other operators as not fences", () => {
+		const accented = math(
+			'<mrow><mo>(</mo><mover accent="true"><mi>x</mi><mo>ˆ</mo></mover><mo>+</mo><mi>y</mi><mo>)</mo></mrow>',
+		);
+		const refined = refineNoteHtml(accented);
+		expect(refined).toContain('<mo stretchy="false">(</mo>');
+		expect(refined).toContain("<mo>+</mo>");
+	});
+});
+
+describe("long inline formulas", () => {
+	const terms = (count: number): string =>
+		Array.from({ length: count }, (_, index) => `<msub><mi>a</mi><mn>${index}</mn></msub>`).join(
+			"<mo>+</mo>",
+		);
+
+	it("cuts a long formula after each outermost relation", () => {
+		const refined = refineNoteHtml(math(`${terms(8)}<mo>=</mo>${terms(8)}<mo>=</mo><mn>0</mn>`));
+		expect(refined.match(/<math>/g)).toHaveLength(3);
+		expect(refined.match(/<mo form="infix">=<\/mo><\/math>/g)).toHaveLength(2);
+		expect(refined.match(/<\/math><wbr><math>/g)).toHaveLength(2);
+		expect(refined.replaceAll(/<\/?math>|<wbr>| form="infix"/g, "")).toBe(
+			`${terms(8)}<mo>=</mo>${terms(8)}<mo>=</mo><mn>0</mn>`,
+		);
+	});
+
+	it("does not cut inside a bracketed group, a short formula or a display equation", () => {
+		const short = math("<mi>a</mi><mo>=</mo><mi>b</mi>");
+		const block = display(`${terms(8)}<mo>=</mo>${terms(8)}`);
+		const group = `<mrow><mo>[</mo>${terms(8)}<mo>=</mo>${terms(8)}<mo>]</mo></mrow>`;
+		for (const formula of [math(`<mi>P</mi>${group}`), short, block]) {
+			expect(refineNoteHtml(formula).match(/<math/g)).toHaveLength(1);
+		}
+	});
+
+	it("looks inside a group that is the whole formula", () => {
+		const refined = refineNoteHtml(math(`<mrow>${terms(8)}<mo>=</mo>${terms(8)}</mrow>`));
+		expect(refined).toBe(`${math(`${terms(8)}<mo form="infix">=</mo>`)}<wbr>${math(terms(8))}`);
+	});
+
+	it("cuts after binary operators when there is no relation", () => {
+		const refined = refineNoteHtml(math(terms(14)));
+		expect(refined.match(/<mo form="infix">\+<\/mo><\/math><wbr><math>/g)).toHaveLength(13);
+	});
+
+	it("never leaves an operator alone in a piece", () => {
+		const leading = refineNoteHtml(math(`<mo>=</mo>${terms(14)}<mo>=</mo><mn>0</mn>`));
+		const adjacent = refineNoteHtml(math(`${terms(8)}<mo>,</mo><mo>=</mo>${terms(8)}`));
+		expect(leading.startsWith(`<math><mo>=</mo>${terms(14)}`)).toBe(true);
+		expect(leading.match(/<wbr>/g)).toHaveLength(1);
+		expect(adjacent).not.toMatch(/<math>(<mo[^>]*>[^<]*<\/mo>)+<\/math>/);
+		expect(adjacent).toContain("<mo>,</mo><mo>=</mo>");
+	});
+
+	it("keeps an id on the first piece only", () => {
+		const refined = refineNoteHtml(
+			`<math id="eq" class="k">${terms(8)}<mo>=</mo>${terms(8)}</math>`,
+		);
+		expect(refined.match(/id="eq"/g)).toHaveLength(1);
+		expect(refined.match(/class="k"/g)).toHaveLength(2);
+		expect(refined.startsWith('<math id="eq"')).toBe(true);
+	});
+
+	it("keeps a form that Typst set", () => {
+		const refined = refineNoteHtml(
+			math(`${terms(8)}<mo>=</mo><mo form="prefix">−</mo>${terms(8)}`),
+		);
+		expect(refined).toContain('<math><mo form="prefix">−</mo>');
+	});
+});
+
+describe("text attached to formulas", () => {
+	const x = math("<mi>x</mi>");
+	const square = math("<mi>□</mi>");
+
+	it("keeps punctuation on the line of the formula before it", () => {
+		expect(refineNoteHtml(`<p>Let ${x}, so that</p>`)).toBe(
+			`<p>Let <span class="nobreak">${x},</span> so that</p>`,
+		);
+	});
+
+	it("keeps an opening bracket and a suffix with their formula", () => {
+		expect(refineNoteHtml(`<p>the (${x})-th entry</p>`)).toBe(
+			`<p>the <span class="nobreak">(${x})-th</span> entry</p>`,
+		);
+	});
+
+	it("leaves a formula between spaces alone", () => {
+		const spaced = `<p>Let ${x} be</p>`;
+		expect(refineNoteHtml(spaced)).toBe(spaced);
+	});
+
+	it("keeps the end-of-proof square with the last word", () => {
+		expect(refineNoteHtml(`<p>as desired. ${square}</p>`)).toBe(
+			`<p>as <span class="nobreak">desired. ${square}</span></p>`,
+		);
+	});
+
+	it("keeps the end-of-proof square with a final formula", () => {
+		expect(refineNoteHtml(`<p>so ${x}. ${square}</p>`)).toBe(
+			`<p>so <span class="nobreak">${x}. ${square}</span></p>`,
+		);
+	});
+
+	it("does not treat a square in the middle of a paragraph as the end of a proof", () => {
+		const middle = `<p>the symbol ${square} marks</p>`;
+		expect(refineNoteHtml(middle)).toBe(middle);
+	});
+
+	it("keeps the end-of-proof square with an element before it", () => {
+		expect(refineNoteHtml(`<p>as <em>desired</em> ${square} </p>`)).toBe(
+			`<p>as <span class="nobreak"><em>desired</em> ${square}</span> </p>`,
+		);
+	});
+
+	it("does not attach text to a display equation", () => {
+		expect(refineNoteHtml(`${display("<mi>x</mi>")}<p>, where</p>`)).toBe(
+			`${equation("<mi>x</mi>")}<p>, where</p>`,
+		);
+	});
+});
+
+describe("display equations", () => {
+	it("are wrapped in a container that can scroll", () => {
+		expect(refineNoteHtml(`<p>so</p>${display("<mi>x</mi>")}<p>where</p>`)).toBe(
+			`<p>so</p>${equation("<mi>x</mi>")}<p>where</p>`,
+		);
+	});
+});
+
+describe("unrelated markup", () => {
+	it("keeps a code block that starts with a blank line", () => {
+		const code = "<pre><code>\n\nfirst</code></pre>";
+		expect(refineNoteHtml(code)).toBe(code);
+	});
+
+	it("is returned unchanged", () => {
+		const html =
+			'<h2>Title</h2><details class="proof"><summary><strong>Proof</strong></summary><p>Text &amp; more <a href="#x">link</a>.</p></details><notes-widget name="w" props="{&quot;a&quot;:1}">fallback</notes-widget>';
+		expect(refineNoteHtml(html)).toBe(html);
+	});
+});

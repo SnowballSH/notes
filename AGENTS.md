@@ -13,6 +13,7 @@ Hosting is documented in [`README.md`](README.md).
 | `pnpm run check` | Typecheck the Svelte and TypeScript sources |
 | `pnpm run lint` | Check formatting and lint with Biome |
 | `pnpm run format` | Format and apply safe lint fixes |
+| `pnpm run test` | Run the unit tests with Vitest |
 | `pnpm run build` | Static production build to `build/` |
 | `scripts/smoke-image.sh IMAGE [ENGINE]` | Smoke-test a built container image |
 
@@ -24,7 +25,7 @@ describes the format and the pipeline.
 pnpm is the only package manager here: `packageManager` in `package.json` pins
 its version for local work, CI and the image. Never add `package-lock.json`.
 
-Before every commit: `pnpm run check && pnpm run lint && pnpm run build`.
+Before every commit: `pnpm run check && pnpm run lint && pnpm run test && pnpm run build`.
 
 ## Code and Technology Guidelines
 
