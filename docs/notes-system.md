@@ -23,6 +23,7 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
 | `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. Definitions and results are filled boxes, an example is an outlined box, and a remark is an aside with a rule down its side. |
 | `proof`, `solution` | A collapsible block with a rule down its side, closed unless `collapsed: false`. |
 | `gallery(columns: n, ..items)` | Items laid out in `n` columns (two on narrow screens). Use it in place of `grid`, which Typst drops in HTML export. |
+| `noteref(note, <label>)[words]` | A link to a labelled card of another note, written as the card's name ("Theorem 2") unless words are given. `note` is a slug of the same course, or `course/slug`. The compile step resolves it against the other note and fails if the note or the label is missing, or if a published note points into a draft. |
 | `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. See [`widgets.md`](widgets.md). |
 
 `pnpm run new:note <course> <slug> <title...>` creates the file from a
@@ -257,7 +258,5 @@ CI runs it on every pull request.
 
 ## Not built yet
 
-- A helper for references between notes that checks the target and writes its
-  name; a plain `#link` to the other note's address works today.
 - Equation numbers: Typst's HTML export drops them, and the build cannot tell.
 - Drawings that follow the theme: an image is embedded as it is.

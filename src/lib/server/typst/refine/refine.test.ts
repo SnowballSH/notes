@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { refineNoteHtml as refineNote } from "./index";
+import { linkNoteReferences, noteReferences } from "./note-references";
 
 const refineNoteHtml = (html: string): string => refineNote(html).html;
 
@@ -407,6 +408,30 @@ describe("images", () => {
 	it("marks an image with neither as one to pass over, and keeps a description that is given", () => {
 		expect(refineNoteHtml('<p><img src="a.png"><img src="b.png" alt="A graph"></p>')).toBe(
 			'<p><img src="a.png" alt=""><img src="b.png" alt="A graph"></p>',
+		);
+	});
+});
+
+describe("references to other notes", () => {
+	const reference = (words = "") =>
+		`<a class="noteref" data-note="sets" data-target="thm-a">${words}</a>`;
+	const target = () => ({ href: "/course/sets#thm-a", name: "Theorem 2" });
+
+	it("lists the references a note makes", () => {
+		expect(noteReferences(`<p>${reference()} and <a href="#x">x</a></p>`)).toEqual([
+			{ note: "sets", target: "thm-a" },
+		]);
+	});
+
+	it("links a reference and names its target on one line", () => {
+		expect(linkNoteReferences(`<p>By ${reference()}.</p>`, target)).toBe(
+			'<p>By <a class="noteref" href="/course/sets#thm-a">Theorem&nbsp;2</a>.</p>',
+		);
+	});
+
+	it("keeps the words the author gave", () => {
+		expect(linkNoteReferences(reference("the bound"), target)).toBe(
+			'<a class="noteref" href="/course/sets#thm-a">the bound</a>',
 		);
 	});
 });
