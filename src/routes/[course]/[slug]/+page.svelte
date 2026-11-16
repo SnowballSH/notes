@@ -8,6 +8,7 @@ import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
+import { referencePreviews } from "#lib/notes/references.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
 
@@ -50,6 +51,7 @@ const course = $derived(data.course);
 		{@attach widgets}
 		{@attach rememberBlocks}
 		{@attach closableBlocks}
+		{@attach referencePreviews}
 		{@attach prepareForPrint}
 	>
 		{@html note.html}

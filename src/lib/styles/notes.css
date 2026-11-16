@@ -355,6 +355,40 @@
 	color: var(--fui-accent-strong);
 }
 
+.note {
+	position: relative;
+}
+
+.note .reference-preview {
+	position: absolute;
+	z-index: 10;
+	inset-inline: 0;
+	max-width: 38rem;
+	max-height: min(24rem, 60vh);
+	margin: 0 auto 0 0;
+	overflow: auto;
+	border-radius: var(--fui-radius-md);
+	background: var(--fui-surface-base);
+	box-shadow: var(--fui-shadow-float-2);
+}
+
+.note .reference-preview > :first-child {
+	margin: 0;
+	border: 1px solid var(--fui-accent);
+	border-radius: var(--fui-radius-md);
+}
+
+.note .reference-preview > .equation {
+	padding: 0.75rem 1rem;
+}
+
+.note .reference-preview > .reference-go {
+	display: block;
+	margin: 0;
+	padding: 0.625rem 1rem;
+	font-size: 0.875rem;
+}
+
 .note .close-block {
 	display: block;
 	margin-left: auto;
