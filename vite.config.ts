@@ -1,16 +1,20 @@
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
 import adapter from "@sveltejs/adapter-static";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, type Plugin } from "vite";
 
+const notesDirectory = resolve("notes");
+
+/** Reloads the page when a note, the library or an image a note uses is saved, added or removed. */
 const reloadOnNoteChange: Plugin = {
 	name: "notes-typst-reload",
 	configureServer({ watcher, ws }) {
-		watcher.add(resolve("notes"));
-		watcher.on("change", (file) => {
-			if (file.endsWith(".typ")) ws.send({ type: "full-reload" });
-		});
+		watcher.add(notesDirectory);
+		const reload = (file: string) => {
+			if (file.startsWith(`${notesDirectory}${sep}`)) ws.send({ type: "full-reload" });
+		};
+		for (const event of ["change", "add", "unlink"] as const) watcher.on(event, reload);
 	},
 };
 

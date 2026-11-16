@@ -11,7 +11,7 @@ pnpm run dev
 ```
 
 Open the address it prints. A note at `notes/<course>/<slug>.typ` is served at
-`/<course>/<slug>`, and the page reloads when you save a `.typ` file.
+`/<course>/<slug>`, and the page reloads when you save, add or remove a file under `notes/`.
 
 - A Typst error is shown on the page in place of the note, with the file and
   line.
