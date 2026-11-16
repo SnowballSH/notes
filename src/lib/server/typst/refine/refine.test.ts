@@ -393,6 +393,24 @@ describe("anchors", () => {
 	});
 });
 
+describe("images", () => {
+	it("describes an image without a description by its caption", () => {
+		expect(
+			refineNoteHtml(
+				'<figure><img src="a.png"><figcaption>The <em>first</em> matrix</figcaption></figure>',
+			),
+		).toBe(
+			'<figure><img src="a.png" alt="The first matrix"><figcaption>The <em>first</em> matrix</figcaption></figure>',
+		);
+	});
+
+	it("marks an image with neither as one to pass over, and keeps a description that is given", () => {
+		expect(refineNoteHtml('<p><img src="a.png"><img src="b.png" alt="A graph"></p>')).toBe(
+			'<p><img src="a.png" alt=""><img src="b.png" alt="A graph"></p>',
+		);
+	});
+});
+
 describe("widgets", () => {
 	it("records the height of a widget that declares one", () => {
 		expect(
