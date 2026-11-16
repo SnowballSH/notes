@@ -106,6 +106,14 @@ covers the reload `pnpm run dev` does on every save. An open block taller than
 most of the window gets a button at its end to close it, and a button above
 the note opens or closes them all.
 
+## Reference previews
+
+`src/lib/notes/references.ts` shows the block a reference points at (a card, a
+figure or an equation) beside the reader's place, as a copy of the block. A
+mouse shows it on hover and a keyboard on focus, and following the link still
+jumps there. On a touch screen the first tap shows the preview, with a link to
+go to the block.
+
 ## Printing
 
 `src/lib/styles/print.css` drops the site header, footer and navigation, and
@@ -161,5 +169,5 @@ whole number of pixels on the 320px board.
 ## Not built yet
 
 - Course index pages generated from the notes.
-- Hover previews for references, and references between notes.
+- References between notes.
 - Diagrams and images.
