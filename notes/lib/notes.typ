@@ -75,6 +75,14 @@
   )
 }
 
+// A reference to a labelled card of another note: #noteref("boolean-functions", <thm-orthonormal>).
+// The site writes the card's name, such as "Theorem 2", unless a body gives other words.
+#let noteref(note, target, ..body) = {
+  let words = body.pos().at(0, default: none)
+  if preview { return if words != none { words } else { emph[#note, #str(target)] } }
+  html.elem("a", attrs: (class: "noteref", "data-note": note, "data-target": str(target)), words)
+}
+
 // Typst drops grids in HTML export, so the site lays the items out with CSS instead.
 #let gallery(columns: 2, ..items) = if preview {
   grid(columns: columns, gutter: 12pt, ..items)

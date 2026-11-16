@@ -12,10 +12,19 @@ import type {
 import type { NoteStatus } from "#lib/outlines/contents.ts";
 import { compileHtml, queryOne, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
+import {
+	linkNoteReferences,
+	type NoteReference,
+	noteReferences,
+	type ReferenceTarget,
+} from "./refine/note-references";
 import { assertValidWidgets } from "./widgets";
 
 const notesRoot = resolve("notes");
 const libraryDirectory = "lib";
+
+/** A note's source as error messages name it: relative to the repository. */
+const shownPath = ({ course, slug }: NoteRef): string => `notes/${course}/${slug}.typ`;
 
 function sourcePath({ course, slug }: NoteRef): string {
 	return join(notesRoot, course, `${slug}.typ`);
@@ -71,11 +80,14 @@ async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 	const meta = queryOne(notesRoot, file, "<note-meta>")
 		.catch((cause: unknown) => {
 			if (!String(cause).includes("expected exactly one element")) throw cause;
-			throw new TypstError(`${file}: the note must start with #show: note.with(title: ..)`, {
-				cause,
-			});
+			throw new TypstError(
+				`${shownPath(ref)}: the note must start with #show: note.with(title: ..)`,
+				{
+					cause,
+				},
+			);
 		})
-		.then((value) => parseMeta(value, file));
+		.then((value) => parseMeta(value, shownPath(ref)));
 	metaByFile.set(file, { modified, meta });
 	meta.catch(() => metaByFile.delete(file));
 	return meta;
@@ -163,8 +175,8 @@ async function compile(ref: NoteRef): Promise<CompiledNote> {
 		compileHtml(notesRoot, file),
 		readMeta(ref),
 	]);
-	const refined = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
-	assertValidWidgets(refined.html, file);
+	const refined = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, shownPath(ref)));
+	assertValidWidgets(refined.html, shownPath(ref));
 	return {
 		...ref,
 		meta,
@@ -175,7 +187,7 @@ async function compile(ref: NoteRef): Promise<CompiledNote> {
 }
 
 /** A note compiled to HTML, compiled again only when one of its sources has changed. */
-export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
+async function compileSource(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const stamp = await sourceStamp(ref);
 	const cached = compiledByFile.get(file);
@@ -184,4 +196,60 @@ export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	compiledByFile.set(file, { stamp, note });
 	note.catch(() => compiledByFile.delete(file));
 	return note;
+}
+
+/** The note a `noteref` names: one of the same course, or `course/slug` for another course. */
+function referencedNote(from: NoteRef, name: string): NoteRef {
+	const [first, second] = name.split("/");
+	return second === undefined
+		? { course: from.course, slug: name }
+		: { course: first ?? "", slug: second };
+}
+
+async function referenceTarget(
+	from: CompiledNote,
+	reference: NoteReference,
+): Promise<ReferenceTarget> {
+	const file = shownPath(from);
+	const ref = referencedNote(from, reference.note);
+	if (!(await hasNote(ref))) {
+		throw new TypstError(
+			`${file}: noteref names the note "${reference.note}", but ${shownPath(ref)} does not exist`,
+		);
+	}
+	const target = await compileSource(ref);
+	if (target.meta.draft && !from.meta.draft) {
+		throw new TypstError(
+			`${file}: noteref points into ${shownPath(ref)}, which is a draft; publish it first or make this note a draft`,
+		);
+	}
+	const card = target.cards.find((candidate) => candidate.id === reference.target);
+	if (!card) {
+		const labels = target.cards.map((candidate) => candidate.id).join(", ");
+		throw new TypstError(
+			`${file}: noteref points at <${reference.target}> in ${shownPath(ref)}, which has no card with that label; its cards are ${labels}`,
+		);
+	}
+	return { href: `${noteHref(ref)}#${card.id}`, name: card.name };
+}
+
+/** A note ready to serve: compiled, with its references to other notes resolved. */
+export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
+	const note = await compileSource(ref);
+	const references = noteReferences(note.html);
+	if (references.length === 0) return note;
+	const key = ({ note: name, target }: NoteReference) => `${name}#${target}`;
+	const targets = new Map(
+		await Promise.all(
+			references.map(
+				async (reference) => [key(reference), await referenceTarget(note, reference)] as const,
+			),
+		),
+	);
+	const html = linkNoteReferences(note.html, (reference) => {
+		const target = targets.get(key(reference));
+		if (!target) throw new TypstError(`${shownPath(ref)}: unresolved noteref ${key(reference)}`);
+		return target;
+	});
+	return { ...note, html };
 }

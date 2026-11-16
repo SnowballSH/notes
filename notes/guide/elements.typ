@@ -51,6 +51,8 @@ A display equation that is wider than the page scrolls sideways on its own.
   A proof is collapsed until the reader opens it. Pass `collapsed: false` to show it open. End it with a square. $square$
 ]
 
+A card in another note is referenced with `noteref`, which writes the card's name and fails the build if the card is not there: #noteref("walsh-hadamard/boolean-functions", <thm-plancherel>) is in the first chapter. Inside one course the note's name alone is enough, as in `#noteref("boolean-functions", <thm-plancherel>)`, and a body gives other words: #noteref("walsh-hadamard/boolean-functions", <thm-plancherel>)[Parseval's identity].
+
 #proposition[A proposition, without a title.]
 
 #lemma(title: "Lemma")[A lemma.]
