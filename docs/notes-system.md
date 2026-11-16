@@ -141,6 +141,12 @@ breadcrumb that leads only to the home page. Its previous and next links
 follow the `order` metadata of its notes, and two of them may not share an
 `order`. In a registered course `order` is not read.
 
+`src/lib/components/PageMeta.svelte` gives every page its title, description,
+canonical address and the Open Graph tags a shared link is previewed from.
+`sitemap.xml` is prerendered from the home page, the outlines and the published
+notes, and `robots.txt` points to it. Drafts and the error page are marked
+`noindex`.
+
 `src/lib/site/title.ts` builds every document title as page, then course, then
 site name. `src/routes/+error.svelte` is the page for an address that does not
 exist.

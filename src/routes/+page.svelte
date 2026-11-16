@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Badge, Link, Panel } from "foundationui/svelte";
+import PageMeta from "#lib/components/PageMeta.svelte";
 import ReadingStart from "#lib/components/ReadingStart.svelte";
 import SectionRow from "#lib/components/SectionRow.svelte";
 import { allSections, readingOrder } from "#lib/outlines/contents.ts";
@@ -8,10 +9,7 @@ import { siteName } from "#lib/site/title.ts";
 const { data } = $props();
 </script>
 
-<svelte:head>
-	<title>{siteName}</title>
-	<meta name="description" content="Academic lecture notes by SnowballSH." />
-</svelte:head>
+<PageMeta title={siteName} description="Academic lecture notes by SnowballSH." />
 
 <h1 class="font-display text-3xl font-semibold text-ink">Notes</h1>
 <p class="mt-3 text-ink-secondary">Academic lecture notes by SnowballSH.</p>
