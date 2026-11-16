@@ -7,6 +7,8 @@ export interface NoteMeta {
 	title: string;
 	summary: string | null;
 	order: number;
+	/** A draft is served while developing and left out of the published site. */
+	draft: boolean;
 }
 
 export interface NoteHeading {

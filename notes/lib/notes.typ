@@ -82,8 +82,9 @@
   html.elem("div", attrs: (class: "gallery", style: "--columns: " + str(columns)), items.pos().join())
 }
 
-#let note(title: none, summary: none, order: 0, body) = {
-  [#metadata((title: title, summary: summary, order: order)) <note-meta>]
+// A draft is served while developing and left out of the published site.
+#let note(title: none, summary: none, order: 0, draft: false, body) = {
+  [#metadata((title: title, summary: summary, order: order, draft: draft)) <note-meta>]
   set page(width: 16cm, height: auto, margin: 1.2cm) if preview
   show figure: it => if is-card(it) { it.body } else { it }
   body

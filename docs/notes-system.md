@@ -7,22 +7,14 @@ runs in the browser as a widget. This is the prototype of that pipeline, with
 
 ## Writing a note
 
+[`writing-notes.md`](writing-notes.md) is the guide for authors: how to add a
+note, keep it a draft, and what each element looks like in source.
+`notes/guide/elements.typ` is a draft note that shows every element, served at
+`/guide/elements` while developing.
+
 `notes/<course>/<slug>.typ` is served at `/<course>/<slug>`. Adding a file adds
-the page. Names are lowercase words joined by hyphens.
-
-```typst
-#import "/lib/notes.typ": *
-#show: note.with(title: "Bitstrings", summary: "One line for search engines.", order: 1)
-
-Plain text with $x + 0 = x$ inline and display math:
-$ e * x = x * e = x $
-
-#definition(title: "Bitstring")[...] <def-bitstring>
-#proof[...]
-#example(title: "XOR by hand", collapsed: true)[...]
-See @def-bitstring.
-#widget("parity-explorer", size: 4)[Shown until the widget loads.]
-```
+the page. Names are lowercase words joined by hyphens. A note whose header says
+`draft: true` is compiled and served only while developing.
 
 `notes/lib/notes.typ` provides:
 

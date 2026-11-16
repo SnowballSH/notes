@@ -19,8 +19,9 @@ Hosting is documented in [`README.md`](README.md).
 
 Notes are Typst files under `notes/`, compiled to HTML at build time by the
 `typst` CLI, which must be on `PATH` at the version pinned in
-`src/lib/server/typst/cli.ts`. [`docs/notes-system.md`](docs/notes-system.md)
-describes the format and the pipeline.
+`src/lib/server/typst/cli.ts`. [`docs/writing-notes.md`](docs/writing-notes.md)
+is the guide for writing them, and [`docs/notes-system.md`](docs/notes-system.md)
+describes the pipeline.
 
 pnpm is the only package manager here: `packageManager` in `package.json` pins
 its version for local work, CI and the image. Never add `package-lock.json`.
