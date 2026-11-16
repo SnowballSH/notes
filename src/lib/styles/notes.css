@@ -359,6 +359,24 @@
 	position: relative;
 }
 
+/* The link to a card or a section stays out of the way until its heading is pointed at. */
+.note .anchor {
+	color: var(--fui-ink-muted);
+	text-decoration: none;
+	opacity: 0;
+}
+
+.note :is(h2, h3, .card > header, .card > summary):hover > .anchor,
+.note .anchor:focus-visible {
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.note .anchor {
+		opacity: 0.6;
+	}
+}
+
 .note .reference-preview {
 	position: absolute;
 	z-index: 10;
@@ -380,6 +398,10 @@
 
 .note .reference-preview > .equation {
 	padding: 0.75rem 1rem;
+}
+
+.note .reference-preview .anchor {
+	display: none;
 }
 
 .note .reference-preview > .reference-go {

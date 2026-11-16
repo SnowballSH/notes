@@ -81,6 +81,11 @@ and pinned beside the text on a wide one. The section being read is marked.
 The list shows a heading's plain text, so a formula in a section heading
 appears there as its bare symbols.
 
+Every card also gets an id: its label if the author gave it one, otherwise its
+kind and number, such as `theorem-3`. Each card heading and section heading
+carries a small `#` link to itself, shown when the heading is pointed at (and
+always, faintly, on a touch screen), so a reader can share "Theorem 3".
+
 ## Courses and navigation
 
 A course is a directory of notes. `src/lib/site/courses.ts` registers each

@@ -1,6 +1,7 @@
 @media print {
 	body > div > :is(header, footer),
 	main nav,
+	.note .anchor,
 	.note .close-block,
 	.note .reference-preview {
 		display: none;
