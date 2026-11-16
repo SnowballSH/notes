@@ -39,7 +39,7 @@ export async function hasNote(ref: NoteRef): Promise<boolean> {
 }
 
 function parseMeta(value: unknown, file: string): NoteMeta {
-	const { title, summary, order } = value as Record<string, unknown>;
+	const { title, summary, order, draft } = value as Record<string, unknown>;
 	if (typeof title !== "string" || title === "") {
 		throw new TypstError(`${file}: the note needs a title`);
 	}
@@ -49,7 +49,10 @@ function parseMeta(value: unknown, file: string): NoteMeta {
 	if (typeof order !== "number" || !Number.isInteger(order)) {
 		throw new TypstError(`${file}: order must be an integer`);
 	}
-	return { title, summary, order };
+	if (typeof draft !== "boolean") {
+		throw new TypstError(`${file}: draft must be true or false`);
+	}
+	return { title, summary, order, draft };
 }
 
 const metaByFile = new Map<string, { modified: number; meta: Promise<NoteMeta> }>();
@@ -60,7 +63,14 @@ async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 	const modified = (await stat(file)).mtimeMs;
 	const cached = metaByFile.get(file);
 	if (cached?.modified === modified) return cached.meta;
-	const meta = queryOne(notesRoot, file, "<note-meta>").then((value) => parseMeta(value, file));
+	const meta = queryOne(notesRoot, file, "<note-meta>")
+		.catch((cause: unknown) => {
+			if (!String(cause).includes("expected exactly one element")) throw cause;
+			throw new TypstError(`${file}: the note must start with #show: note.with(title: ..)`, {
+				cause,
+			});
+		})
+		.then((value) => parseMeta(value, file));
 	metaByFile.set(file, { modified, meta });
 	meta.catch(() => metaByFile.delete(file));
 	return meta;
@@ -68,24 +78,35 @@ async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 
 const hrefOf = ({ course, slug }: NoteRef): string => `/${course}/${slug}`;
 
-/** The notes of one course in reading order, which is that of their `order` metadata. */
+async function withMeta(refs: NoteRef[]): Promise<(NoteRef & { meta: NoteMeta })[]> {
+	return Promise.all(refs.map(async (ref) => ({ ...ref, meta: await readMeta(ref) })));
+}
+
+/** Every note that is not a draft: the pages of the published site. */
+export async function publishedNotes(): Promise<NoteRef[]> {
+	const notes = await withMeta(await listNotes());
+	return notes.filter((note) => !note.meta.draft).map(({ course, slug }) => ({ course, slug }));
+}
+
+/** The published notes of one course in reading order, which is that of their `order` metadata. */
 export async function courseNotes(course: string): Promise<(NoteRef & NoteLink)[]> {
 	const refs = (await listNotes()).filter((note) => note.course === course);
-	const notes = await Promise.all(
-		refs.map(async (ref) => ({ ...ref, meta: await readMeta(ref), href: hrefOf(ref) })),
-	);
+	const notes = (await withMeta(refs)).filter((note) => !note.meta.draft);
 	notes.sort((a, b) => a.meta.order - b.meta.order);
-	const tied = notes.find((note, index) => note.meta.order === notes[index + 1]?.meta.order);
-	if (tied) {
-		throw new TypstError(`${course}: two notes have order ${tied.meta.order}; it must be unique`);
+	const tied = notes.findIndex((note, index) => note.meta.order === notes[index + 1]?.meta.order);
+	if (tied >= 0) {
+		const [first, second] = notes.slice(tied, tied + 2).map((note) => `${note.slug}.typ`);
+		throw new TypstError(
+			`notes/${course}: ${first} and ${second} both have order ${notes[tied]?.meta.order}; give each note its own`,
+		);
 	}
-	return notes.map(({ meta, ...note }) => ({ ...note, title: meta.title }));
+	return notes.map(({ meta, ...note }) => ({ ...note, title: meta.title, href: hrefOf(note) }));
 }
 
 export async function noteNeighbours(ref: NoteRef): Promise<NoteNeighbours> {
 	const notes = await courseNotes(ref.course);
 	const index = notes.findIndex((note) => note.slug === ref.slug);
-	if (index < 0) throw new TypstError(`${sourcePath(ref)}: not a note of ${ref.course}`);
+	if (index < 0) return { previous: null, next: null };
 	const link = (note: NoteLink | undefined): NoteLink | null =>
 		note ? { title: note.title, href: note.href } : null;
 	return { previous: link(notes[index - 1]), next: link(notes[index + 1]) };

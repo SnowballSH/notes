@@ -15,20 +15,6 @@
 	line-height: var(--fui-leading-prose);
 }
 
-@media (min-width: 40rem) {
-	.note {
-		font-size: 1.0625rem;
-	}
-
-	.note h2 {
-		font-size: 1.5rem;
-	}
-
-	.note h3 {
-		font-size: 1.1875rem;
-	}
-}
-
 .note p {
 	text-wrap: pretty;
 }
@@ -52,6 +38,20 @@
 .note h3 {
 	margin-top: 2rem;
 	font-size: 1.0625rem;
+}
+
+@media (min-width: 40rem) {
+	.note {
+		font-size: 1.0625rem;
+	}
+
+	.note h2 {
+		font-size: 1.5rem;
+	}
+
+	.note h3 {
+		font-size: 1.1875rem;
+	}
 }
 
 .note h4 {

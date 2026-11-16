@@ -29,6 +29,9 @@ const course = $derived(data.course);
 	trail={[{ label: siteName, href: "/" }, ...(course ? [{ label: course.title, href: course.href }] : [])]}
 />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{note.meta.title}</h1>
+{#if note.meta.draft}
+	<p class="mt-2 text-sm text-ink-muted">Draft: shown while developing, left out of the published site.</p>
+{/if}
 <NoteContents headings={note.headings} />
 
 {#if note.warnings.length > 0}

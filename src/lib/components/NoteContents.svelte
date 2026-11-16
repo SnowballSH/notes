@@ -58,7 +58,6 @@ li.nested a {
 a {
 	display: flex;
 	align-items: center;
-	min-height: 2.75rem;
 	margin-left: -2px;
 	padding: 0.25rem 0.375rem 0.25rem 1rem;
 	border-left: 2px solid transparent;
@@ -86,8 +85,10 @@ a:focus-visible {
 		margin-top: 0;
 		overflow-y: auto;
 	}
+}
+@media (pointer: coarse) {
 	a {
-		min-height: 0;
+		min-height: 2.75rem;
 	}
 }
 </style>
