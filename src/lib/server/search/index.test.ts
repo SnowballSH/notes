@@ -11,8 +11,8 @@ const note: CompiledNote = {
 	warnings: [],
 	headings: [{ id: "basics", text: "Basics", level: 2 }],
 	cards: [
-		{ id: "thm-union", name: "Theorem 1", title: "Union Bound" },
-		{ id: "remark-1", name: "Remark 1", title: "" },
+		{ id: "thm-union", name: "Theorem 1", title: "Union Bound", labelled: true },
+		{ id: "remark-1", name: "Remark 1", title: "", labelled: false },
 	],
 };
 

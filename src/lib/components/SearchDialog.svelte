@@ -13,7 +13,8 @@ let entries = $state<SearchEntry[]>();
 let failed = $state(false);
 let list = $state<HTMLElement>();
 
-const results = $derived(entries ? search(entries, query) : []);
+const found = $derived(entries ? search(entries, query) : { shown: [], total: 0 });
+const results = $derived(found.shown);
 
 async function load(): Promise<void> {
 	if (entries) return;
@@ -32,6 +33,7 @@ const status = $derived.by(() => {
 	if (!entries) return "Loading...";
 	if (query.trim() === "") return "";
 	if (results.length === 0) return "Nothing matches.";
+	if (found.total > results.length) return `The first ${results.length} of ${found.total} results`;
 	return results.length === 1 ? "1 result" : `${results.length} results`;
 });
 

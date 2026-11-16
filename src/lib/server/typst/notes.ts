@@ -17,6 +17,7 @@ import {
 	type NoteReference,
 	noteReferences,
 	type ReferenceTarget,
+	wordlessReferencesInTitles,
 } from "./refine/note-references";
 import { assertValidWidgets } from "./widgets";
 
@@ -200,9 +201,15 @@ async function compileSource(ref: NoteRef): Promise<CompiledNote> {
 
 /** The note a `noteref` names: one of the same course, or `course/slug` for another course. */
 function referencedNote(from: NoteRef, name: string): NoteRef {
-	const [first, second] = name.split("/");
+	const parts = name.split("/");
+	if (parts.length > 2 || !parts.every(isName)) {
+		throw new TypstError(
+			`${shownPath(from)}: noteref names "${name}"; write "<slug>" for a note of the same course or "<course>/<slug>", without a leading slash`,
+		);
+	}
+	const [first, second] = parts;
 	return second === undefined
-		? { course: from.course, slug: name }
+		? { course: from.course, slug: first ?? "" }
 		: { course: first ?? "", slug: second };
 }
 
@@ -223,11 +230,14 @@ async function referenceTarget(
 			`${file}: noteref points into ${shownPath(ref)}, which is a draft; publish it first or make this note a draft`,
 		);
 	}
-	const card = target.cards.find((candidate) => candidate.id === reference.target);
+	const labelled = target.cards.filter((candidate) => candidate.labelled);
+	const card = labelled.find((candidate) => candidate.id === reference.target);
 	if (!card) {
-		const labels = target.cards.map((candidate) => candidate.id).join(", ");
+		const labels = labelled.map((candidate) => `<${candidate.id}>`).join(", ");
+		const has =
+			labels === "" ? "no labelled cards" : `no card with that label; its labels are ${labels}`;
 		throw new TypstError(
-			`${file}: noteref points at <${reference.target}> in ${shownPath(ref)}, which has no card with that label; its cards are ${labels}`,
+			`${file}: noteref points at <${reference.target}> in ${shownPath(ref)}, which has ${has}`,
 		);
 	}
 	return { href: `${noteHref(ref)}#${card.id}`, name: card.name };
@@ -238,13 +248,24 @@ export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const note = await compileSource(ref);
 	const references = noteReferences(note.html);
 	if (references.length === 0) return note;
+	const [untitled] = wordlessReferencesInTitles(note.html);
+	if (untitled) {
+		throw new TypstError(
+			`${shownPath(ref)}: a noteref in a heading or a card's title needs its own words: #noteref("${untitled.note}", <${untitled.target}>)[...]`,
+		);
+	}
 	const key = ({ note: name, target }: NoteReference) => `${name}#${target}`;
-	const targets = new Map(
-		await Promise.all(
-			references.map(
-				async (reference) => [key(reference), await referenceTarget(note, reference)] as const,
-			),
+	const outcomes = await Promise.allSettled(
+		references.map(
+			async (reference) => [key(reference), await referenceTarget(note, reference)] as const,
 		),
+	);
+	const failures = outcomes.flatMap((outcome) =>
+		outcome.status === "rejected" ? [String(outcome.reason?.message ?? outcome.reason)] : [],
+	);
+	if (failures.length > 0) throw new TypstError([...new Set(failures)].join("\n"));
+	const targets = new Map(
+		outcomes.flatMap((outcome) => (outcome.status === "fulfilled" ? [outcome.value] : [])),
 	);
 	const html = linkNoteReferences(note.html, (reference) => {
 		const target = targets.get(key(reference));

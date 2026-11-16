@@ -37,6 +37,21 @@ const referenceLinks = (root: ParentNode): { link: Element; reference: NoteRefer
 export const noteReferences = (html: string): NoteReference[] =>
 	referenceLinks(parseFragment(html)).map(({ reference }) => reference);
 
+const titles = new Set(["h2", "h3", "h4", "header", "summary"]);
+
+/**
+ * References that have no words of their own and sit in a section heading or a card's
+ * title. Their text is only known after the page's list of sections and the search index
+ * have been made, so they would be missing there.
+ */
+export function wordlessReferencesInTitles(html: string): NoteReference[] {
+	return referenceLinks(parseFragment(html)).flatMap(({ link, reference }) => {
+		const parent = link.parentNode;
+		const inTitle = parent !== null && "tagName" in parent && titles.has(parent.tagName);
+		return inTitle && textOf(link).trim() === "" ? [reference] : [];
+	});
+}
+
 /**
  * Points each reference at its target. A reference the author gave no words is written as
  * the target's name, kept on one line like the references Typst writes.

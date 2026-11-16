@@ -2,8 +2,7 @@
 
 A note is one Typst file, compiled to static HTML when the site builds. Notes
 are files in git and render the same for every reader; anything interactive
-runs in the browser as a widget. This is the prototype of that pipeline, with
-`notes/walsh-hadamard/boolean-functions.typ` as its first page.
+runs in the browser as a widget.
 
 ## Writing a note
 
@@ -27,9 +26,10 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
 | `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. See [`widgets.md`](widgets.md). |
 
 `pnpm run new:note <course> <slug> <title...>` creates the file from a
-template and prints what is left to do. In a registered course the note starts
-as a draft; elsewhere it gets the next free `order`. It refuses to overwrite a
-note.
+template and prints what is left to do. The note always starts as a draft; in
+a directory without an outline it also gets the next free `order`. The command
+refuses to overwrite a note, and refuses a course that has neither an outline
+nor a directory unless `--new-course` is given.
 
 ## Pipeline
 
@@ -83,7 +83,9 @@ of them lists them as "On this page": pinned beside the text on a wide window,
 below the title on a medium one, and behind a "Contents" button in the corner
 on a phone, where the list would fill the first screen. The button is there on
 every window too narrow for the pinned list, so the sections and the top of
-the page are one tap away from anywhere. The section being read is marked. The
+the page are one tap away. It steps aside while the reader scrolls down, so it
+never covers the line being read, and returns on scrolling up or on keyboard
+focus. The section being read is marked. The
 list shows a heading's plain text, so a formula in a section heading appears
 there as its bare symbols.
 
@@ -94,7 +96,7 @@ scroll sideways.
 Every card also gets an id: its label if the author gave it one, otherwise its
 kind and number, such as `theorem-3`. Each card heading and section heading
 carries a small `#` link to itself, shown when the heading is pointed at (and
-always, faintly, on a touch screen), so a reader can share "Theorem 3".
+always on a touch screen), so a reader can share "Theorem 3".
 
 ## Courses and navigation
 
@@ -126,8 +128,9 @@ its link back to the outline from the same data, so the outline page and the
 note pages cannot drift apart. Previous and next skip planned sections.
 
 `contents.ts` refuses an outline that disagrees with the notes: a published
-note that no section names, a section naming a note that does not exist, or a
-note named twice. Each message names the file and the line to add or remove.
+note that no section names, a section naming a note that does not exist, a
+note named twice, or a published note whose title differs from its section's.
+Each message names the file and the line to add or remove.
 The check runs wherever the outline is read, so it fails the build (on the
 home page, the outline page and every note page of the course) and
 `courses.test.ts` with the same message; while developing it is shown on the
@@ -153,7 +156,8 @@ once and lists the entries containing every word typed
 find covers the text of the page being read.
 
 A compiled note is kept in memory until one of its sources changes, so the
-index and the pages do not compile a note twice.
+index and the pages do not compile a note twice. Its references to other notes
+(`noteref`) are resolved after that, against the other notes as they are then.
 
 ## Collapsible blocks
 
@@ -248,13 +252,17 @@ line at a window width of 320px, which the reserved height relies on.
 outline logic, search matching, the widget contract and the scaffolds.
 
 `pnpm run test:e2e` builds the site, serves it, and checks it in Chromium and
-Firefox (`tests/e2e/`): every page loads without errors, never scrolls
+Firefox (`tests/e2e/`). The tests find the site's pages by following its links
+and pick their subjects by structure (the first note with a proof, the first
+reference to a card), so editing a note does not break them: every page loads
+without errors, never scrolls
 sideways and passes the axe accessibility checks in both themes; opened
 proofs survive a reload; a reference previews its target; search reaches a
 named theorem; the widget loads without moving the page; on a phone the note
 starts on the first screen and every equation fits or scrolls on its own.
 It needs the browsers once: `pnpm exec playwright install chromium firefox`.
-CI runs it on every pull request.
+CI runs it on every pull request, keeps the traces of a failed run, and does
+not publish the image unless it passes.
 
 ## Not built yet
 

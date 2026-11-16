@@ -16,7 +16,8 @@ const entries = [
 	entry("Proposition 4: Naïve Method", "The Walsh-Hadamard transform"),
 ];
 
-const labels = (query: string): string[] => search(entries, query).map((found) => found.label);
+const labels = (query: string): string[] =>
+	search(entries, query).shown.map((found) => found.label);
 
 describe("search", () => {
 	it("finds entries that contain every word, in any order and case", () => {
@@ -37,7 +38,7 @@ describe("search", () => {
 
 	it("puts a label that starts with the query first", () => {
 		expect(labels("par")[0]).toBe("Definition 2: Parity Function");
-		expect(search([entry("A parity"), entry("Parity")], "parity")[0]?.label).toBe("Parity");
+		expect(search([entry("A parity"), entry("Parity")], "parity").shown[0]?.label).toBe("Parity");
 	});
 
 	it("returns nothing for an empty query or no match", () => {
@@ -46,6 +47,8 @@ describe("search", () => {
 	});
 
 	it("keeps to the limit", () => {
-		expect(search(entries, "o", 2)).toHaveLength(2);
+		const { shown, total } = search(entries, "o", 2);
+		expect(shown).toHaveLength(2);
+		expect(total).toBe(4);
 	});
 });
