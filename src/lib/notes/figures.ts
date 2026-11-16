@@ -86,8 +86,10 @@ export const zoomableFigures: Attachment = (container) => {
 	container.addEventListener("click", open);
 	container.addEventListener("keydown", onKey);
 	container.addEventListener("load", markAll, true);
+	window.addEventListener("resize", markAll);
 	return () => {
 		observer.disconnect();
+		window.removeEventListener("resize", markAll);
 		container.removeEventListener("click", open);
 		container.removeEventListener("keydown", onKey);
 		container.removeEventListener("load", markAll, true);

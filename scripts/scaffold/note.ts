@@ -20,31 +20,26 @@ export interface NoteArguments {
 }
 
 /**
- * Reads `[--new-course] <course> <slug> <title...>`. Options are looked for only before
- * the title, so a title may contain a dash or a word that starts with two.
+ * Reads `[--new-course] <course> <slug> <title...>`. `--new-course` is taken wherever it
+ * stands. Any other option is refused before the title begins; after that every word
+ * belongs to the title, which may therefore contain a dash or a word that starts with two.
  */
 export function parseNoteArguments(args: readonly string[]): NoteArguments {
+	const words = args.filter((argument) => argument !== "--new-course");
 	const names: string[] = [];
-	let startsCourse = false;
 	let unknownOption: string | undefined;
 	let index = 0;
-	for (; index < args.length && names.length < 2; index++) {
-		const argument = args[index] ?? "";
-		if (argument === "--new-course") startsCourse = true;
-		else if (argument.startsWith("--")) unknownOption ??= argument;
-		else names.push(argument);
+	for (; index < words.length && names.length < 2; index++) {
+		const word = words[index] ?? "";
+		if (word.startsWith("--")) unknownOption ??= word;
+		else names.push(word);
 	}
-	const words = args.slice(index).filter((word, position) => {
-		if (word !== "--new-course") return true;
-		startsCourse = true;
-		return position < 0;
-	});
 	const [course, slug] = names;
 	return {
 		...(course !== undefined && { course }),
 		...(slug !== undefined && { slug }),
-		title: words.join(" ").trim(),
-		startsCourse,
+		title: words.slice(index).join(" ").trim(),
+		startsCourse: args.includes("--new-course"),
 		...(unknownOption !== undefined && { unknownOption }),
 	};
 }
