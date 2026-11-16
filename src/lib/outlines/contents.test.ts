@@ -132,7 +132,7 @@ describe("readingOrder and notePlace", () => {
 });
 
 describe("outlineProblems", () => {
-	it("reports a note whose title differs from its section's, ignoring case", () => {
+	it("reports a note whose title differs from its section's, capitals included", () => {
 		const titled = (title: string) =>
 			outlineProblems(course, [
 				{ slug: "membership", draft: false, title },
@@ -141,7 +141,8 @@ describe("outlineProblems", () => {
 		const [section] = course.outline.chapters.flatMap((chapter) =>
 			chapter.sections.filter((candidate) => candidate.note === "membership"),
 		);
-		expect(titled(section?.title.toUpperCase() ?? "")).toEqual([]);
+		expect(titled(` ${section?.title} `)).toEqual([]);
+		expect(titled(section?.title.toUpperCase() ?? "")).toHaveLength(1);
 		expect(titled("Something else").join("\n")).toMatch(
 			/^notes\/sets\/membership\.typ is titled "Something else", but section [\d.]+ of src\/lib\/outlines\/sets\.ts is titled/,
 		);

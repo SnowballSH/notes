@@ -18,6 +18,9 @@ function copyOf(target: HTMLElement): HTMLElement {
 	const copy = target.cloneNode(true) as HTMLElement;
 	for (const element of [copy, ...copy.querySelectorAll("[id]")]) element.removeAttribute("id");
 	for (const button of copy.querySelectorAll(".close-block")) button.remove();
+	for (const image of copy.querySelectorAll('img[role="button"]')) {
+		for (const attribute of ["role", "tabindex", "aria-label"]) image.removeAttribute(attribute);
+	}
 	if (copy instanceof HTMLDetailsElement) copy.open = true;
 	return copy;
 }

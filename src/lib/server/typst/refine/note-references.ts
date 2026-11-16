@@ -39,6 +39,13 @@ export const noteReferences = (html: string): NoteReference[] =>
 
 const titles = new Set(["h2", "h3", "h4", "header", "summary"]);
 
+function isInTitle(link: Element): boolean {
+	for (let node = link.parentNode; node && "tagName" in node; node = node.parentNode) {
+		if (titles.has(node.tagName)) return true;
+	}
+	return false;
+}
+
 /**
  * References that have no words of their own and sit in a section heading or a card's
  * title. Their text is only known after the page's list of sections and the search index
@@ -46,9 +53,7 @@ const titles = new Set(["h2", "h3", "h4", "header", "summary"]);
  */
 export function wordlessReferencesInTitles(html: string): NoteReference[] {
 	return referenceLinks(parseFragment(html)).flatMap(({ link, reference }) => {
-		const parent = link.parentNode;
-		const inTitle = parent !== null && "tagName" in parent && titles.has(parent.tagName);
-		return inTitle && textOf(link).trim() === "" ? [reference] : [];
+		return isInTitle(link) && textOf(link).trim() === "" ? [reference] : [];
 	});
 }
 

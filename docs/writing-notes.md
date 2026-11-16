@@ -32,8 +32,9 @@ content and structure, not the site's styling.
    ```
 
    It writes `notes/<course>/<slug>.typ` as a draft and prints the next
-   steps. Names are lowercase words joined by hyphens, and the course must
-   exist already (`--new-course` creates its directory). The header it writes:
+   steps. Names are lowercase words joined by hyphens. The course must be
+   registered or already have a directory; `--new-course` starts an
+   unregistered one. The header it writes:
 
    ```typst
    #import "/lib/notes.typ": *
@@ -94,6 +95,13 @@ Things to know:
 - A display equation wider than the page scrolls sideways on its own. A long
   inline formula breaks after `=` and similar relations; keep very long
   formulas in display equations.
+- A card's label is its address on the page, so each label is used once in a
+  note, and is not the name a section or a numbered card would get on its own
+  (`<parity>` under a section called "Parity", or `<theorem-2>`). The build
+  says so if it is.
+- Give a figure that carries information an `alt:`. Without one it takes its
+  caption as its description, and with neither a screen reader skips it. PNG,
+  JPEG and SVG files work. A small figure opens enlarged when clicked.
 - `grid` is dropped by HTML export; use `gallery`. `overline`, `underline`
   inside math and `line` are dropped too, and the build tells you when an
   element was left out. Equation numbers are dropped without a warning: a
@@ -127,6 +135,7 @@ the directory may share.
 pnpm run check && pnpm run lint && pnpm run test && pnpm run build
 ```
 
-The build fails, with the file and line, on a Typst error or warning, a
+The build fails, naming the file (and the line, for what Typst itself reports),
+on a Typst error or warning, a
 reference to a label that does not exist, a bad header, an outline that
 disagrees with its notes, or a widget that is not registered.

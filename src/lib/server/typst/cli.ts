@@ -60,21 +60,21 @@ export async function compileHtml(root: string, file: string): Promise<TypstOutp
 	return typst(["compile", "--features", "html", "--format", "html", "--root", root, file, "-"]);
 }
 
-export async function queryOne(root: string, file: string, selector: string): Promise<unknown> {
+/** The value of the first metadata element with the given label, or null when the file has none. */
+export async function readMetadata(root: string, file: string, label: string): Promise<unknown> {
 	await assertVersion();
+	const expression = `query(<${label}>).map(found => found.value).at(0, default: none)`;
 	const { stdout } = await typst([
-		"query",
+		"eval",
+		expression,
+		"--in",
+		file,
 		"--features",
 		"html",
 		"--target",
 		"html",
 		"--root",
 		root,
-		file,
-		selector,
-		"--field",
-		"value",
-		"--one",
 	]);
 	return JSON.parse(stdout);
 }

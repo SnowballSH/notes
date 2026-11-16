@@ -81,7 +81,7 @@ export function outlineProblems(
 		}
 		namedBy.set(note, number);
 		const found = existing.get(note);
-		const differs = (other: string) => other.trim().toLowerCase() !== title.trim().toLowerCase();
+		const differs = (other: string) => other.trim() !== title.trim();
 		if (found?.title !== undefined && !found.draft && differs(found.title)) {
 			return `notes/${course}/${note}.typ is titled "${found.title}", but section ${number} of ${file} is titled "${title}"; give them the same title, since the note shows one and the links to it show the other`;
 		}
