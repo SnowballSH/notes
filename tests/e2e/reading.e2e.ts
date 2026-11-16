@@ -138,6 +138,40 @@ test("the tiling widget loads without moving the page and names each step", asyn
 	expect(await caption.innerText()).not.toBe(atRest);
 });
 
+test("a figure enlarges by click or from the keyboard, and Escape closes it", async ({
+	page,
+	request,
+}) => {
+	await page.goto(await pageWith(request, "<figure"), { waitUntil: "networkidle" });
+	const image = page.locator("article.note figure img").first();
+	const thumbnail = (await image.boundingBox())?.width ?? 0;
+
+	await image.click();
+	const enlarged = page.locator("dialog.figure-zoom img");
+	await expect(enlarged).toBeVisible();
+	expect((await enlarged.boundingBox())?.width).toBeGreaterThan(thumbnail);
+	await page.keyboard.press("Escape");
+	await expect(page.locator("dialog.figure-zoom")).toHaveCount(0);
+
+	await image.focus();
+	await page.keyboard.press("Enter");
+	await expect(enlarged).toBeVisible();
+});
+
+test("the home page offers to continue with the note read last", async ({ page, request }) => {
+	await page.goto("/", { waitUntil: "networkidle" });
+	await expect(page.getByRole("link", { name: "Start reading" }).first()).toBeVisible();
+
+	const later = await pageWith(request, markers.note, 'rel="prev"');
+	await page.goto(later, { waitUntil: "networkidle" });
+	await page.goto("/", { waitUntil: "networkidle" });
+
+	await expect(page.getByRole("link", { name: /^Continue with / }).first()).toHaveAttribute(
+		"href",
+		later,
+	);
+});
+
 test.describe("on a phone", () => {
 	test.use({ viewport: phone });
 

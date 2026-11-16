@@ -8,7 +8,9 @@ import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
 import PageMeta from "#lib/components/PageMeta.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { fitEquations } from "#lib/notes/equations.ts";
+import { zoomableFigures } from "#lib/notes/figures.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
+import { recordLastRead } from "#lib/notes/progress.ts";
 import { referencePreviews } from "#lib/notes/references.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
@@ -21,6 +23,10 @@ const trail = $derived([
 	...(course ? [{ label: course.title, href: course.href }] : []),
 	...(number ? [{ label: number }] : []),
 ]);
+
+$effect(() => {
+	if (!note.meta.draft) recordLastRead(note.course, `/${note.course}/${note.slug}`);
+});
 </script>
 
 <PageMeta
@@ -60,6 +66,7 @@ const trail = $derived([
 		{@attach closableBlocks}
 		{@attach referencePreviews}
 		{@attach fitEquations}
+		{@attach zoomableFigures}
 		{@attach prepareForPrint}
 	>
 		{@html note.html}

@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Badge } from "foundationui/svelte";
-import ActionLink from "#lib/components/ActionLink.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import PageMeta from "#lib/components/PageMeta.svelte";
+import ReadingStart from "#lib/components/ReadingStart.svelte";
 import SectionRow from "#lib/components/SectionRow.svelte";
 import { allSections, readingOrder } from "#lib/outlines/contents.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
@@ -10,7 +10,6 @@ import { pageTitle, siteName } from "#lib/site/title.ts";
 const { data } = $props();
 const course = $derived(data.course);
 const linked = $derived(readingOrder(course.parts));
-const start = $derived(linked[0]);
 const status = $derived(
 	linked.length === 0
 		? "Outline only. The notes themselves are still to come."
@@ -31,8 +30,8 @@ const partsLabel = (parts: string): string =>
 {#if status}
 	<p class="mt-2 text-sm text-ink-muted">{status}</p>
 {/if}
-{#if start}
-	<p class="mt-6"><ActionLink href={start.href}>Start reading</ActionLink></p>
+{#if linked.length > 0}
+	<p class="mt-6"><ReadingStart course={course.slug} sections={linked} /></p>
 {/if}
 
 <ol class="mt-10 space-y-8">

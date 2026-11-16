@@ -414,6 +414,12 @@ describe("images", () => {
 		);
 	});
 
+	it("finds the caption when the image sits in a box inside its figure", () => {
+		expect(
+			refineNoteHtml('<figure><p><img src="a.png"></p><figcaption>n = 3</figcaption></figure>'),
+		).toContain('<img src="a.png" alt="n = 3">');
+	});
+
 	it("marks an image with neither as one to pass over, and keeps a description that is given", () => {
 		expect(refineNoteHtml('<p><img src="a.png"><img src="b.png" alt="A graph"></p>')).toBe(
 			'<p><img src="a.png" alt=""><img src="b.png" alt="A graph"></p>',
