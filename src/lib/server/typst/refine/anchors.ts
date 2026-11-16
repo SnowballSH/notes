@@ -1,4 +1,5 @@
 import type { NoteCard } from "#lib/notes/types.ts";
+import type { Addresses } from "./addresses";
 import {
 	addClass,
 	append,
@@ -35,12 +36,6 @@ export function adoptLabels(root: ParentNode): string[] {
 
 const labelledMark = "data-labelled";
 
-function unused(wanted: string, taken: Set<string>): string {
-	let id = wanted;
-	for (let copy = 2; taken.has(id); copy++) id = `${wanted}-${copy}`;
-	return id;
-}
-
 const isCard = (element: Element): boolean =>
 	(attribute(element, "class") ?? "").split(/\s+/).includes("card");
 
@@ -53,7 +48,7 @@ function cardName(card: Element): string | undefined {
 	return name ? textOf(name).trim() : undefined;
 }
 
-export const idFrom = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const idFrom = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 function anchorTo(id: string, name: string): Element {
 	const anchor = createElement("a", { href: `#${id}`, "aria-label": `Link to ${name}` });
@@ -73,8 +68,7 @@ function appendAnchor(target: Element, id: string, name: string): void {
  * its id; the others are named after their kind and number. Returns the cards, in order.
  * Labels must have been adopted first.
  */
-export function addAnchors(root: ParentNode): NoteCard[] {
-	const taken = new Set(descendants(root).flatMap((element) => attribute(element, "id") ?? []));
+export function addAnchors(root: ParentNode, addresses: Addresses): NoteCard[] {
 	const cards = descendants(root)
 		.filter(isCard)
 		.flatMap((card) => {
@@ -83,8 +77,7 @@ export function addAnchors(root: ParentNode): NoteCard[] {
 			if (!name || !heading) return [];
 			const labelled = attribute(card, labelledMark) !== undefined;
 			card.attrs = card.attrs.filter((attr) => attr.name !== labelledMark);
-			const id = attribute(card, "id") ?? unused(idFrom(name), taken);
-			taken.add(id);
+			const id = attribute(card, "id") ?? addresses.claim(idFrom(name), name);
 			setAttribute(card, "id", id);
 			const title = textOf(heading)
 				.replace(name, "")

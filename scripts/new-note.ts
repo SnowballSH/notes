@@ -11,6 +11,7 @@ import {
 	notePath,
 	noteRequestProblem,
 	noteSource,
+	parseNoteArguments,
 	unknownCourseProblem,
 } from "./scaffold/note.ts";
 
@@ -22,16 +23,12 @@ async function courseSources(directory: string): Promise<string[]> {
 const usage = "Usage: pnpm run new:note [--new-course] <course> <slug> <title...>";
 
 await runCommand(async () => {
-	const args = process.argv.slice(2);
-	const startsCourse = args.includes("--new-course");
-	const unknownOption = args.find(
-		(argument) => argument.startsWith("--") && argument !== "--new-course",
+	const { course, slug, title, startsCourse, unknownOption } = parseNoteArguments(
+		process.argv.slice(2),
 	);
 	if (unknownOption !== undefined) {
 		throw new UsageError(`unknown option "${unknownOption}"\n${usage}`);
 	}
-	const [course, slug, ...words] = args.filter((argument) => argument !== "--new-course");
-	const title = words.join(" ").trim();
 	const problem = noteRequestProblem(course, slug, title);
 	if (course === undefined || slug === undefined || problem !== undefined) {
 		throw new UsageError(`${problem}\n${usage}`);

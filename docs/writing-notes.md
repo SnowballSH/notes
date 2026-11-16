@@ -100,7 +100,7 @@ Things to know:
   (`<parity>` under a section called "Parity", or `<theorem-2>`). The build
   says so if it is.
 - Give a figure that carries information an `alt:`. Without one it takes its
-  caption as its description, and with neither a screen reader skips it. PNG,
+  caption as its description, and with neither it has no description at all. PNG,
   JPEG and SVG files work. A small figure opens enlarged when clicked.
 - `grid` is dropped by HTML export; use `gallery`. `overline`, `underline`
   inside math and `line` are dropped too, and the build tells you when an

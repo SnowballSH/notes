@@ -1,6 +1,4 @@
-import type { NoteCard, NoteHeading } from "#lib/notes/types.ts";
-import { idFrom } from "./anchors";
-import { slug } from "./headings";
+import type { Displacement } from "./addresses";
 
 /**
  * What is wrong with the labels an author gave the cards of a note, one line each. A label
@@ -9,24 +7,18 @@ import { slug } from "./headings";
  */
 export function labelProblems(
 	labels: readonly string[],
-	headings: readonly NoteHeading[],
-	cards: readonly NoteCard[],
+	displacements: readonly Displacement[],
 ): string[] {
-	const used = new Set(labels);
-	const repeated = [...new Set(labels.filter((label, index) => labels.indexOf(label) !== index))];
+	const repeated = labels.filter((label, index) => labels.indexOf(label) !== index);
 	return [
-		...repeated.map((label) => `two cards have the label <${label}>; give each card its own label`),
-		...headings
-			.filter((heading) => used.has(slug(heading.text)))
-			.map(
-				(heading) =>
-					`the label <${slug(heading.text)}> is also the address of the section "${heading.text}"; rename the label`,
+		...new Set([
+			...repeated.map(
+				(label) => `two cards have the label <${label}>; give each card its own label`,
 			),
-		...cards
-			.filter((card) => !card.labelled && used.has(idFrom(card.name)))
-			.map(
-				(card) =>
-					`the label <${idFrom(card.name)}> is the address ${card.name} gets on its own; rename the label`,
+			...displacements.map(
+				({ label, owner }) =>
+					`the label <${label}> is the address ${owner} would have; rename the label`,
 			),
+		]),
 	];
 }

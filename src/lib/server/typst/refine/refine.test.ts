@@ -392,10 +392,20 @@ describe("anchors", () => {
 		);
 		expect(problems).toEqual([
 			"two cards have the label <dup>; give each card its own label",
-			'the label <parity> is also the address of the section "Parity"; rename the label',
-			"the label <theorem-2> is the address Theorem 2 gets on its own; rename the label",
+			'the label <parity> is the address the section "Parity" would have; rename the label',
+			"the label <theorem-2> is the address Theorem 2 would have; rename the label",
 		]);
 		expect(refineNote(`<h2>Parity</h2>${card("lemma", "Lemma 1", "lem-a")}`).problems).toEqual([]);
+	});
+
+	it("judges a clash by the address a section really has", () => {
+		const card =
+			'<div data-label="parity"><section class="card card-lemma"><header><strong>Lemma 1</strong></header></section></div>';
+		expect(refineNote(`<h2 id="sec-parity">Parity</h2>${card}`).problems).toEqual([]);
+		const second = card.replace("parity", "examples-2");
+		expect(refineNote(`<h2>Examples</h2><h2>Examples</h2>${second}`).problems).toEqual([
+			'the label <examples-2> is the address the section "Examples" would have; rename the label',
+		]);
 	});
 
 	it("lets a card's label win over a section heading with the same slug", () => {

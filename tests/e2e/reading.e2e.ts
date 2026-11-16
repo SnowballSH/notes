@@ -143,7 +143,8 @@ test("a figure enlarges by click or from the keyboard, and Escape closes it", as
 	request,
 }) => {
 	await page.goto(await pageWith(request, "<figure"), { waitUntil: "networkidle" });
-	const image = page.locator("article.note figure img").first();
+	const image = page.locator('article.note figure img[role="button"]').first();
+	await expect(image).toBeVisible();
 	const thumbnail = (await image.boundingBox())?.width ?? 0;
 
 	await image.click();

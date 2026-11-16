@@ -50,9 +50,15 @@ export async function hasNote(ref: NoteRef): Promise<boolean> {
 	return (await listNotes()).some((note) => note.course === ref.course && note.slug === ref.slug);
 }
 
-function parseMeta(value: unknown, file: string): NoteMeta {
-	if (value === null) {
+export function parseMeta(headers: readonly unknown[], file: string): NoteMeta {
+	const [value, ...others] = headers;
+	if (value === undefined) {
 		throw new TypstError(`${file}: the note must start with #show: note.with(title: ..)`);
+	}
+	if (others.length > 0) {
+		throw new TypstError(
+			`${file}: the note has ${headers.length} #show: note.with(..) headers; keep one`,
+		);
 	}
 	const { title, summary, order, draft } = value as Record<string, unknown>;
 	if (typeof title !== "string" || title.trim() === "") {

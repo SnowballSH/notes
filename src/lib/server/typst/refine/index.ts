@@ -1,7 +1,9 @@
 import { parseFragment, serialize } from "parse5";
 import type { NoteCard, NoteHeading } from "#lib/notes/types.ts";
+import { Addresses } from "./addresses";
 import { addAnchors, adoptLabels } from "./anchors";
 import { classifyCodeTokens } from "./code";
+import { attribute, descendants } from "./dom";
 import { identifyHeadings } from "./headings";
 import { describeImages } from "./images";
 import { labelProblems } from "./labels";
@@ -26,8 +28,10 @@ export function refineNoteHtml(html: string): RefinedNote {
 	classifyCodeTokens(fragment);
 	describeImages(fragment);
 	const labels = adoptLabels(fragment);
-	const headings = identifyHeadings(fragment);
-	const cards = addAnchors(fragment);
-	const problems = labelProblems(labels, headings, cards);
+	const ids = descendants(fragment).flatMap((element) => attribute(element, "id") ?? []);
+	const addresses = new Addresses(ids, labels);
+	const headings = identifyHeadings(fragment, addresses);
+	const cards = addAnchors(fragment, addresses);
+	const problems = labelProblems(labels, addresses.displacements);
 	return { html: serialize(fragment), headings, cards, problems };
 }
