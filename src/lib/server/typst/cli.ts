@@ -8,12 +8,32 @@ const maxBuffer = 64 * 1024 * 1024;
 
 export class TypstError extends Error {}
 
-async function typst(args: string[]): Promise<string> {
+interface TypstOutput {
+	stdout: string;
+	/** Typst's diagnostics for a run that succeeded, each with the place it points at. */
+	warnings: string[];
+}
+
+const exportIsExperimental = /^warning: html export is under active development/;
+
+/** Typst's diagnostics, one string each, without the standing warning about HTML export. */
+function diagnostics(stderr: string): string[] {
+	return stderr
+		.split(/^(?=(?:warning|error): )/m)
+		.map((block) => block.trim())
+		.filter((block) => block !== "" && !exportIsExperimental.test(block));
+}
+
+export const parseWarnings = (stderr: string): string[] =>
+	diagnostics(stderr).filter((block) => block.startsWith("warning: "));
+
+async function typst(args: string[]): Promise<TypstOutput> {
 	try {
-		const { stdout } = await run("typst", args, { maxBuffer });
-		return stdout;
+		const { stdout, stderr } = await run("typst", args, { maxBuffer });
+		return { stdout, warnings: parseWarnings(stderr) };
 	} catch (cause) {
-		const detail = (cause as { stderr?: string }).stderr ?? String(cause);
+		const { stderr } = cause as { stderr?: string };
+		const detail = stderr === undefined ? String(cause) : diagnostics(stderr).join("\n\n");
 		throw new TypstError(`typst ${args[0]} failed:\n${detail}`, { cause });
 	}
 }
@@ -22,8 +42,8 @@ let versionChecked: Promise<void> | undefined;
 
 function assertVersion(): Promise<void> {
 	versionChecked ??= typst(["--version"])
-		.then((output) => {
-			const found = output.split(" ")[1];
+		.then(({ stdout }) => {
+			const found = stdout.split(" ")[1];
 			if (found !== TYPST_VERSION) {
 				throw new TypstError(`typst ${TYPST_VERSION} is required, found ${found}`);
 			}
@@ -35,14 +55,14 @@ function assertVersion(): Promise<void> {
 	return versionChecked;
 }
 
-export async function compileHtml(root: string, file: string): Promise<string> {
+export async function compileHtml(root: string, file: string): Promise<TypstOutput> {
 	await assertVersion();
 	return typst(["compile", "--features", "html", "--format", "html", "--root", root, file, "-"]);
 }
 
 export async function queryOne(root: string, file: string, selector: string): Promise<unknown> {
 	await assertVersion();
-	const output = await typst([
+	const { stdout } = await typst([
 		"query",
 		"--features",
 		"html",
@@ -56,5 +76,5 @@ export async function queryOne(root: string, file: string, selector: string): Pr
 		"value",
 		"--one",
 	]);
-	return JSON.parse(output);
+	return JSON.parse(stdout);
 }

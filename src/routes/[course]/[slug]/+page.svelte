@@ -1,6 +1,7 @@
 <script lang="ts">
 import mathFont from "@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2?url";
 import { Link } from "foundationui/svelte";
+import AuthorNotice from "#lib/components/AuthorNotice.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
@@ -29,6 +30,10 @@ const course = $derived(data.course);
 />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{note.meta.title}</h1>
 <NoteContents headings={note.headings} />
+
+{#if note.warnings.length > 0}
+	<AuthorNotice title="Typst left something out of this page" details={note.warnings} />
+{/if}
 
 {#key note.html}
 	<article class="note mt-8" {@attach widgets} {@attach prepareForPrint}>

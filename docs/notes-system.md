@@ -44,11 +44,15 @@ See @def-bitstring.
    It then passes the fragment through `refine/`, described under
    [Repairing the exported HTML](#repairing-the-exported-html).
 3. `src/routes/[course]/[slug]` prerenders each note. The build fails on a
-   Typst error, a broken reference, bad metadata or an unknown widget.
+   Typst error, a broken reference, bad metadata, an unknown widget, or a
+   Typst warning, such as an element that HTML export leaves out. The message
+   names the file and line.
 4. `src/lib/styles/notes.css` styles the compiled markup. Math is native
    MathML set in STIX Two Math, so pages need no math JavaScript.
 
-`pnpm run dev` reloads the page when a `.typ` file changes.
+`pnpm run dev` reloads the page when a `.typ` file changes. While developing,
+a Typst error is shown on the page in place of the note, and a Typst warning
+is shown in a notice above it.
 
 ## Repairing the exported HTML
 
@@ -66,6 +70,7 @@ checked in Chromium and Firefox.
 | A prime moves from a superscript to beside its base. | The prime glyph is already raised. As a superscript it is shrunk and raised again into a speck. |
 | A bracket with nothing tall beside it is marked `stretchy="false"`. | Chromium reserves room for a stretchy bracket to grow, which sets `f(x)` as `f ( x )`. Brackets around fractions, matrices, roots and sums with limits still grow; brackets around superscripts keep their plain size, as in LaTeX without `\left`. |
 | An inline formula longer than 24 characters is cut into several formulas with a `<wbr>` between them: after each relation or comma of its outermost level, or after its binary operators when it has none. Inline math does not wrap anywhere else. | Chromium never breaks a line inside a formula and Firefox breaks anywhere. A long formula overflowed a phone screen in one and split between a function and its argument in the other. A long formula whose operators all sit inside brackets is not cut and can still overflow. |
+| The colours of Typst's syntax theme on code become `token-*` classes. | Typst writes fixed colours meant for a white page; the stylesheet colours each kind of token for either theme. |
 | A formula and the text that touches it (a comma, a bracket, `-th`), and the end-of-proof square with the word before it, are wrapped in `span.nobreak`. | A line could otherwise start with the comma or the square. |
 | Each display equation is wrapped in `div.equation`. | Firefox does not scroll a `<math>` element, so a wide equation made the whole page scroll sideways. The wrapper scrolls instead, and a shadow marks the edge that hides more. On a phone it reaches into the gutter, so an equation a few pixels too wide is shown whole. |
 
@@ -154,6 +159,4 @@ whole number of pixels on the 320px board.
 
 - Course index pages generated from the notes.
 - Hover previews for references, and references between notes.
-- Code block colours that follow the theme: Typst emits fixed light-theme
-  colours.
 - Diagrams and images.

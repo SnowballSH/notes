@@ -19,6 +19,8 @@ export interface CompiledNote extends NoteRef {
 	meta: NoteMeta;
 	html: string;
 	headings: NoteHeading[];
+	/** What Typst warned about, such as an element it left out of the page. */
+	warnings: string[];
 	styles: string;
 }
 
