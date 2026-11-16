@@ -9,6 +9,7 @@ const heading = $derived(missing ? "Page not found" : "Something went wrong");
 
 <svelte:head>
 	<title>{pageTitle(heading)}</title>
+	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <p class="text-sm text-ink-muted">Error {page.status}</p>

@@ -5,6 +5,7 @@ import BlockControls from "#lib/components/BlockControls.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
+import PageMeta from "#lib/components/PageMeta.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { fitEquations } from "#lib/notes/equations.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
@@ -22,10 +23,14 @@ const trail = $derived([
 ]);
 </script>
 
+<PageMeta
+	title={pageTitle(note.meta.title, ...(course ? [course.title] : []))}
+	description={note.meta.summary}
+	kind="article"
+/>
 <svelte:head>
-	<title>{pageTitle(note.meta.title, ...(course ? [course.title] : []))}</title>
-	{#if note.meta.summary}
-		<meta name="description" content={note.meta.summary} />
+	{#if note.meta.draft}
+		<meta name="robots" content="noindex" />
 	{/if}
 	{#if note.html.includes("<math")}
 		<link rel="preload" as="font" type="font/woff2" href={mathFont} crossorigin="anonymous" />
