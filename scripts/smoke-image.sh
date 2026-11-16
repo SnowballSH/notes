@@ -54,8 +54,12 @@ grep -q '<math' "${body}" && grep -q 'card-definition' "${body}" || {
   printf 'FAIL the compiled Typst note is not served\n' >&2
   exit 1
 }
+grep -q 'aria-label="Breadcrumb"' "${body}" && grep -q 'rel="next"' "${body}" || {
+  printf 'FAIL the note has no breadcrumb or no link to the next note\n' >&2
+  exit 1
+}
 expect /absent 404
-grep -q 'Not Found' "${body}" || grep -q '_app/' "${body}" || {
+grep -q '_app/' "${body}" || {
   printf 'FAIL the 404 is not the site page\n' >&2
   exit 1
 }

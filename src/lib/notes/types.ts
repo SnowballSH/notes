@@ -14,3 +14,13 @@ export interface CompiledNote extends NoteRef {
 	html: string;
 	styles: string;
 }
+
+export interface NoteLink {
+	title: string;
+	href: string;
+}
+
+export interface NoteNeighbours {
+	previous: NoteLink | null;
+	next: NoteLink | null;
+}

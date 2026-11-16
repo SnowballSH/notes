@@ -1,6 +1,12 @@
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import type { CompiledNote, NoteMeta, NoteRef } from "#lib/notes/types.ts";
+import type {
+	CompiledNote,
+	NoteLink,
+	NoteMeta,
+	NoteNeighbours,
+	NoteRef,
+} from "#lib/notes/types.ts";
 import { widgetNames } from "#lib/widgets/registry.ts";
 import { compileHtml, queryOne, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
@@ -46,6 +52,45 @@ function parseMeta(value: unknown, file: string): NoteMeta {
 	return { title, summary, order };
 }
 
+const metaByFile = new Map<string, { modified: number; meta: Promise<NoteMeta> }>();
+
+/** A note's metadata, read again only when its file has changed. */
+async function readMeta(ref: NoteRef): Promise<NoteMeta> {
+	const file = sourcePath(ref);
+	const modified = (await stat(file)).mtimeMs;
+	const cached = metaByFile.get(file);
+	if (cached?.modified === modified) return cached.meta;
+	const meta = queryOne(notesRoot, file, "<note-meta>").then((value) => parseMeta(value, file));
+	metaByFile.set(file, { modified, meta });
+	meta.catch(() => metaByFile.delete(file));
+	return meta;
+}
+
+const hrefOf = ({ course, slug }: NoteRef): string => `/${course}/${slug}`;
+
+/** The notes of one course in reading order, which is that of their `order` metadata. */
+export async function courseNotes(course: string): Promise<(NoteRef & NoteLink)[]> {
+	const refs = (await listNotes()).filter((note) => note.course === course);
+	const notes = await Promise.all(
+		refs.map(async (ref) => ({ ...ref, meta: await readMeta(ref), href: hrefOf(ref) })),
+	);
+	notes.sort((a, b) => a.meta.order - b.meta.order);
+	const tied = notes.find((note, index) => note.meta.order === notes[index + 1]?.meta.order);
+	if (tied) {
+		throw new TypstError(`${course}: two notes have order ${tied.meta.order}; it must be unique`);
+	}
+	return notes.map(({ meta, ...note }) => ({ ...note, title: meta.title }));
+}
+
+export async function noteNeighbours(ref: NoteRef): Promise<NoteNeighbours> {
+	const notes = await courseNotes(ref.course);
+	const index = notes.findIndex((note) => note.slug === ref.slug);
+	if (index < 0) throw new TypstError(`${sourcePath(ref)}: not a note of ${ref.course}`);
+	const link = (note: NoteLink | undefined): NoteLink | null =>
+		note ? { title: note.title, href: note.href } : null;
+	return { previous: link(notes[index - 1]), next: link(notes[index + 1]) };
+}
+
 function extract(document: string, pattern: RegExp, file: string): string {
 	const captured = pattern.exec(document)?.[1];
 	if (captured === undefined) throw new TypstError(`${file}: unexpected Typst HTML output`);
@@ -64,15 +109,12 @@ function assertKnownWidgets(html: string, file: string): void {
 
 export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
-	const [document, meta] = await Promise.all([
-		compileHtml(notesRoot, file),
-		queryOne(notesRoot, file, "<note-meta>"),
-	]);
+	const [document, meta] = await Promise.all([compileHtml(notesRoot, file), readMeta(ref)]);
 	const html = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
 	assertKnownWidgets(html, file);
 	return {
 		...ref,
-		meta: parseMeta(meta, file),
+		meta,
 		html,
 		styles: /<style>([\s\S]*?)<\/style>/.exec(document)?.[1] ?? "",
 	};
