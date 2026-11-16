@@ -33,7 +33,7 @@ content and structure, not the site's styling.
 
    It writes `notes/<course>/<slug>.typ` as a draft and prints the next
    steps. Names are lowercase words joined by hyphens, and the course must
-   exist already. The header it writes:
+   exist already (`--new-course` creates its directory). The header it writes:
 
    ```typst
    #import "/lib/notes.typ": *

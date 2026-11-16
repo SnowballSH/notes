@@ -8,8 +8,9 @@ export default defineConfig({
 	fullyParallel: false,
 	workers: 1,
 	forbidOnly: Boolean(process.env.CI),
+	retries: process.env.CI ? 1 : 0,
 	reporter: process.env.CI ? "github" : "list",
-	use: { baseURL: `http://127.0.0.1:${port}` },
+	use: { baseURL: `http://127.0.0.1:${port}`, trace: "retain-on-failure" },
 	webServer: {
 		command: `pnpm run build && pnpm exec vite preview --host 127.0.0.1 --port ${port} --strictPort`,
 		url: `http://127.0.0.1:${port}/`,

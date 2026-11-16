@@ -18,16 +18,22 @@ function score(entry: SearchEntry, query: string[]): number | undefined {
 	return (query.length - inLabel) * 10 + startsLabel;
 }
 
+export interface SearchResults {
+	/** The best matches, at most `limit` of them. */
+	shown: SearchEntry[];
+	/** How many entries matched in all. */
+	total: number;
+}
+
 /** The entries that contain every word of the query, best first, keeping their order among equals. */
-export function search(entries: readonly SearchEntry[], query: string, limit = 12): SearchEntry[] {
+export function search(entries: readonly SearchEntry[], query: string, limit = 12): SearchResults {
 	const wanted = words(query);
-	if (wanted.length === 0) return [];
-	return entries
+	if (wanted.length === 0) return { shown: [], total: 0 };
+	const matches = entries
 		.flatMap((entry) => {
 			const rank = score(entry, wanted);
 			return rank === undefined ? [] : [{ entry, rank }];
 		})
-		.sort((a, b) => a.rank - b.rank)
-		.slice(0, limit)
-		.map(({ entry }) => entry);
+		.sort((a, b) => a.rank - b.rank);
+	return { shown: matches.slice(0, limit).map(({ entry }) => entry), total: matches.length };
 }

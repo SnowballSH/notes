@@ -20,14 +20,23 @@ import {
  * Typst gives a card an id only when the same note refers to it. The library wraps every
  * labelled card in a `div[data-label]`; the label becomes the card's id and the wrapper goes.
  */
-function adoptLabels(root: ParentNode): void {
+export function adoptLabels(root: ParentNode): void {
 	for (const wrapper of elementsNamed(root, "div")) {
 		const label = attribute(wrapper, "data-label");
 		const [card, ...others] = childElements(wrapper);
 		if (label === undefined || !card || others.length > 0) continue;
 		setAttribute(card, "id", label);
+		setAttribute(card, labelledMark, "");
 		replace(wrapper, card);
 	}
+}
+
+const labelledMark = "data-labelled";
+
+function unused(wanted: string, taken: Set<string>): string {
+	let id = wanted;
+	for (let copy = 2; taken.has(id); copy++) id = `${wanted}-${copy}`;
+	return id;
 }
 
 const isCard = (element: Element): boolean =>
@@ -60,9 +69,9 @@ function appendAnchor(target: Element, id: string, name: string): void {
  * Gives every card an address and shows a link to it, and to each section heading, so that
  * a reader can point someone at "Theorem 3". A card the author labelled keeps its label as
  * its id; the others are named after their kind and number. Returns the cards, in order.
+ * Labels must have been adopted first.
  */
 export function addAnchors(root: ParentNode): NoteCard[] {
-	adoptLabels(root);
 	const taken = new Set(descendants(root).flatMap((element) => attribute(element, "id") ?? []));
 	const cards = descendants(root)
 		.filter(isCard)
@@ -70,9 +79,9 @@ export function addAnchors(root: ParentNode): NoteCard[] {
 			const name = cardName(card);
 			const heading = childElements(card)[0];
 			if (!name || !heading) return [];
-			const wanted = idFrom(name);
-			const id = attribute(card, "id") ?? (taken.has(wanted) ? undefined : wanted);
-			if (id === undefined) return [];
+			const labelled = attribute(card, labelledMark) !== undefined;
+			card.attrs = card.attrs.filter((attr) => attr.name !== labelledMark);
+			const id = attribute(card, "id") ?? unused(idFrom(name), taken);
 			taken.add(id);
 			setAttribute(card, "id", id);
 			const title = textOf(heading)
@@ -80,7 +89,7 @@ export function addAnchors(root: ParentNode): NoteCard[] {
 				.trim()
 				.replace(/^\((.*)\)$/, "$1");
 			appendAnchor(heading, id, name);
-			return [{ id, name, title }];
+			return [{ id, name, title, labelled }];
 		});
 	for (const heading of elementsNamed(root, "h2", "h3")) {
 		const id = attribute(heading, "id");

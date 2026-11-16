@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { refineNoteHtml as refineNote } from "./index";
-import { linkNoteReferences, noteReferences } from "./note-references";
+import { linkNoteReferences, noteReferences, wordlessReferencesInTitles } from "./note-references";
 
 const refineNoteHtml = (html: string): string => refineNote(html).html;
 
@@ -376,10 +376,19 @@ describe("anchors", () => {
 		]);
 	});
 
-	it("does not reuse an id that is already on the page", () => {
+	it("gives a card another id when its own is already on the page", () => {
 		const html =
 			'<p id="theorem-1"></p><section class="card card-theorem"><header><strong>Theorem 1</strong></header></section>';
-		expect(refineNoteHtml(html)).toBe(html);
+		expect(refineNoteHtml(html)).toContain('<section class="card card-theorem" id="theorem-1-2">');
+	});
+
+	it("lets a card's label win over a section heading with the same slug", () => {
+		const { html, headings, cards } = refineNote(
+			'<h2>Lemma A</h2><div data-label="lemma-a"><section class="card card-lemma"><header><strong>Lemma 1</strong></header></section></div>',
+		);
+		expect(headings.map((heading) => heading.id)).toEqual(["lemma-a-2"]);
+		expect(cards).toEqual([{ id: "lemma-a", name: "Lemma 1", title: "", labelled: true }]);
+		expect(html).not.toContain("data-label");
 	});
 
 	it("links to a section heading without changing its listed text", () => {
@@ -427,6 +436,13 @@ describe("references to other notes", () => {
 		expect(linkNoteReferences(`<p>By ${reference()}.</p>`, target)).toBe(
 			'<p>By <a class="noteref" href="/course/sets#thm-a">Theorem&nbsp;2</a>.</p>',
 		);
+	});
+
+	it("finds a reference without words in a heading or a card title, where its text would be lost", () => {
+		expect(
+			wordlessReferencesInTitles(`<h2>After ${reference()}</h2><p>${reference()}</p>`),
+		).toEqual([{ note: "sets", target: "thm-a" }]);
+		expect(wordlessReferencesInTitles(`<h2>After ${reference("the bound")}</h2>`)).toEqual([]);
 	});
 
 	it("keeps the words the author gave", () => {

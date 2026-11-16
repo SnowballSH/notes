@@ -53,9 +53,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium firefox
       - run: pnpm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-traces
+          path: test-results
+          retention-days: 7
 
   image:
-    needs: verify
+    needs: [verify, e2e]
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:

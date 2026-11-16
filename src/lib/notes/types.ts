@@ -23,6 +23,8 @@ export interface NoteCard {
 	name: string;
 	/** Empty when the card has no title. */
 	title: string;
+	/** Whether the author labelled the card, which makes its id safe to refer to from another note. */
+	labelled: boolean;
 }
 
 export interface CompiledNote extends NoteRef {

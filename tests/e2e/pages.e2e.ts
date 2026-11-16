@@ -1,31 +1,43 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { openAllBlocks, pages, phone, watchForProblems } from "./pages";
+import { openAllBlocks, phone, sitePages, watchForProblems } from "./pages";
 
-for (const path of pages) {
-	test.describe(path, () => {
-		test("loads without errors and never scrolls sideways", async ({ page }) => {
-			const problems = watchForProblems(page);
-			for (const viewport of [{ width: 1280, height: 800 }, phone]) {
+test("every page loads without errors and never scrolls sideways", async ({ page, request }) => {
+	const problems = watchForProblems(page);
+	const paths = await sitePages(request);
+	expect(paths.length).toBeGreaterThan(1);
+	for (const path of paths) {
+		for (const viewport of [{ width: 1280, height: 800 }, phone]) {
+			await test.step(`${path} at ${viewport.width}px`, async () => {
 				await page.setViewportSize(viewport);
 				await page.goto(path, { waitUntil: "networkidle" });
 				await openAllBlocks(page);
 				const overflows = await page.evaluate(
 					() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
 				);
-				expect(overflows, `sideways scroll at ${viewport.width}px`).toBe(false);
-			}
-			expect(problems).toEqual([]);
-		});
+				expect(overflows, `${path} scrolls sideways at ${viewport.width}px`).toBe(false);
+			});
+		}
+	}
+	expect(problems).toEqual([]);
+});
 
-		for (const colorScheme of ["light", "dark"] as const) {
-			test(`passes the accessibility checks in the ${colorScheme} theme`, async ({ page }) => {
-				await page.emulateMedia({ colorScheme });
-				await page.setViewportSize(phone);
+for (const colorScheme of ["light", "dark"] as const) {
+	test(`every page passes the accessibility checks in the ${colorScheme} theme`, async ({
+		page,
+		request,
+	}) => {
+		test.slow();
+		await page.emulateMedia({ colorScheme });
+		await page.setViewportSize(phone);
+		for (const path of await sitePages(request)) {
+			await test.step(path, async () => {
 				await page.goto(path, { waitUntil: "networkidle" });
 				await openAllBlocks(page);
 				const { violations } = await new AxeBuilder({ page }).analyze();
-				expect(violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
+				expect(
+					violations.map((violation) => `${path}: ${violation.id}: ${violation.help}`),
+				).toEqual([]);
 			});
 		}
 	});
