@@ -26,7 +26,8 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
 | `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. See [`widgets.md`](widgets.md). |
 
 `pnpm run new:note <course> <slug> <title...>` creates the file from a
-template, with the next free `order` of the course. It refuses to overwrite a
+template and prints what is left to do. In a registered course the note starts
+as a draft; elsewhere it gets the next free `order`. It refuses to overwrite a
 note.
 
 ## Pipeline
@@ -95,18 +96,45 @@ always, faintly, on a touch screen), so a reader can share "Theorem 3".
 
 ## Courses and navigation
 
-A course is a directory of notes. `src/lib/site/courses.ts` registers each
-course with its outline, its category and the page that introduces it; the
-home page and that page both read from the registry. A note page takes its
-breadcrumb and its link back to the outline from the registry, and its
-previous and next links from the other notes in the same directory, in the
-order of their `order` metadata. Two notes of a course may not share an
-`order`. A course that is not registered still gets its pages and its previous
-and next links, with a breadcrumb that leads only to the home page.
+A course is a directory of notes, an outline in `src/lib/outlines/<course>.ts`
+and an entry in `src/lib/site/courses.ts` that gives it a category from
+`categories.ts`. Nothing else is written per course:
 
-`courses.test.ts` checks that the notes linked from each outline are exactly
-the notes of the course, in reading order, so the outline's numbering and the
-previous and next links cannot drift apart.
+- `src/routes/[category=category]/[course]` serves the outline of every
+  registered course at `/<category slug>/<course slug>`. Notes are served by
+  `[course]/[slug]`, which has the same shape, so the `category` matcher in
+  `src/params.ts` accepts only the slugs in `categories.ts`. A test keeps a
+  category from taking the name of a notes directory.
+- The home page lists every registered course with what is written.
+
+The outline is the single source of a course's reading order. A section names
+its note by slug (`note: "boolean-functions"`), and
+`src/lib/outlines/contents.ts` derives the rest from the outline and the list
+of notes on disk: each section's number (`<part>.<section>`), its link, and
+its state.
+
+| State | When | Shown as |
+|---|---|---|
+| written | The section names a published note. | A link. |
+| draft | The section names a draft note, while developing. | A link with a "Draft" badge. |
+| planned | The section names no note, or names a draft in the published site. | Muted text with a "Planned" badge, no link. |
+
+A note page takes its number, its breadcrumb, its previous and next links and
+its link back to the outline from the same data, so the outline page and the
+note pages cannot drift apart. Previous and next skip planned sections.
+
+`contents.ts` refuses an outline that disagrees with the notes: a published
+note that no section names, a section naming a note that does not exist, or a
+note named twice. Each message names the file and the line to add or remove.
+The check runs wherever the outline is read, so it fails the build (on the
+home page, the outline page and every note page of the course) and
+`courses.test.ts` with the same message; while developing it is shown on the
+page.
+
+A directory of notes that is not registered still gets its pages, with a
+breadcrumb that leads only to the home page. Its previous and next links
+follow the `order` metadata of its notes, and two of them may not share an
+`order`. In a registered course `order` is not read.
 
 `src/lib/site/title.ts` builds every document title as page, then course, then
 site name. `src/routes/+error.svelte` is the page for an address that does not

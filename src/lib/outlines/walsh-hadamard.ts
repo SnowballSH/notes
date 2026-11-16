@@ -10,12 +10,12 @@ export const walshHadamard: NotesOutline = {
 				{
 					title: "Boolean functions and Fourier expansions",
 					summary: "Writing any function on bitstrings as a sum of parity functions.",
-					href: "/walsh-hadamard/boolean-functions",
+					note: "boolean-functions",
 				},
 				{
 					title: "The Walsh-Hadamard transform",
 					summary: "The matrix behind the transform and a fast way to apply it.",
-					href: "/walsh-hadamard/walsh-hadamard",
+					note: "walsh-hadamard",
 				},
 				{
 					title: "Classical applications",

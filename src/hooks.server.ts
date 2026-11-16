@@ -1,13 +1,14 @@
 import type { HandleServerError } from "@sveltejs/kit/hooks";
+import { OutlineError } from "#lib/outlines/contents.ts";
 import { TypstError } from "#lib/server/typst/cli.ts";
 import { dev } from "$app/env";
 
 /**
- * What Typst reported is printed where the author is looking: in the terminal always, and
- * on the error page while developing.
+ * What the author must fix, as Typst or the outline check reported it, is printed where the
+ * author is looking: in the terminal always, and on the error page while developing.
  */
 export const handleError: HandleServerError = ({ error }) => {
-	if (!(error instanceof TypstError)) return;
+	if (!(error instanceof TypstError || error instanceof OutlineError)) return;
 	console.error(error.message);
 	if (dev) return { message: error.message };
 };

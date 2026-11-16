@@ -29,6 +29,8 @@ export interface CompiledNote extends NoteRef {
 export interface NoteLink {
 	title: string;
 	href: string;
+	/** The note's number in its course's outline, such as 1.2; null for a course without one. */
+	number: string | null;
 }
 
 export interface NoteNeighbours {

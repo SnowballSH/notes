@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextOrder, notePath, noteRequestProblem, noteSource } from "./note";
+import { nextOrder, noteNextSteps, notePath, noteRequestProblem, noteSource } from "./note";
 import { widgetNameProblem, widgetScaffold } from "./widget";
 
 describe("widgetNameProblem", () => {
@@ -66,16 +66,44 @@ describe("nextOrder", () => {
 
 describe("noteSource", () => {
 	it("writes the header with the title quoted for Typst and the given order", () => {
-		const source = noteSource('The "fast" transform', 3);
+		const source = noteSource('The "fast" transform', { order: 3 });
 		expect(source).toMatch(/^#import "\/lib\/notes\.typ": \*\n#show: note\.with\(\n/);
 		expect(source).toContain('  title: "The \\"fast\\" transform",\n');
 		expect(source).toContain("  order: 3,\n");
+		expect(source).not.toContain("draft");
 		expect(nextOrder([source])).toBe(4);
+	});
+
+	it("starts a note of a course with an outline as a draft, without an order", () => {
+		const source = noteSource("The fast transform", { outline: "src/lib/outlines/sets.ts" });
+		expect(source).toContain("  draft: true,\n)\n");
+		expect(source).not.toContain("order:");
 	});
 
 	it("goes to the note's place under notes/", () => {
 		expect(notePath({ course: "walsh-hadamard", slug: "fast-transform" })).toBe(
 			"notes/walsh-hadamard/fast-transform.typ",
 		);
+	});
+});
+
+describe("noteNextSteps", () => {
+	const request = { course: "sets", slug: "unions", title: "Unions" };
+
+	it("names the outline file and the line to add for a course with an outline", () => {
+		const steps = noteNextSteps(request, { outline: "src/lib/outlines/sets.ts" });
+		expect(steps).toContain("Created notes/sets/unions.typ as a draft");
+		expect(steps).toContain("http://localhost:5173/sets/unions");
+		expect(steps).toContain(
+			'In src/lib/outlines/sets.ts, add this line to the section the note covers:\n       note: "unions",',
+		);
+		expect(steps).toContain("Remove draft: true from the note's header.");
+	});
+
+	it("reports the order for a course without an outline", () => {
+		const steps = noteNextSteps(request, { order: 2 });
+		expect(steps).toContain("Created notes/sets/unions.typ with order 2.");
+		expect(steps).toContain("http://localhost:5173/sets/unions");
+		expect(steps).not.toContain("src/lib/outlines");
 	});
 });

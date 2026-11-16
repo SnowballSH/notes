@@ -1,6 +1,5 @@
 <script lang="ts">
 import mathFont from "@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2?url";
-import { Link } from "foundationui/svelte";
 import AuthorNotice from "#lib/components/AuthorNotice.svelte";
 import BlockControls from "#lib/components/BlockControls.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
@@ -15,7 +14,12 @@ import { widgets } from "#lib/widgets/mount.ts";
 
 const { data } = $props();
 const note = $derived(data.note);
-const course = $derived(data.course);
+const { course, number, previous, next } = $derived(data.navigation);
+const trail = $derived([
+	{ label: siteName, href: "/" },
+	...(course ? [{ label: course.title, href: course.href }] : []),
+	...(number ? [{ label: number }] : []),
+]);
 </script>
 
 <svelte:head>
@@ -29,9 +33,7 @@ const course = $derived(data.course);
 	{@html `<style>${note.styles}</style>`}
 </svelte:head>
 
-<Breadcrumb
-	trail={[{ label: siteName, href: "/" }, ...(course ? [{ label: course.title, href: course.href }] : [])]}
-/>
+<Breadcrumb {trail} />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{note.meta.title}</h1>
 {#if note.meta.draft}
 	<p class="mt-2 text-sm text-ink-muted">Draft: shown while developing, left out of the published site.</p>
@@ -60,7 +62,4 @@ const course = $derived(data.course);
 	</article>
 {/key}
 
-<NoteNeighbours {...data.neighbours} />
-{#if course}
-	<p class="mt-8 text-sm"><Link href={course.href} subtle>Outline of {course.title}</Link></p>
-{/if}
+<NoteNeighbours {previous} {next} outline={course} />
