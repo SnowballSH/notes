@@ -10,7 +10,7 @@ import {
 
 const levels: Readonly<Record<string, number>> = { h2: 2, h3: 3 };
 
-function slug(text: string): string {
+export function slug(text: string): string {
 	const words = text
 		.normalize("NFKD")
 		.replace(/\p{M}+/gu, "")

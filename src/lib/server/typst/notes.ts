@@ -10,7 +10,7 @@ import type {
 	NoteRef,
 } from "#lib/notes/types.ts";
 import type { NoteStatus } from "#lib/outlines/contents.ts";
-import { compileHtml, queryOne, TypstError } from "./cli";
+import { compileHtml, readMetadata, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
 import {
 	linkNoteReferences,
@@ -51,8 +51,11 @@ export async function hasNote(ref: NoteRef): Promise<boolean> {
 }
 
 function parseMeta(value: unknown, file: string): NoteMeta {
+	if (value === null) {
+		throw new TypstError(`${file}: the note must start with #show: note.with(title: ..)`);
+	}
 	const { title, summary, order, draft } = value as Record<string, unknown>;
-	if (typeof title !== "string" || title === "") {
+	if (typeof title !== "string" || title.trim() === "") {
 		throw new TypstError(`${file}: the note needs a title`);
 	}
 	if (summary !== null && typeof summary !== "string") {
@@ -78,17 +81,9 @@ async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 	const modified = (await stat(file)).mtimeMs;
 	const cached = metaByFile.get(file);
 	if (cached?.modified === modified) return cached.meta;
-	const meta = queryOne(notesRoot, file, "<note-meta>")
-		.catch((cause: unknown) => {
-			if (!String(cause).includes("expected exactly one element")) throw cause;
-			throw new TypstError(
-				`${shownPath(ref)}: the note must start with #show: note.with(title: ..)`,
-				{
-					cause,
-				},
-			);
-		})
-		.then((value) => parseMeta(value, shownPath(ref)));
+	const meta = readMetadata(notesRoot, file, "note-meta").then((value) =>
+		parseMeta(value, shownPath(ref)),
+	);
 	metaByFile.set(file, { modified, meta });
 	meta.catch(() => metaByFile.delete(file));
 	return meta;
@@ -176,7 +171,12 @@ async function compile(ref: NoteRef): Promise<CompiledNote> {
 		compileHtml(notesRoot, file),
 		readMeta(ref),
 	]);
-	const refined = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, shownPath(ref)));
+	const { problems, ...refined } = refineNoteHtml(
+		extract(document, /<body>([\s\S]*)<\/body>/, shownPath(ref)),
+	);
+	if (problems.length > 0) {
+		throw new TypstError(problems.map((problem) => `${shownPath(ref)}: ${problem}`).join("\n"));
+	}
 	assertValidWidgets(refined.html, shownPath(ref));
 	return {
 		...ref,

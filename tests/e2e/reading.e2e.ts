@@ -150,8 +150,10 @@ test("a figure enlarges by click or from the keyboard, and Escape closes it", as
 	const enlarged = page.locator("dialog.figure-zoom img");
 	await expect(enlarged).toBeVisible();
 	expect((await enlarged.boundingBox())?.width).toBeGreaterThan(thumbnail);
+	await expect(page.getByRole("button", { name: "Close" })).toBeFocused();
 	await page.keyboard.press("Escape");
 	await expect(page.locator("dialog.figure-zoom")).toHaveCount(0);
+	await expect(image).toBeFocused();
 
 	await image.focus();
 	await page.keyboard.press("Enter");

@@ -19,16 +19,18 @@ import {
 /**
  * Typst gives a card an id only when the same note refers to it. The library wraps every
  * labelled card in a `div[data-label]`; the label becomes the card's id and the wrapper goes.
+ * Returns the labels, in order, repeats included.
  */
-export function adoptLabels(root: ParentNode): void {
-	for (const wrapper of elementsNamed(root, "div")) {
+export function adoptLabels(root: ParentNode): string[] {
+	return elementsNamed(root, "div").flatMap((wrapper) => {
 		const label = attribute(wrapper, "data-label");
 		const [card, ...others] = childElements(wrapper);
-		if (label === undefined || !card || others.length > 0) continue;
+		if (label === undefined || !card || others.length > 0) return [];
 		setAttribute(card, "id", label);
 		setAttribute(card, labelledMark, "");
 		replace(wrapper, card);
-	}
+		return [label];
+	});
 }
 
 const labelledMark = "data-labelled";
@@ -51,7 +53,7 @@ function cardName(card: Element): string | undefined {
 	return name ? textOf(name).trim() : undefined;
 }
 
-const idFrom = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+export const idFrom = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 function anchorTo(id: string, name: string): Element {
 	const anchor = createElement("a", { href: `#${id}`, "aria-label": `Link to ${name}` });

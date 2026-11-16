@@ -2,12 +2,17 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 export const phone = { width: 390, height: 800 } as const;
 
-const internalLink = /href="(\/[^"#?]*)"/g;
+const internalLink = /href="(\/(?!\/)[^"#?]*)["#?]/g;
+const sitemapAddress = /<loc>https?:\/\/[^/]+(\/[^<]*)<\/loc>/g;
 const isPage = (path: string): boolean => !path.startsWith("/_app/") && !/\.[a-z0-9]+$/.test(path);
 
-/** Every page of the built site, found by following its own links from the home page. */
+/** Every page of the built site: those the sitemap lists, and those its own links lead to. */
 export async function sitePages(request: APIRequestContext): Promise<string[]> {
-	const found = new Set(["/"]);
+	const sitemap = await (await request.get("/sitemap.xml")).text();
+	const found = new Set([
+		"/",
+		...[...sitemap.matchAll(sitemapAddress)].flatMap(([, path]) => path ?? []),
+	]);
 	for (const path of found) {
 		const html = await (await request.get(path)).text();
 		for (const [, href] of html.matchAll(internalLink)) {

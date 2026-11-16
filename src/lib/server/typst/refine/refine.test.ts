@@ -382,6 +382,22 @@ describe("anchors", () => {
 		expect(refineNoteHtml(html)).toContain('<section class="card card-theorem" id="theorem-1-2">');
 	});
 
+	it("reports labels that repeat or take the address of a section or a numbered card", () => {
+		const card = (kind: string, name: string, label?: string): string => {
+			const section = `<section class="card card-${kind}"><header><strong>${name}</strong></header></section>`;
+			return label === undefined ? section : `<div data-label="${label}">${section}</div>`;
+		};
+		const { problems } = refineNote(
+			`<h2>Parity</h2>${card("lemma", "Lemma 1", "dup")}${card("lemma", "Lemma 2", "dup")}${card("lemma", "Lemma 3", "parity")}${card("theorem", "Theorem 1", "theorem-2")}${card("theorem", "Theorem 2")}`,
+		);
+		expect(problems).toEqual([
+			"two cards have the label <dup>; give each card its own label",
+			'the label <parity> is also the address of the section "Parity"; rename the label',
+			"the label <theorem-2> is the address Theorem 2 gets on its own; rename the label",
+		]);
+		expect(refineNote(`<h2>Parity</h2>${card("lemma", "Lemma 1", "lem-a")}`).problems).toEqual([]);
+	});
+
 	it("lets a card's label win over a section heading with the same slug", () => {
 		const { html, headings, cards } = refineNote(
 			'<h2>Lemma A</h2><div data-label="lemma-a"><section class="card card-lemma"><header><strong>Lemma 1</strong></header></section></div>',
@@ -449,6 +465,11 @@ describe("references to other notes", () => {
 			wordlessReferencesInTitles(`<h2>After ${reference()}</h2><p>${reference()}</p>`),
 		).toEqual([{ note: "sets", target: "thm-a" }]);
 		expect(wordlessReferencesInTitles(`<h2>After ${reference("the bound")}</h2>`)).toEqual([]);
+		expect(
+			wordlessReferencesInTitles(
+				`<section><header>From <strong>${reference()}</strong></header></section>`,
+			),
+		).toHaveLength(1);
 	});
 
 	it("keeps the words the author gave", () => {

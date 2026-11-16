@@ -91,7 +91,7 @@ list shows a heading's plain text, so a formula in a section heading appears
 there as its bare symbols.
 
 On a narrow screen `src/lib/notes/equations.ts` sets a display equation that
-is up to 14% too wide slightly smaller, so that it shows whole. Wider ones
+is up to about a fifth too wide smaller, so that it shows whole. Wider ones
 scroll sideways.
 
 Every card also gets an id: its label if the author gave it one, otherwise its
