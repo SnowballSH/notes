@@ -355,7 +355,23 @@
 	color: var(--fui-accent-strong);
 }
 
-.note summary:focus-visible {
+.note .close-block {
+	display: block;
+	margin-left: auto;
+	padding: 0.25rem 0.625rem;
+	border: 1px solid var(--fui-line);
+	border-radius: var(--fui-radius-sm);
+	font-size: 0.875rem;
+	color: var(--fui-ink-secondary);
+	cursor: pointer;
+}
+
+.note .close-block:hover {
+	border-color: var(--fui-accent);
+	color: var(--fui-accent-strong);
+}
+
+.note :is(summary, .close-block):focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
 }

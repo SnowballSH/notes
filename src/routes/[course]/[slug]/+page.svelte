@@ -2,9 +2,11 @@
 import mathFont from "@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2?url";
 import { Link } from "foundationui/svelte";
 import AuthorNotice from "#lib/components/AuthorNotice.svelte";
+import BlockControls from "#lib/components/BlockControls.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
+import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
@@ -38,8 +40,18 @@ const course = $derived(data.course);
 	<AuthorNotice title="Typst left something out of this page" details={note.warnings} />
 {/if}
 
+{#if note.html.includes("<details")}
+	<BlockControls container="article.note" />
+{/if}
+
 {#key note.html}
-	<article class="note mt-8" {@attach widgets} {@attach prepareForPrint}>
+	<article
+		class="note mt-6"
+		{@attach widgets}
+		{@attach rememberBlocks}
+		{@attach closableBlocks}
+		{@attach prepareForPrint}
+	>
 		{@html note.html}
 	</article>
 {/key}

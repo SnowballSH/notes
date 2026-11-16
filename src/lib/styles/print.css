@@ -1,6 +1,7 @@
 @media print {
 	body > div > :is(header, footer),
-	main nav {
+	main nav,
+	.note .close-block {
 		display: none;
 	}
 
