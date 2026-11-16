@@ -14,6 +14,7 @@ Hosting is documented in [`README.md`](README.md).
 | `pnpm run lint` | Check formatting and lint with Biome |
 | `pnpm run format` | Format and apply safe lint fixes |
 | `pnpm run test` | Run the unit tests with Vitest |
+| `pnpm run test:e2e` | Build the site and check it in Chromium and Firefox with Playwright |
 | `pnpm run build` | Static production build to `build/` |
 | `pnpm run new:note <course> <slug> <title...>` | Create `notes/<course>/<slug>.typ` from a template |
 | `pnpm run new:widget <name>` | Create a widget in `src/lib/widgets/<name>/`; see [`docs/widgets.md`](docs/widgets.md) |
