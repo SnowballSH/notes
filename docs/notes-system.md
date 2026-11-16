@@ -76,10 +76,17 @@ removes.
 
 The same pass gives every second- and third-level heading an id made from its
 text, unique on the page, and returns the headings. A note with at least two
-of them lists them under "On this page": below the title on a narrow window,
-and pinned beside the text on a wide one. The section being read is marked.
-The list shows a heading's plain text, so a formula in a section heading
-appears there as its bare symbols.
+of them lists them as "On this page": pinned beside the text on a wide window,
+below the title on a medium one, and behind a "Contents" button in the corner
+on a phone, where the list would fill the first screen. The button is there on
+every window too narrow for the pinned list, so the sections and the top of
+the page are one tap away from anywhere. The section being read is marked. The
+list shows a heading's plain text, so a formula in a section heading appears
+there as its bare symbols.
+
+On a narrow screen `src/lib/notes/equations.ts` sets a display equation that
+is up to 14% too wide slightly smaller, so that it shows whole. Wider ones
+scroll sideways.
 
 ## Courses and navigation
 

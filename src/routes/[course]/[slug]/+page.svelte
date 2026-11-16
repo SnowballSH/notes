@@ -7,6 +7,7 @@ import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
+import { fitEquations } from "#lib/notes/equations.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
 import { referencePreviews } from "#lib/notes/references.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
@@ -52,6 +53,7 @@ const course = $derived(data.course);
 		{@attach rememberBlocks}
 		{@attach closableBlocks}
 		{@attach referencePreviews}
+		{@attach fitEquations}
 		{@attach prepareForPrint}
 	>
 		{@html note.html}
