@@ -75,6 +75,25 @@ removes.
 Known gap: Typst 0.15 drops `overline` and `underline` in HTML export, so they
 do not appear on the site.
 
+## Courses and navigation
+
+A course is a directory of notes. `src/lib/site/courses.ts` registers each
+course with its outline, its category and the page that introduces it; the
+home page and that page both read from the registry. A note page takes its
+breadcrumb and its link back to the outline from the registry, and its
+previous and next links from the other notes in the same directory, in the
+order of their `order` metadata. Two notes of a course may not share an
+`order`. A course that is not registered still gets its pages and its previous
+and next links, with a breadcrumb that leads only to the home page.
+
+`courses.test.ts` checks that the notes linked from each outline are exactly
+the notes of the course, in reading order, so the outline's numbering and the
+previous and next links cannot drift apart.
+
+`src/lib/site/title.ts` builds every document title as page, then course, then
+site name. `src/routes/+error.svelte` is the page for an address that does not
+exist.
+
 ## Editor preview
 
 `.vscode/settings.json` points tinymist at `notes/` as the Typst root and
@@ -113,7 +132,7 @@ whole number of pixels on the 320px board.
 
 ## Not built yet
 
-- Course index pages, a table of contents, and previous/next links.
+- Course index pages generated from the notes, and a table of contents.
 - Hover previews for references, and references between notes.
 - Code block colours that follow the theme: Typst emits fixed light-theme
   colours.
