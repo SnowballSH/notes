@@ -31,14 +31,15 @@ content and structure, not the site's styling.
    pnpm run new:note <course> <slug> The title of the note
    ```
 
-   It writes `notes/<course>/<slug>.typ` as a draft and prints the next two
-   steps. Names are lowercase words joined by hyphens. The header it writes:
+   It writes `notes/<course>/<slug>.typ` as a draft and prints the next
+   steps. Names are lowercase words joined by hyphens, and the course must
+   exist already. The header it writes:
 
    ```typst
    #import "/lib/notes.typ": *
    #show: note.with(
      title: "The title of the note",
-     summary: "One sentence, shown to search engines.",
+     summary: "One sentence that says what this note covers, for search engines.",
      draft: true,
    )
    ```
@@ -47,13 +48,16 @@ content and structure, not the site's styling.
    `note: "<slug>"` to the section it covers. The outline is the only place
    that orders a course. It decides the note's number (the second section of
    the first part is 1.2), its link on the outline and home pages, and its
-   previous and next links.
-3. Remove `draft: true` from the header to publish.
+   previous and next links. Give the note and its section the same title:
+   the page shows the note's, and the links to it show the section's.
+3. Write the note's `summary`, then remove `draft: true` from the header to
+   publish.
 
 `pnpm run test` and the build fail, saying which line to add or remove in
 which file, when a published note is in no section of the outline, when a
-section names a note that does not exist, or when two sections name the same
-note.
+section names a note that does not exist, when two sections name the same
+note, when a note and its section have different titles, or when a published
+note still has the summary it was created with.
 
 ## Keep a note unpublished
 
@@ -90,8 +94,10 @@ Things to know:
   inline formula breaks after `=` and similar relations; keep very long
   formulas in display equations.
 - `grid` is dropped by HTML export; use `gallery`. `overline`, `underline`
-  inside math, `line` and equation numbers are dropped too. The build tells
-  you when an element was left out.
+  inside math and `line` are dropped too, and the build tells you when an
+  element was left out. Equation numbers are dropped without a warning: a
+  reference says "Equation 1" but no equation shows a number, so do not number
+  equations.
 
 ## Start a course
 

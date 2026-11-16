@@ -11,11 +11,13 @@ let query = $state("");
 let active = $state(0);
 let entries = $state<SearchEntry[]>();
 let failed = $state(false);
+let list = $state<HTMLElement>();
 
 const results = $derived(entries ? search(entries, query) : []);
 
 async function load(): Promise<void> {
 	if (entries) return;
+	failed = false;
 	try {
 		const response = await fetch("/search.json");
 		if (!response.ok) throw new Error(`search index: ${response.status}`);
@@ -24,6 +26,18 @@ async function load(): Promise<void> {
 		failed = true;
 	}
 }
+
+const status = $derived.by(() => {
+	if (failed) return "The search index could not be loaded.";
+	if (!entries) return "Loading...";
+	if (query.trim() === "") return "";
+	if (results.length === 0) return "Nothing matches.";
+	return results.length === 1 ? "1 result" : `${results.length} results`;
+});
+
+$effect(() => {
+	list?.querySelectorAll("a")[active]?.scrollIntoView({ block: "nearest" });
+});
 
 function show(): void {
 	query = "";
@@ -66,7 +80,7 @@ function onResultKey(event: KeyboardEvent): void {
 	Search
 </button>
 
-<Dialog bind:open title="Search the notes" class="search-dialog">
+<Dialog bind:open title="Search the notes">
 	<Input
 		type="search"
 		placeholder="A theorem, a definition, a section..."
@@ -76,12 +90,8 @@ function onResultKey(event: KeyboardEvent): void {
 		oninput={() => (active = 0)}
 		onkeydown={onResultKey}
 	/>
-	{#if failed}
-		<p class="status">The search index could not be loaded.</p>
-	{:else if query.trim() !== "" && entries && results.length === 0}
-		<p class="status">Nothing matches.</p>
-	{/if}
-	<ul class="results" aria-label="Results">
+	<p class="status" role="status">{status}</p>
+	<ul class="results" aria-label="Results" bind:this={list}>
 		{#each results as result, index (result.href)}
 			<li>
 				<a
@@ -119,6 +129,7 @@ function onResultKey(event: KeyboardEvent): void {
 	outline-offset: 2px;
 }
 .status {
+	min-height: 1.25rem;
 	margin-top: 0.75rem;
 	font-size: 0.875rem;
 	color: var(--fui-ink-muted);

@@ -1,4 +1,5 @@
 import type { Attachment } from "svelte/attachments";
+import { blocksIn } from "./blocks.ts";
 
 /**
  * A printout should show every proof, on white paper. Collapsed blocks open and the light
@@ -9,7 +10,7 @@ export const prepareForPrint: Attachment = (container) => {
 	let opened: HTMLDetailsElement[] = [];
 	let theme: string | undefined;
 	const prepare = () => {
-		const closed = [...container.querySelectorAll<HTMLDetailsElement>("details:not([open])")];
+		const closed = blocksIn(container).filter((block) => !block.open);
 		for (const details of closed) details.open = true;
 		opened = [...opened, ...closed];
 		theme ??= page.dataset.theme;

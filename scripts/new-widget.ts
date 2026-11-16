@@ -3,8 +3,11 @@ import { alreadyExists, runCommand, UsageError } from "./scaffold/cli.ts";
 import { widgetNameProblem, widgetScaffold } from "./scaffold/widget.ts";
 
 await runCommand(async () => {
-	const [name] = process.argv.slice(2);
-	const problem = widgetNameProblem(name);
+	const [name, ...extra] = process.argv.slice(2);
+	const problem =
+		extra.length > 0
+			? `a widget has one name: did you mean ${[name, ...extra].join("-")}?`
+			: widgetNameProblem(name);
 	if (name === undefined || problem !== undefined) {
 		throw new UsageError(`${problem}\nUsage: pnpm run new:widget <name>`);
 	}

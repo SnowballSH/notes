@@ -1,6 +1,16 @@
 import { componentName, isWidgetName } from "../../src/lib/widgets/names.ts";
 import { widgetUsage } from "../../src/lib/widgets/usage.ts";
 
+const sharedFiles = new Set([
+	"contract",
+	"mount",
+	"names",
+	"props",
+	"registry",
+	"usage",
+	"widget-frame",
+]);
+
 export interface ScaffoldFile {
 	path: string;
 	content: string;
@@ -72,6 +82,9 @@ export function widgetNameProblem(name: string | undefined): string | undefined 
 	if (name === undefined) return "give the widget a name, such as demo-counter";
 	if (!isWidgetName(name)) {
 		return `"${name}" is not a widget name: use lowercase words joined by hyphens, starting with a letter`;
+	}
+	if (sharedFiles.has(name)) {
+		return `"${name}" is the name of a file every widget shares in src/lib/widgets; choose another`;
 	}
 	return undefined;
 }

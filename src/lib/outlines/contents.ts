@@ -31,6 +31,8 @@ export interface OutlinedCourse {
 export interface NoteStatus {
 	slug: string;
 	draft: boolean;
+	/** The title in the note's header, when known, to check against its section's. */
+	title?: string;
 }
 
 export interface ContentsOptions {
@@ -67,7 +69,7 @@ export function outlineProblems(
 	notes: readonly NoteStatus[],
 ): string[] {
 	const file = outlineFile(course);
-	const existing = new Set(notes.map((note) => note.slug));
+	const existing = new Map(notes.map((note) => [note.slug, note]));
 	const sections = numberedSections(outline);
 	const namedBy = new Map<string, string>();
 
@@ -78,7 +80,11 @@ export function outlineProblems(
 			return `${file}: sections ${earlier} and ${number} both name the note "${note}"; name it in one section only`;
 		}
 		namedBy.set(note, number);
-		if (existing.has(note)) return [];
+		const found = existing.get(note);
+		if (found?.title !== undefined && found.title.toLowerCase() !== title.toLowerCase()) {
+			return `notes/${course}/${note}.typ is titled "${found.title}", but section ${number} of ${file} is titled "${title}"; give them the same title, since the note shows one and the links to it show the other`;
+		}
+		if (found) return [];
 		return `${file}: section ${number} "${title}" names the note "${note}", but notes/${course}/${note}.typ does not exist; create it with pnpm run new:note ${course} ${note} <title>, or remove note: "${note}" from the section`;
 	});
 

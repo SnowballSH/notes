@@ -44,11 +44,10 @@ const trail = $derived([
 	<AuthorNotice title="Typst left something out of this page" details={note.warnings} />
 {/if}
 
-{#if note.html.includes("<details")}
-	<BlockControls container="article.note" />
-{/if}
-
 {#key note.html}
+	{#if note.html.includes("<details")}
+		<BlockControls container="article.note" />
+	{/if}
 	<article
 		class="note mt-6"
 		{@attach widgets}

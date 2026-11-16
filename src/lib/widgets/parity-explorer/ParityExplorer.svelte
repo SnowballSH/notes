@@ -59,12 +59,12 @@ const dot = $derived(selected % 2);
 	font-family: var(--fui-font-mono);
 }
 .name {
-	min-width: 2.25rem;
+	min-width: 2.75rem;
 	color: var(--fui-ink-secondary);
 }
 button {
-	width: 2.25rem;
-	height: 2.25rem;
+	width: 2.75rem;
+	height: 2.75rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-sm);
 	background: transparent;

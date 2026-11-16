@@ -9,6 +9,7 @@ function referenced(link: HTMLAnchorElement, container: Element): HTMLElement | 
 	const id = decodeURIComponent(link.hash.slice(1));
 	const target = id === "" ? null : document.getElementById(id);
 	if (!(target instanceof HTMLElement) || !container.contains(target)) return undefined;
+	if (target.contains(link)) return undefined;
 	if (target.matches(".card, figure")) return target;
 	return target.closest<HTMLElement>(".equation") ?? undefined;
 }

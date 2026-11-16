@@ -3,6 +3,11 @@ import { nextOrder, noteNextSteps, notePath, noteRequestProblem, noteSource } fr
 import { widgetNameProblem, widgetScaffold } from "./widget";
 
 describe("widgetNameProblem", () => {
+	it("refuses a name that would sit beside a shared file of the same name", () => {
+		expect(widgetNameProblem("widget-frame")).toContain("every widget shares");
+		expect(widgetNameProblem("contract")).toContain("every widget shares");
+	});
+
 	it("accepts lowercase words joined by hyphens", () => {
 		expect(widgetNameProblem("demo-counter")).toBeUndefined();
 	});
@@ -69,8 +74,7 @@ describe("noteSource", () => {
 		const source = noteSource('The "fast" transform', { order: 3 });
 		expect(source).toMatch(/^#import "\/lib\/notes\.typ": \*\n#show: note\.with\(\n/);
 		expect(source).toContain('  title: "The \\"fast\\" transform",\n');
-		expect(source).toContain("  order: 3,\n");
-		expect(source).not.toContain("draft");
+		expect(source).toContain("  order: 3,\n  draft: true,\n)\n");
 		expect(nextOrder([source])).toBe(4);
 	});
 
@@ -97,12 +101,14 @@ describe("noteNextSteps", () => {
 		expect(steps).toContain(
 			'In src/lib/outlines/sets.ts, add this line to the section the note covers:\n       note: "unions",',
 		);
-		expect(steps).toContain("Remove draft: true from the note's header.");
+		expect(steps).toContain("Write the note's summary in its header.");
+		expect(steps).toContain("Remove draft: true from the header.");
 	});
 
 	it("reports the order for a course without an outline", () => {
 		const steps = noteNextSteps(request, { order: 2 });
-		expect(steps).toContain("Created notes/sets/unions.typ with order 2.");
+		expect(steps).toContain("Created notes/sets/unions.typ as a draft with order 2");
+		expect(steps).toContain("remove draft: true");
 		expect(steps).toContain("http://localhost:5173/sets/unions");
 		expect(steps).not.toContain("src/lib/outlines");
 	});

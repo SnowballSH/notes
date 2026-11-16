@@ -1,4 +1,5 @@
 import { isName } from "../../src/lib/notes/names.ts";
+import { placeholderSummary } from "../../src/lib/notes/template.ts";
 import { typstString } from "../../src/lib/notes/typst.ts";
 
 export interface NoteRequest {
@@ -8,6 +9,13 @@ export interface NoteRequest {
 }
 
 const libraryDirectory = "lib";
+
+/** Why a note cannot go in a course that has neither an outline nor a directory yet. */
+export function unknownCourseProblem(course: string, known: readonly string[]): string {
+	const courses =
+		known.length > 0 ? `the courses are ${known.join(", ")}` : "there are no courses yet";
+	return `there is no course "${course}": ${courses}. To start one, see "Start a course" in docs/writing-notes.md, or pass --new-course to create notes/${course}/ now`;
+}
 
 export function noteRequestProblem(
 	course: string | undefined,
@@ -45,12 +53,13 @@ export const notePath = ({ course, slug }: Pick<NoteRequest, "course" | "slug">)
 export type NotePlacement = { outline: string } | { order: number };
 
 export function noteSource(title: string, placement: NotePlacement): string {
-	const placementLine = "order" in placement ? `order: ${placement.order},` : "draft: true,";
+	const placementLines =
+		"order" in placement ? `order: ${placement.order},\n  draft: true,` : "draft: true,";
 	return `#import "/lib/notes.typ": *
 #show: note.with(
   title: ${typstString(title)},
-  summary: "One sentence that says what this note covers, for search engines.",
-  ${placementLine}
+  summary: ${typstString(placeholderSummary)},
+  ${placementLines}
 )
 
 Open with a sentence or two on what this note is about.
@@ -73,12 +82,14 @@ export function noteNextSteps(request: NoteRequest, placement: NotePlacement): s
 	const path = notePath(request);
 	const address = `Read it with pnpm run dev at:\n  http://localhost:5173/${request.course}/${request.slug}`;
 	if ("order" in placement) {
-		return `Created ${path} with order ${placement.order}.
+		return `Created ${path} as a draft with order ${placement.order}: pnpm run dev serves it, and the published site leaves it out.
 
 ${address}
 
 The course has no outline, so its previous and next links follow order.
-"Start a course" in docs/writing-notes.md says how to give it one.`;
+"Start a course" in docs/writing-notes.md says how to give it one.
+
+To publish it, write its summary and remove draft: true from its header.`;
 	}
 	return `Created ${path} as a draft: pnpm run dev serves it, and the published site leaves it out.
 
@@ -87,5 +98,6 @@ ${address}
 To publish it:
   1. In ${placement.outline}, add this line to the section the note covers:
        note: "${request.slug}",
-  2. Remove draft: true from the note's header.`;
+  2. Write the note's summary in its header.
+  3. Remove draft: true from the header.`;
 }
