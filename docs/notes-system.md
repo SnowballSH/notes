@@ -96,6 +96,16 @@ previous and next links cannot drift apart.
 site name. `src/routes/+error.svelte` is the page for an address that does not
 exist.
 
+## Collapsible blocks
+
+`src/lib/notes/blocks.ts` keeps, for the browser session, which proofs and
+other collapsible blocks the reader opened on each page, and reopens them when
+the reader comes back or the page reloads; after a reload it also puts the
+scroll position back, which the reopened proofs would otherwise shift. That
+covers the reload `pnpm run dev` does on every save. An open block taller than
+most of the window gets a button at its end to close it, and a button above
+the note opens or closes them all.
+
 ## Printing
 
 `src/lib/styles/print.css` drops the site header, footer and navigation, and
