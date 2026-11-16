@@ -8,6 +8,8 @@
 }
 
 .note {
+	--note-surface: var(--fui-surface-base);
+	--note-gutter: 0rem;
 	color: var(--fui-ink);
 	line-height: var(--fui-leading-prose);
 }
@@ -72,6 +74,17 @@
 .note math {
 	font-family: "STIX Two Math", math;
 	font-size: 1.1em;
+	white-space: nowrap;
+}
+
+.note .nobreak {
+	white-space: nowrap;
+}
+
+/* Small enough to sit over one letter, and raised to clear the dot of an i. */
+.note mo.vector-arrow[stretchy="false"] {
+	padding-bottom: 0.1em;
+	font-size: 0.6em;
 }
 
 .note [id] {
@@ -103,20 +116,44 @@
 	text-align: center;
 }
 
-.note math[display="block"] {
-	max-width: 100%;
-	margin-block: 0.75rem;
+/*
+ * A wide equation scrolls inside its wrapper. The shadows mark an edge that hides more of
+ * it: the first two layers move with the content and cover the shadow at whichever end
+ * has been reached. On a phone the wrapper reaches into the gutter beside it, so that an
+ * equation a few pixels too wide is still shown whole.
+ */
+.note .equation {
+	--edge-shade: color-mix(in srgb, var(--fui-ink) 20%, transparent);
+	max-width: calc(100% + 2 * var(--note-gutter));
+	margin-inline: calc(-1 * var(--note-gutter));
+	padding: 0.25rem var(--note-gutter);
 	overflow-x: auto;
+	background:
+		linear-gradient(to right, var(--note-surface) 0.75rem, transparent) left / 1.5rem 100% no-repeat
+		local,
+		linear-gradient(to left, var(--note-surface) 0.75rem, transparent) right / 1.5rem 100% no-repeat
+		local,
+		linear-gradient(to right, var(--edge-shade), transparent) left / 0.75rem calc(100% - 0.5rem)
+		no-repeat scroll,
+		linear-gradient(to left, var(--edge-shade), transparent) right / 0.75rem calc(100% - 0.5rem)
+		no-repeat scroll;
+}
+
+.note .equation > math {
+	width: max-content;
+	min-width: 100%;
 }
 
 .note .card {
 	padding: 1rem 1.25rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-md);
-	background: var(--fui-surface-raised);
+	--note-surface: var(--fui-surface-raised);
+	background: var(--note-surface);
 }
 
 .note .card-remark {
+	--note-surface: var(--fui-surface-base);
 	padding-inline: 0;
 	border: 0;
 	background: none;
@@ -164,6 +201,19 @@
 }
 
 @media (max-width: 40rem) {
+	.note {
+		--note-gutter: 1rem;
+	}
+
+	.note .card:not(.card-remark) {
+		--note-gutter: 0.875rem;
+		padding-inline: var(--note-gutter);
+	}
+
+	.note .equation > math {
+		font-size: 1em;
+	}
+
 	.note .gallery {
 		grid-template-columns: repeat(min(var(--columns), 2), minmax(0, 1fr));
 	}
