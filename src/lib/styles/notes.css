@@ -228,6 +228,17 @@
 	white-space: nowrap;
 }
 
+/* Inline math is an inline box, so the spacing between stacked blocks must not reach it. */
+.note :is(.card, details, li, notes-widget) > math {
+	margin-top: 0;
+}
+
+/* Chromium sets a fraction flush against the symbol after it, and ignores a margin here. */
+.note mfrac {
+	margin-inline: 0;
+	padding-inline: 0.1em;
+}
+
 .note .nobreak {
 	white-space: nowrap;
 }
@@ -254,6 +265,15 @@
 
 .note math mtable.multiline-equation mtable:not(.cases, .aligned) > mtr > mtd {
 	padding-inline: 0.4em;
+}
+
+/* The brackets of a matrix already stand clear of its entries. */
+.note math mtable:not(.cases, .aligned, .multiline-equation) > mtr > mtd:first-child {
+	padding-inline-start: 0.1em;
+}
+
+.note math mtable:not(.cases, .aligned, .multiline-equation) > mtr > mtd:last-child {
+	padding-inline-end: 0.1em;
 }
 
 /* Likewise its left/right column alignment reaches into nested matrices, which should stay centred. */

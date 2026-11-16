@@ -187,6 +187,28 @@ export function splitLongInlineMath(root: ParentNode): void {
 	}
 }
 
+const lettersWithTails = new Set(
+	"fgjpqy\u03b2\u03b3\u03b6\u03b7\u03bc\u03be\u03c1\u03c6\u03c7\u03c8",
+);
+
+const hasTail = (element: Element): boolean =>
+	element.tagName === "mi" && lettersWithTails.has(textOf(element).normalize("NFKD"));
+
+/**
+ * A subscript is placed below the lowest point of its base, so the tail of a letter such as
+ * gamma, chi or f pushes its subscript down and away from it. Such a base is treated as
+ * having no depth, which sets its subscript where the subscript of an x would go.
+ */
+export function tuckSubscriptsUnderTails(root: ParentNode): void {
+	for (const script of elementsNamed(root, "msub", "msubsup")) {
+		const [base] = childElements(script);
+		if (!base || !hasTail(base)) continue;
+		const flat = createMathElement("mpadded", { depth: "0" });
+		replace(base, flat);
+		append(flat, base);
+	}
+}
+
 /** Firefox does not scroll a math element, so each display equation gets a wrapper that can. */
 export function wrapDisplayEquations(root: ParentNode): void {
 	for (const math of elementsNamed(root, "math").filter((math) => !isInline(math))) {
@@ -198,6 +220,7 @@ export function refineMath(root: ParentNode): void {
 	useSpacingAccents(root);
 	setPrimesBesideBase(root);
 	fixFencesAroundShortContent(root);
+	tuckSubscriptsUnderTails(root);
 	splitLongInlineMath(root);
 	wrapDisplayEquations(root);
 }

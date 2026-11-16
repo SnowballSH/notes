@@ -92,6 +92,29 @@ describe("primes", () => {
 	});
 });
 
+describe("subscripts", () => {
+	const flat = (letter: string): string => `<mpadded depth="0"><mi>${letter}</mi></mpadded>`;
+
+	it("sets the subscript of a letter with a tail as it would for a letter without one", () => {
+		expect(refineNoteHtml(math("<msub><mi>\u{1d6fe}</mi><mi>n</mi></msub>"))).toBe(
+			math(`<msub>${flat("\u{1d6fe}")}<mi>n</mi></msub>`),
+		);
+		expect(refineNoteHtml(math("<msubsup><mi>\u{1d453}</mi><mn>0</mn><mn>2</mn></msubsup>"))).toBe(
+			math(`<msubsup>${flat("\u{1d453}")}<mn>0</mn><mn>2</mn></msubsup>`),
+		);
+	});
+
+	it("leaves letters without a tail, groups and superscripts alone", () => {
+		for (const formula of [
+			math("<msub><mi>\u{1d43b}</mi><mn>1</mn></msub>"),
+			math("<msub><mrow><mi>\u{1d6fe}</mi><mi>x</mi></mrow><mn>1</mn></msub>"),
+			math("<msup><mi>\u{1d6fe}</mi><mn>2</mn></msup>"),
+		]) {
+			expect(refineNoteHtml(formula)).toBe(formula);
+		}
+	});
+});
+
 describe("fences", () => {
 	it("stops a bracket around short content from stretching", () => {
 		expect(refineNoteHtml(math("<mi>f</mi><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow>"))).toBe(
