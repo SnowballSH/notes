@@ -110,12 +110,13 @@ function assertKnownWidgets(html: string, file: string): void {
 export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const [document, meta] = await Promise.all([compileHtml(notesRoot, file), readMeta(ref)]);
-	const html = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
+	const { html, headings } = refineNoteHtml(extract(document, /<body>([\s\S]*)<\/body>/, file));
 	assertKnownWidgets(html, file);
 	return {
 		...ref,
 		meta,
 		html,
+		headings,
 		styles: /<style>([\s\S]*?)<\/style>/.exec(document)?.[1] ?? "",
 	};
 }

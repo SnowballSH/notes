@@ -131,8 +131,8 @@ async function move(by: 1 | -1): Promise<void> {
 	text-align: center;
 }
 button {
-	width: 2.25rem;
-	height: 2.25rem;
+	width: 2.75rem;
+	height: 2.75rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-sm);
 	background: transparent;
@@ -156,6 +156,7 @@ button:focus-visible {
 	overflow: hidden;
 	border: 1px solid var(--fui-line);
 	background: white;
+	filter: var(--note-figure-filter, none);
 }
 canvas {
 	position: absolute;

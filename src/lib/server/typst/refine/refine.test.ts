@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { refineNoteHtml } from "./index";
+import { refineNoteHtml as refineNote } from "./index";
+
+const refineNoteHtml = (html: string): string => refineNote(html).html;
 
 const math = (inner: string): string => `<math>${inner}</math>`;
 const display = (inner: string): string => `<math display="block">${inner}</math>`;
@@ -270,6 +272,49 @@ describe("display equations", () => {
 	});
 });
 
+describe("headings", () => {
+	it("gives each section heading an id made from its text", () => {
+		const { html, headings } = refineNote("<h2>Hadamard Matrix</h2><h3>The $2^n$ case!</h3>");
+		expect(html).toBe(
+			'<h2 id="hadamard-matrix">Hadamard Matrix</h2><h3 id="the-2-n-case">The $2^n$ case!</h3>',
+		);
+		expect(headings).toEqual([
+			{ id: "hadamard-matrix", text: "Hadamard Matrix", level: 2 },
+			{ id: "the-2-n-case", text: "The $2^n$ case!", level: 3 },
+		]);
+	});
+
+	it("keeps ids unique among headings and against ids anywhere in the note", () => {
+		const { headings } = refineNote(
+			'<h2>Proof</h2><h2>Proof</h2><h2>Lemma</h2><section id="lemma"></section><h2 id="own">Kept</h2>',
+		);
+		expect(headings.map((heading) => heading.id)).toEqual(["proof", "proof-2", "lemma-2", "own"]);
+	});
+
+	it("keeps letters of any script and falls back when a heading has none", () => {
+		const { headings } = refineNote(
+			"<h2>Na\u00efve bound</h2><h2>\u0394\u03bf\u03ba\u03b9\u03bc\u03ae</h2><h2>\u2211</h2><h2>\u220f</h2>",
+		);
+		expect(headings.map((heading) => heading.id)).toEqual([
+			"naive-bound",
+			"\u03b4\u03bf\u03ba\u03b9\u03bc\u03b7",
+			"section",
+			"section-2",
+		]);
+	});
+
+	it("leaves deeper headings out", () => {
+		const { html, headings } = refineNote("<h4>Deep</h4>");
+		expect(html).toBe("<h4>Deep</h4>");
+		expect(headings).toEqual([]);
+	});
+
+	it("reads the text of a heading that holds a formula", () => {
+		const { headings } = refineNote(`<h2>Order ${math("<mi>n</mi>")} matrices</h2>`);
+		expect(headings).toEqual([{ id: "order-n-matrices", text: "Order n matrices", level: 2 }]);
+	});
+});
+
 describe("unrelated markup", () => {
 	it("keeps a code block that starts with a blank line", () => {
 		const code = "<pre><code>\n\nfirst</code></pre>";
@@ -278,7 +323,7 @@ describe("unrelated markup", () => {
 
 	it("is returned unchanged", () => {
 		const html =
-			'<h2>Title</h2><details class="proof"><summary><strong>Proof</strong></summary><p>Text &amp; more <a href="#x">link</a>.</p></details><notes-widget name="w" props="{&quot;a&quot;:1}">fallback</notes-widget>';
+			'<details class="proof"><summary><strong>Proof</strong></summary><p>Text &amp; more <a href="#x">link</a>.</p></details><notes-widget name="w" props="{&quot;a&quot;:1}">fallback</notes-widget>';
 		expect(refineNoteHtml(html)).toBe(html);
 	});
 });
