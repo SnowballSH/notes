@@ -16,6 +16,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
 		"lint": "biome check .",
 		"test": "vitest run",
+		"test:e2e": "playwright test",
 		"format": "biome check --write .",
 		"new:note": "node scripts/new-note.ts",
 		"new:widget": "node scripts/new-widget.ts"
@@ -27,7 +28,9 @@
 		"foundationui": "https://github.com/SnowballSH/foundationui/releases/download/v0.5.5/foundationui-0.5.5.tgz"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.14.0",
 		"@biomejs/biome": "2.5.14",
+		"@playwright/test": "1.65.1",
 		"@sveltejs/adapter-static": "4.0.1",
 		"@sveltejs/kit": "3.2.0",
 		"@sveltejs/vite-plugin-svelte": "7.3.1",

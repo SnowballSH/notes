@@ -241,6 +241,20 @@ the step being played. The left and right arrow keys move like the buttons
 while either button has focus. Each caption is short enough to stay on one
 line at a window width of 320px, which the reserved height relies on.
 
+## Tests
+
+`pnpm run test` runs the unit tests: each rule of the HTML repair pass, the
+outline logic, search matching, the widget contract and the scaffolds.
+
+`pnpm run test:e2e` builds the site, serves it, and checks it in Chromium and
+Firefox (`tests/e2e/`): every page loads without errors, never scrolls
+sideways and passes the axe accessibility checks in both themes; opened
+proofs survive a reload; a reference previews its target; search reaches a
+named theorem; the widget loads without moving the page; on a phone the note
+starts on the first screen and every equation fits or scrolls on its own.
+It needs the browsers once: `pnpm exec playwright install chromium firefox`.
+CI runs it on every pull request.
+
 ## Not built yet
 
 - A helper for references between notes that checks the target and writes its
