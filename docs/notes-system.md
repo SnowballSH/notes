@@ -48,7 +48,8 @@ nor a directory unless `--new-course` is given.
 4. `src/lib/styles/notes.css` styles the compiled markup. Math is native
    MathML set in STIX Two Math, so pages need no math JavaScript.
 
-`pnpm run dev` reloads the page when a `.typ` file changes. While developing,
+`pnpm run dev` reloads the page when a file under `notes/` is saved, added or
+removed. While developing,
 a Typst error is shown on the page in place of the note, and a Typst warning
 is shown in a notice above it.
 
