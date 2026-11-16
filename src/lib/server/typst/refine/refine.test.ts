@@ -298,9 +298,8 @@ describe("display equations", () => {
 describe("headings", () => {
 	it("gives each section heading an id made from its text", () => {
 		const { html, headings } = refineNote("<h2>Hadamard Matrix</h2><h3>The $2^n$ case!</h3>");
-		expect(html).toBe(
-			'<h2 id="hadamard-matrix">Hadamard Matrix</h2><h3 id="the-2-n-case">The $2^n$ case!</h3>',
-		);
+		expect(html).toContain('<h2 id="hadamard-matrix">Hadamard Matrix');
+		expect(html).toContain('<h3 id="the-2-n-case">The $2^n$ case!');
 		expect(headings).toEqual([
 			{ id: "hadamard-matrix", text: "Hadamard Matrix", level: 2 },
 			{ id: "the-2-n-case", text: "The $2^n$ case!", level: 3 },
@@ -335,6 +334,48 @@ describe("headings", () => {
 	it("reads the text of a heading that holds a formula", () => {
 		const { headings } = refineNote(`<h2>Order ${math("<mi>n</mi>")} matrices</h2>`);
 		expect(headings).toEqual([{ id: "order-n-matrices", text: "Order n matrices", level: 2 }]);
+	});
+});
+
+describe("anchors", () => {
+	const anchor = (id: string, name: string): string =>
+		` <a href="#${id}" aria-label="Link to ${name}" class="anchor">#</a>`;
+
+	it("names an unlabelled card after its kind and number, and links to it", () => {
+		expect(
+			refineNoteHtml(
+				'<section class="card card-theorem"><header><strong>Theorem 3</strong> (Name)</header><p>Text</p></section>',
+			),
+		).toBe(
+			`<section class="card card-theorem" id="theorem-3"><header><strong>Theorem 3</strong> (Name)${anchor("theorem-3", "Theorem 3")}</header><p>Text</p></section>`,
+		);
+	});
+
+	it("keeps the label the author gave a card", () => {
+		expect(
+			refineNoteHtml(
+				'<details class="card card-lemma" id="lem-a"><summary><strong>Lemma 1</strong></summary>Text</details>',
+			),
+		).toBe(
+			`<details class="card card-lemma" id="lem-a"><summary><strong>Lemma 1</strong>${anchor("lem-a", "Lemma 1")}</summary>Text</details>`,
+		);
+	});
+
+	it("does not reuse an id that is already on the page", () => {
+		const html =
+			'<p id="theorem-1"></p><section class="card card-theorem"><header><strong>Theorem 1</strong></header></section>';
+		expect(refineNoteHtml(html)).toBe(html);
+	});
+
+	it("links to a section heading without changing its listed text", () => {
+		const { html, headings } = refineNote("<h2>Parity</h2>");
+		expect(html).toBe(`<h2 id="parity">Parity${anchor("parity", "the section Parity")}</h2>`);
+		expect(headings).toEqual([{ id: "parity", text: "Parity", level: 2 }]);
+	});
+
+	it("leaves proofs, which have no number, alone", () => {
+		const proof = '<details class="proof"><summary><strong>Proof</strong></summary>Text</details>';
+		expect(refineNoteHtml(proof)).toBe(proof);
 	});
 });
 

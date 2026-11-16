@@ -1,5 +1,6 @@
 import { parseFragment, serialize } from "parse5";
 import type { NoteHeading } from "#lib/notes/types.ts";
+import { addAnchors } from "./anchors";
 import { classifyCodeTokens } from "./code";
 import { identifyHeadings } from "./headings";
 import { refineMath } from "./math";
@@ -19,5 +20,6 @@ export function refineNoteHtml(html: string): RefinedNote {
 	reserveWidgetSpace(fragment);
 	classifyCodeTokens(fragment);
 	const headings = identifyHeadings(fragment);
+	addAnchors(fragment);
 	return { html: serialize(fragment), headings };
 }

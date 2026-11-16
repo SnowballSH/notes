@@ -88,6 +88,11 @@ On a narrow screen `src/lib/notes/equations.ts` sets a display equation that
 is up to 14% too wide slightly smaller, so that it shows whole. Wider ones
 scroll sideways.
 
+Every card also gets an id: its label if the author gave it one, otherwise its
+kind and number, such as `theorem-3`. Each card heading and section heading
+carries a small `#` link to itself, shown when the heading is pointed at (and
+always, faintly, on a touch screen), so a reader can share "Theorem 3".
+
 ## Courses and navigation
 
 A course is a directory of notes. `src/lib/site/courses.ts` registers each
