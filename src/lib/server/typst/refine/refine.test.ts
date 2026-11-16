@@ -330,6 +330,22 @@ describe("widgets", () => {
 	});
 });
 
+describe("code", () => {
+	it("turns the colours of Typst's syntax theme into token classes", () => {
+		const code =
+			'<pre><code data-lang="py"><span style="color: #d73948">def</span> <span style="color: #4b69c6">f</span>(): <span style="color: #74747c"># note</span></code></pre>';
+		expect(refineNoteHtml(code)).toBe(
+			'<pre><code data-lang="py"><span class="token-keyword">def</span> <span class="token-function">f</span>(): <span class="token-comment"># note</span></code></pre>',
+		);
+	});
+
+	it("leaves a colour it does not know and coloured text outside code", () => {
+		const html =
+			'<code><span style="color: #123456">x</span></code><p><span style="color: #d73948">red</span></p>';
+		expect(refineNoteHtml(html)).toBe(html);
+	});
+});
+
 describe("unrelated markup", () => {
 	it("keeps a code block that starts with a blank line", () => {
 		const code = "<pre><code>\n\nfirst</code></pre>";
