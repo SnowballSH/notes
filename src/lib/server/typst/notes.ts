@@ -1,6 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { isName } from "#lib/notes/names.ts";
+import { isName, noteHref } from "#lib/notes/names.ts";
 import type {
 	CompiledNote,
 	NoteLink,
@@ -8,6 +8,7 @@ import type {
 	NoteNeighbours,
 	NoteRef,
 } from "#lib/notes/types.ts";
+import type { NoteStatus } from "#lib/outlines/contents.ts";
 import { compileHtml, queryOne, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
 import { assertValidWidgets } from "./widgets";
@@ -76,8 +77,6 @@ async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 	return meta;
 }
 
-const hrefOf = ({ course, slug }: NoteRef): string => `/${course}/${slug}`;
-
 async function withMeta(refs: NoteRef[]): Promise<(NoteRef & { meta: NoteMeta })[]> {
 	return Promise.all(refs.map(async (ref) => ({ ...ref, meta: await readMeta(ref) })));
 }
@@ -88,10 +87,21 @@ export async function publishedNotes(): Promise<NoteRef[]> {
 	return notes.filter((note) => !note.meta.draft).map(({ course, slug }) => ({ course, slug }));
 }
 
-/** The published notes of one course in reading order, which is that of their `order` metadata. */
-export async function courseNotes(course: string): Promise<(NoteRef & NoteLink)[]> {
-	const refs = (await listNotes()).filter((note) => note.course === course);
-	const notes = (await withMeta(refs)).filter((note) => !note.meta.draft);
+async function notesOfCourse(course: string): Promise<(NoteRef & { meta: NoteMeta })[]> {
+	return withMeta((await listNotes()).filter((note) => note.course === course));
+}
+
+/** Every note of one course and whether it is a draft, in no particular order. */
+export async function courseNoteStatuses(course: string): Promise<NoteStatus[]> {
+	return (await notesOfCourse(course)).map(({ slug, meta }) => ({ slug, draft: meta.draft }));
+}
+
+/**
+ * The published notes of a course that has no outline, in reading order, which is that of
+ * their `order` metadata.
+ */
+export async function notesByOrder(course: string): Promise<(NoteRef & NoteLink)[]> {
+	const notes = (await notesOfCourse(course)).filter((note) => !note.meta.draft);
 	notes.sort((a, b) => a.meta.order - b.meta.order);
 	const tied = notes.findIndex((note, index) => note.meta.order === notes[index + 1]?.meta.order);
 	if (tied >= 0) {
@@ -100,15 +110,20 @@ export async function courseNotes(course: string): Promise<(NoteRef & NoteLink)[
 			`notes/${course}: ${first} and ${second} both have order ${notes[tied]?.meta.order}; give each note its own`,
 		);
 	}
-	return notes.map(({ meta, ...note }) => ({ ...note, title: meta.title, href: hrefOf(note) }));
+	return notes.map(({ meta, ...note }) => ({
+		...note,
+		title: meta.title,
+		href: noteHref(note),
+		number: null,
+	}));
 }
 
-export async function noteNeighbours(ref: NoteRef): Promise<NoteNeighbours> {
-	const notes = await courseNotes(ref.course);
+export async function neighboursByOrder(ref: NoteRef): Promise<NoteNeighbours> {
+	const notes = await notesByOrder(ref.course);
 	const index = notes.findIndex((note) => note.slug === ref.slug);
 	if (index < 0) return { previous: null, next: null };
 	const link = (note: NoteLink | undefined): NoteLink | null =>
-		note ? { title: note.title, href: note.href } : null;
+		note ? { title: note.title, href: note.href, number: note.number } : null;
 	return { previous: link(notes[index - 1]), next: link(notes[index + 1]) };
 }
 

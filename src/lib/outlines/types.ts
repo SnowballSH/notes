@@ -1,7 +1,8 @@
 export interface OutlineSection {
 	title: string;
 	summary: string;
-	href?: string;
+	/** The slug of the note that covers this section, `notes/<course>/<note>.typ`, once it is started. */
+	note?: string;
 }
 
 export interface OutlineChapter {

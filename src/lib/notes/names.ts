@@ -2,3 +2,6 @@
 export const namePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const isName = (text: string): boolean => namePattern.test(text);
+
+export const noteHref = ({ course, slug }: { course: string; slug: string }): string =>
+	`/${course}/${slug}`;
