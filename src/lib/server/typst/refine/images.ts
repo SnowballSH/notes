@@ -7,10 +7,15 @@ import {
 	textOf,
 } from "./dom";
 
+function enclosingFigure(image: Element): Element | undefined {
+	for (let node = image.parentNode; node && "tagName" in node; node = node.parentNode) {
+		if (node.tagName === "figure") return node;
+	}
+	return undefined;
+}
+
 function captionOf(image: Element): string | undefined {
-	const figure = image.parentNode;
-	if (!figure || !("tagName" in figure) || figure.tagName !== "figure") return undefined;
-	const caption = figure.childNodes.find(
+	const caption = enclosingFigure(image)?.childNodes.find(
 		(child): child is Element => "tagName" in child && child.tagName === "figcaption",
 	);
 	return caption ? textOf(caption).trim() : undefined;

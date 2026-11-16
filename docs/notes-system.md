@@ -159,6 +159,15 @@ A compiled note is kept in memory until one of its sources changes, so the
 index and the pages do not compile a note twice. Its references to other notes
 (`noteref`) are resolved after that, against the other notes as they are then.
 
+## Reading conveniences
+
+`src/lib/notes/progress.ts` remembers, on the reader's device, the note of each
+course they opened last. The home page and the outline page then offer
+"Continue with 1.2" in place of "Start reading". Nothing leaves the browser.
+
+`src/lib/notes/figures.ts` lets a figure's image open enlarged in a dialog, by
+click or with Enter, since a detailed figure in a gallery is too small to read.
+
 ## Collapsible blocks
 
 `src/lib/notes/blocks.ts` keeps, for the browser session, which proofs and
