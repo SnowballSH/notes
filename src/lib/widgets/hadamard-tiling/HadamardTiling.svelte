@@ -1,31 +1,42 @@
 <script lang="ts">
 import { flushSync, onDestroy, untrack } from "svelte";
-import { hadamardTile } from "./hadamard/matrix.ts";
-
-interface Props {
-	start?: number;
-	max?: number;
-}
+import type { WidgetProps } from "../contract.ts";
+import WidgetFrame from "../WidgetFrame.svelte";
+import type definition from "./definition.ts";
+import { hadamardTile } from "./matrix.ts";
 
 const Stage = { Whole: 0, Shrunk: 1, Spread: 2, Flipped: 3 } as const;
 type Stage = (typeof Stage)[keyof typeof Stage];
 
-const largestLevel = 6;
+interface Step {
+	stage: Stage;
+	caption: string;
+}
+
+const construction: readonly Step[] = [
+	{ stage: Stage.Shrunk, caption: "Shrink it into the top-left quarter." },
+	{ stage: Stage.Spread, caption: "Copy it into the other three quarters." },
+	{ stage: Stage.Flipped, caption: "Negate the bottom-right copy." },
+];
+const reversal: readonly Step[] = [
+	{ stage: Stage.Spread, caption: "Restore the bottom-right copy." },
+	{ stage: Stage.Shrunk, caption: "Stack the copies in the top-left quarter." },
+	{ stage: Stage.Whole, caption: "Enlarge it to fill the board." },
+];
+
 const moveMilliseconds = 1000;
 const restMilliseconds = 450;
 const quarters = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
 
-const { start = 1, max = 6 }: Props = $props();
-const clamp = (value: number, low: number, high: number) =>
-	Math.min(Math.max(Math.round(value), low), high);
-const highest = untrack(() => clamp(max, 1, largestLevel));
-
-const first = untrack(() => clamp(start, 0, highest));
+const { start, max }: WidgetProps<typeof definition> = $props();
+const highest = untrack(() => max);
+const first = untrack(() => Math.min(start, highest));
 
 let level = $state(first);
 let stage = $state<Stage>(Stage.Whole);
 let exponent = $state(first);
 let playing = $state(false);
+let narration = $state<string>();
 let still = $state(false);
 let board = $state<HTMLElement>();
 let alive = true;
@@ -59,17 +70,18 @@ function regroup(nextLevel: number, nextStage: Stage): void {
 	flushSync();
 }
 
-async function play(stages: readonly Stage[]): Promise<void> {
-	const last = stages.at(-1) ?? stage;
+async function play(steps: readonly Step[]): Promise<void> {
+	const last = steps.at(-1)?.stage ?? stage;
 	if (prefersStillness()) {
 		stage = last;
 		return;
 	}
-	for (const [index, next] of stages.entries()) {
+	for (const [index, step] of steps.entries()) {
 		if (index > 0) await pause(restMilliseconds);
 		if (!alive) return;
 		if (queued !== undefined) break;
-		stage = next;
+		stage = step.stage;
+		narration = step.caption;
 		await pause(moveMilliseconds);
 		if (queued !== undefined) break;
 	}
@@ -79,10 +91,10 @@ async function play(stages: readonly Stage[]): Promise<void> {
 async function animate(by: 1 | -1): Promise<void> {
 	if (by === 1) {
 		if (stage === Stage.Flipped) regroup(level + 1, Stage.Whole);
-		await play([Stage.Shrunk, Stage.Spread, Stage.Flipped]);
+		await play(construction);
 	} else {
 		if (stage === Stage.Whole) regroup(level - 1, Stage.Flipped);
-		await play([Stage.Spread, Stage.Shrunk, Stage.Whole]);
+		await play(reversal);
 	}
 }
 
@@ -101,15 +113,24 @@ async function move(by: 1 | -1): Promise<void> {
 		await animate(by);
 	} finally {
 		playing = false;
+		narration = undefined;
 	}
 	const next = queued;
 	queued = undefined;
 	if (next !== undefined && alive) await move(next);
 }
+
+function moveByArrowKey(event: KeyboardEvent): void {
+	const by = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : undefined;
+	if (by === undefined || event.altKey || event.ctrlKey || event.metaKey) return;
+	event.preventDefault();
+	void move(by);
+}
 </script>
 
-<figure class="tiling">
-	<div class="controls">
+<WidgetFrame>
+	<!-- svelte-ignore a11y_no_static_element_interactions: the keys reach it only from its buttons -->
+	<div class="controls" onkeydown={moveByArrowKey}>
 		<button
 			type="button"
 			aria-label="Previous matrix"
@@ -137,15 +158,16 @@ async function move(by: 1 | -1): Promise<void> {
 			<canvas class={quarter} {@attach hadamardTile(level)}></canvas>
 		{/each}
 	</div>
-</figure>
+	{#snippet caption()}
+		<p>{narration ?? `The ${order} by ${order} matrix.`}</p>
+		<p class="legend">
+			<span><span class="swatch plus" aria-hidden="true"></span>white is +1</span>
+			<span><span class="swatch minus" aria-hidden="true"></span>black is &minus;1</span>
+		</p>
+	{/snippet}
+</WidgetFrame>
 
 <style>
-.tiling {
-	margin: 0;
-	display: grid;
-	gap: 0.75rem;
-	justify-items: start;
-}
 .controls {
 	display: flex;
 	align-items: center;
@@ -166,9 +188,15 @@ button {
 	font: inherit;
 	cursor: pointer;
 }
+button:not([aria-disabled="true"]):hover {
+	border-color: var(--fui-accent);
+	background: var(--fui-surface-raised);
+}
 button[aria-disabled="true"] {
+	border-style: dashed;
 	color: var(--fui-ink-muted);
-	cursor: default;
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 button:focus-visible {
 	outline: 2px solid var(--fui-accent);
@@ -183,6 +211,28 @@ button:focus-visible {
 	border: 1px solid var(--fui-line);
 	background: white;
 	filter: var(--note-figure-filter, none);
+}
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 1rem;
+}
+.legend > span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+.swatch {
+	width: 0.75rem;
+	height: 0.75rem;
+	border: 1px solid var(--fui-ink-muted);
+	filter: var(--note-figure-filter, none);
+}
+.swatch.plus {
+	background: white;
+}
+.swatch.minus {
+	background: black;
 }
 canvas {
 	position: absolute;

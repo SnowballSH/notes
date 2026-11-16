@@ -1,6 +1,7 @@
 import { mount, unmount } from "svelte";
 import type { Attachment } from "svelte/attachments";
-import { loadWidget } from "./registry";
+import { resolveProps } from "./contract.ts";
+import { loadWidget, widgetDefinitions } from "./registry.ts";
 
 type Destroy = () => void;
 
@@ -8,8 +9,10 @@ async function mountWidget(target: HTMLElement): Promise<Destroy> {
 	const name = target.getAttribute("name") ?? "";
 	const fallback = [...target.childNodes];
 	try {
+		const definition = widgetDefinitions[name];
+		if (!definition) throw new Error(`unknown widget ${name}`);
 		const component = await loadWidget(name);
-		const props = JSON.parse(target.getAttribute("props") ?? "{}");
+		const props = resolveProps(definition.props, JSON.parse(target.getAttribute("props") ?? "{}"));
 		target.replaceChildren();
 		const instance = mount(component, { target, props });
 		target.setAttribute("data-mounted", "");

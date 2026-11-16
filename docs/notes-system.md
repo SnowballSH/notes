@@ -23,7 +23,11 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
 | `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. Definitions and results are filled boxes, an example is an outlined box, and a remark is an aside with a rule down its side. |
 | `proof`, `solution` | A collapsible block with a rule down its side, closed unless `collapsed: false`. |
 | `gallery(columns: n, ..items)` | Items laid out in `n` columns (two on narrow screens). Use it in place of `grid`, which Typst drops in HTML export. |
-| `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. |
+| `widget(name, ..props)[fallback]` | An interactive component from `src/lib/widgets`. Props must be named; the fallback body is optional. See [`widgets.md`](widgets.md). |
+
+`pnpm run new:note <course> <slug> <title...>` creates the file from a
+template, with the next free `order` of the course. It refuses to overwrite a
+note.
 
 ## Pipeline
 
@@ -32,11 +36,11 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
    experimental and its output changes between releases.
 2. `src/lib/server/typst/notes.ts` lists the notes, compiles one to an HTML
    fragment, reads its metadata from the `<note-meta>` label, and rejects
-   widgets that are not registered.
+   a widget that does not exist or is given props it does not take.
    It then passes the fragment through `refine/`, described under
    [Repairing the exported HTML](#repairing-the-exported-html).
 3. `src/routes/[course]/[slug]` prerenders each note. The build fails on a
-   Typst error, a broken reference, bad metadata, an unknown widget, or a
+   Typst error, a broken reference, bad metadata, a misused widget, or a
    Typst warning, such as an element that HTML export leaves out. The message
    names the file and line.
 4. `src/lib/styles/notes.css` styles the compiled markup. Math is native
@@ -127,18 +131,30 @@ Leave `tinymist.exportTarget` at its default: set to `html`, the panel is blank.
 
 ## Widgets
 
-A widget is a Svelte component registered by name in
-`src/lib/widgets/registry.ts`. The compiled note carries a
-`<notes-widget name props>` placeholder with fallback content;
-`src/lib/widgets/mount.ts` replaces it in the browser and loads the component
-only on pages that use it. Props are the named arguments of `#widget`, passed
-as JSON.
+[`widgets.md`](widgets.md) is the guide to creating one. In brief:
 
-A widget's registry entry may state the height it takes once mounted. The
-compile step records that height on the placeholder, and while the widget is
-loading the placeholder already takes it, so the text below does not jump.
-Without JavaScript, or if the widget fails to load, the fallback content stays
-at its own height.
+- A widget is a directory `src/lib/widgets/<name>/` holding `definition.ts`
+  (its props and, optionally, the height it takes once mounted) and its
+  component, named in PascalCase. `registry.ts` finds both with
+  `import.meta.glob`, so there is no list to edit. Definitions are imported
+  eagerly: they are plain data that the note compiler and the tests read
+  without rendering anything. Components are imported lazily, so a page loads
+  only the code of the widgets it uses.
+- `contract.ts` defines what a definition may declare. The component's props
+  type is inferred from it.
+- The compiled note carries a `<notes-widget name props>` placeholder with the
+  fallback content; props are the named arguments of `#widget`, as JSON.
+  `src/lib/server/typst/widgets.ts` checks every placeholder against its
+  definition when the note is compiled.
+- `mount.ts` replaces the placeholder in the browser, with the definition's
+  defaults filled in for the props the note left out.
+- `WidgetFrame.svelte` is the figure, caption and spacing that widgets share.
+- `/dev/widgets` is a playground that exists only while developing.
+
+The compile step records a widget's declared height on the placeholder, and
+while the widget is loading the placeholder already takes it, so the text
+below does not jump. Without JavaScript, or if the widget fails to load, the
+fallback content stays at its own height.
 
 ### hadamard-tiling
 
@@ -157,6 +173,11 @@ never lock. Regrouping repaints
 and repositions the canvases with transitions switched off, inside the click,
 so the swap is never visible. `max` is capped at 6 so every entry covers a
 whole number of pixels on the 320px board.
+
+The caption under the board names the matrix shown and, during an animation,
+the step being played. The left and right arrow keys move like the buttons
+while either button has focus. Each caption is short enough to stay on one
+line at a window width of 320px, which the reserved height relies on.
 
 ## Not built yet
 
