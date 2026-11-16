@@ -60,10 +60,10 @@ export async function compileHtml(root: string, file: string): Promise<TypstOutp
 	return typst(["compile", "--features", "html", "--format", "html", "--root", root, file, "-"]);
 }
 
-/** The value of the first metadata element with the given label, or null when the file has none. */
-export async function readMetadata(root: string, file: string, label: string): Promise<unknown> {
+/** The value of every metadata element with the given label, in document order. */
+export async function readMetadata(root: string, file: string, label: string): Promise<unknown[]> {
 	await assertVersion();
-	const expression = `query(<${label}>).map(found => found.value).at(0, default: none)`;
+	const expression = `query(<${label}>).map(found => found.value)`;
 	const { stdout } = await typst([
 		"eval",
 		expression,

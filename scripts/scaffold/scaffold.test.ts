@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { nextOrder, noteNextSteps, notePath, noteRequestProblem, noteSource } from "./note";
+import {
+	nextOrder,
+	noteNextSteps,
+	notePath,
+	noteRequestProblem,
+	noteSource,
+	parseNoteArguments,
+} from "./note";
 import { widgetNameProblem, widgetScaffold } from "./widget";
 
 describe("widgetNameProblem", () => {
@@ -66,6 +73,39 @@ describe("nextOrder", () => {
 
 	it("ignores a note without an order", () => {
 		expect(nextOrder(['#show: note.with(title: "A")\n', header("order: 1,")])).toBe(2);
+	});
+});
+
+describe("parseNoteArguments", () => {
+	it("reads the course, the slug and the title", () => {
+		expect(parseNoteArguments(["sets", "unions", "Unions", "of", "sets"])).toEqual({
+			course: "sets",
+			slug: "unions",
+			title: "Unions of sets",
+			startsCourse: false,
+		});
+	});
+
+	it("takes --new-course wherever it stands, and no other option", () => {
+		expect(parseNoteArguments(["--new-course", "sets", "unions", "Unions"]).startsCourse).toBe(
+			true,
+		);
+		expect(parseNoteArguments(["sets", "unions", "Unions", "--new-course"])).toMatchObject({
+			title: "Unions",
+			startsCourse: true,
+		});
+		expect(parseNoteArguments(["sets", "--force", "unions", "Unions"]).unknownOption).toBe(
+			"--force",
+		);
+	});
+
+	it("leaves dashes in the title alone", () => {
+		expect(parseNoteArguments(["sets", "intro", "Sets", "--", "a", "first", "look"])).toMatchObject(
+			{
+				title: "Sets -- a first look",
+			},
+		);
+		expect(parseNoteArguments(["sets", "intro", "  "]).title).toBe("");
 	});
 });
 

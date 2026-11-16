@@ -10,6 +10,45 @@ export interface NoteRequest {
 
 const libraryDirectory = "lib";
 
+export interface NoteArguments {
+	course?: string;
+	slug?: string;
+	title: string;
+	startsCourse: boolean;
+	/** An option before the title that the command does not have. */
+	unknownOption?: string;
+}
+
+/**
+ * Reads `[--new-course] <course> <slug> <title...>`. Options are looked for only before
+ * the title, so a title may contain a dash or a word that starts with two.
+ */
+export function parseNoteArguments(args: readonly string[]): NoteArguments {
+	const names: string[] = [];
+	let startsCourse = false;
+	let unknownOption: string | undefined;
+	let index = 0;
+	for (; index < args.length && names.length < 2; index++) {
+		const argument = args[index] ?? "";
+		if (argument === "--new-course") startsCourse = true;
+		else if (argument.startsWith("--")) unknownOption ??= argument;
+		else names.push(argument);
+	}
+	const words = args.slice(index).filter((word, position) => {
+		if (word !== "--new-course") return true;
+		startsCourse = true;
+		return position < 0;
+	});
+	const [course, slug] = names;
+	return {
+		...(course !== undefined && { course }),
+		...(slug !== undefined && { slug }),
+		title: words.join(" ").trim(),
+		startsCourse,
+		...(unknownOption !== undefined && { unknownOption }),
+	};
+}
+
 /** Why a note cannot go in a course that has neither an outline nor a directory yet. */
 export function unknownCourseProblem(course: string, known: readonly string[]): string {
 	const courses =

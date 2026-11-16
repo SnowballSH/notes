@@ -1,6 +1,6 @@
 import type { Attachment } from "svelte/attachments";
 
-const zoomable = "figure img:not(.reference-preview *, .figure-zoom *)";
+const zoomable = "figure img:not(a img, .reference-preview *, .figure-zoom *)";
 
 /** The width the dialog shows an image at; an image already that wide gains nothing from it. */
 const enlargedWidth = (): number =>
@@ -31,31 +31,49 @@ function enlarged(image: HTMLImageElement, caption: string): HTMLDialogElement {
 	});
 	dialog.addEventListener("close", () => {
 		dialog.remove();
-		image.focus();
+		if (image.isConnected) image.focus();
 	});
 	return dialog;
 }
 
-/**
- * A figure in a gallery is small, and a detailed one is unreadable at that size. A figure's
- * image that the dialog would show larger opens enlarged in it, by click or from the keyboard.
- */
-export const zoomableFigures: Attachment = (container) => {
-	if (!(container instanceof HTMLElement)) return;
-	const marked = [...container.querySelectorAll<HTMLImageElement>(zoomable)].filter(
-		(image) => image.getBoundingClientRect().width < enlargedWidth(),
-	);
-	for (const image of marked) {
-		image.tabIndex = 0;
-		image.setAttribute("role", "button");
+const buttonAttributes = { role: "button", tabindex: "0" } as const;
+
+/** Makes an image a control when the dialog would show it larger, and an ordinary image when not. */
+function mark(image: HTMLImageElement): void {
+	const width = image.getBoundingClientRect().width;
+	const enlarges = width > 0 && width < enlargedWidth();
+	if (enlarges === (image.getAttribute("role") === "button")) return;
+	for (const [name, value] of Object.entries(buttonAttributes)) {
+		if (enlarges) image.setAttribute(name, value);
+		else image.removeAttribute(name);
+	}
+	if (enlarges) {
 		image.setAttribute(
 			"aria-label",
 			`Enlarge the figure${image.alt === "" ? "" : `: ${image.alt}`}`,
 		);
+	} else {
+		image.removeAttribute("aria-label");
 	}
+}
+
+/**
+ * A figure in a gallery is small, and a detailed one is unreadable at that size. A figure's
+ * image that the dialog would show larger opens enlarged in it, by click or from the
+ * keyboard. Which images those are is decided again when the window or a proof changes
+ * size. An image inside a link keeps the link.
+ */
+export const zoomableFigures: Attachment = (container) => {
+	if (!(container instanceof HTMLElement)) return;
+	const markAll = () => {
+		for (const image of container.querySelectorAll<HTMLImageElement>(zoomable)) mark(image);
+	};
+	const observer = new ResizeObserver(markAll);
+	observer.observe(container);
 	const open = (event: Event) => {
 		const image = event.target;
-		if (!(image instanceof HTMLImageElement) || !marked.includes(image)) return;
+		if (!(image instanceof HTMLImageElement) || !image.matches(`${zoomable}[role="button"]`))
+			return;
 		event.preventDefault();
 		const caption = image.closest("figure")?.querySelector("figcaption")?.textContent?.trim() ?? "";
 		const dialog = enlarged(image, caption);
@@ -67,9 +85,12 @@ export const zoomableFigures: Attachment = (container) => {
 	};
 	container.addEventListener("click", open);
 	container.addEventListener("keydown", onKey);
+	container.addEventListener("load", markAll, true);
 	return () => {
+		observer.disconnect();
 		container.removeEventListener("click", open);
 		container.removeEventListener("keydown", onKey);
+		container.removeEventListener("load", markAll, true);
 		container.querySelector<HTMLDialogElement>("dialog.figure-zoom")?.close();
 	};
 };

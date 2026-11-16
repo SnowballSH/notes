@@ -8,11 +8,12 @@ const isPage = (path: string): boolean => !path.startsWith("/_app/") && !/\.[a-z
 
 /** Every page of the built site: those the sitemap lists, and those its own links lead to. */
 export async function sitePages(request: APIRequestContext): Promise<string[]> {
-	const sitemap = await (await request.get("/sitemap.xml")).text();
-	const found = new Set([
-		"/",
-		...[...sitemap.matchAll(sitemapAddress)].flatMap(([, path]) => path ?? []),
-	]);
+	const sitemap = await request.get("/sitemap.xml");
+	const listed = [...(await sitemap.text()).matchAll(sitemapAddress)].flatMap(
+		([, path]) => path ?? [],
+	);
+	if (!sitemap.ok() || listed.length === 0) throw new Error("sitemap.xml lists no pages");
+	const found = new Set(["/", ...listed]);
 	for (const path of found) {
 		const html = await (await request.get(path)).text();
 		for (const [, href] of html.matchAll(internalLink)) {
