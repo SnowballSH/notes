@@ -1,8 +1,10 @@
 <script lang="ts">
+import mathFont from "@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2?url";
 import { Link } from "foundationui/svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
+import { prepareForPrint } from "#lib/notes/print.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
 
@@ -16,6 +18,9 @@ const course = $derived(data.course);
 	{#if note.meta.summary}
 		<meta name="description" content={note.meta.summary} />
 	{/if}
+	{#if note.html.includes("<math")}
+		<link rel="preload" as="font" type="font/woff2" href={mathFont} crossorigin="anonymous" />
+	{/if}
 	{@html `<style>${note.styles}</style>`}
 </svelte:head>
 
@@ -26,7 +31,7 @@ const course = $derived(data.course);
 <NoteContents headings={note.headings} />
 
 {#key note.html}
-	<article class="note mt-8" {@attach widgets}>
+	<article class="note mt-8" {@attach widgets} {@attach prepareForPrint}>
 		{@html note.html}
 	</article>
 {/key}

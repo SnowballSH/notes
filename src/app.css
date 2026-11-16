@@ -4,4 +4,5 @@
 @import "foundationui/tokens.css";
 @import "foundationui/theme.css";
 @import "./lib/styles/notes.css";
+@import "./lib/styles/print.css";
 @source "../node_modules/foundationui";

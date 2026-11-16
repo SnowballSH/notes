@@ -35,8 +35,17 @@ onDestroy(() => {
 
 const order = $derived(2 ** exponent);
 
+let queued: 1 | -1 | undefined;
+let endPause: (() => void) | undefined;
+
 const pause = (milliseconds: number) =>
-	new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+	new Promise<void>((resolve) => {
+		const timer = setTimeout(resolve, milliseconds);
+		endPause = () => {
+			clearTimeout(timer);
+			resolve();
+		};
+	});
 const prefersStillness = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function regroup(nextLevel: number, nextStage: Stage): void {
@@ -51,34 +60,51 @@ function regroup(nextLevel: number, nextStage: Stage): void {
 }
 
 async function play(stages: readonly Stage[]): Promise<void> {
+	const last = stages.at(-1) ?? stage;
 	if (prefersStillness()) {
-		stage = stages.at(-1) ?? stage;
+		stage = last;
 		return;
 	}
 	for (const [index, next] of stages.entries()) {
 		if (index > 0) await pause(restMilliseconds);
 		if (!alive) return;
+		if (queued !== undefined) break;
 		stage = next;
 		await pause(moveMilliseconds);
+		if (queued !== undefined) break;
+	}
+	if (queued !== undefined) regroup(level, last);
+}
+
+async function animate(by: 1 | -1): Promise<void> {
+	if (by === 1) {
+		if (stage === Stage.Flipped) regroup(level + 1, Stage.Whole);
+		await play([Stage.Shrunk, Stage.Spread, Stage.Flipped]);
+	} else {
+		if (stage === Stage.Whole) regroup(level - 1, Stage.Flipped);
+		await play([Stage.Spread, Stage.Shrunk, Stage.Whole]);
 	}
 }
 
+/** A press during an animation jumps to its end and then starts the move just asked for. */
 async function move(by: 1 | -1): Promise<void> {
 	const target = exponent + by;
-	if (playing || target < 0 || target > highest) return;
+	if (target < 0 || target > highest) return;
+	if (playing) {
+		queued = by;
+		endPause?.();
+		return;
+	}
 	playing = true;
 	exponent = target;
 	try {
-		if (by === 1) {
-			if (stage === Stage.Flipped) regroup(level + 1, Stage.Whole);
-			await play([Stage.Shrunk, Stage.Spread, Stage.Flipped]);
-		} else {
-			if (stage === Stage.Whole) regroup(level - 1, Stage.Flipped);
-			await play([Stage.Spread, Stage.Shrunk, Stage.Whole]);
-		}
+		await animate(by);
 	} finally {
 		playing = false;
 	}
+	const next = queued;
+	queued = undefined;
+	if (next !== undefined && alive) await move(next);
 }
 </script>
 
@@ -87,14 +113,14 @@ async function move(by: 1 | -1): Promise<void> {
 		<button
 			type="button"
 			aria-label="Previous matrix"
-			aria-disabled={playing || exponent <= 0}
+			aria-disabled={exponent <= 0}
 			onclick={() => move(-1)}>&larr;</button
 		>
 		<span class="order" aria-live="polite">n = {exponent}</span>
 		<button
 			type="button"
 			aria-label="Next matrix"
-			aria-disabled={playing || exponent >= highest}
+			aria-disabled={exponent >= highest}
 			onclick={() => move(1)}>&rarr;</button
 		>
 	</div>
@@ -190,6 +216,11 @@ canvas {
 @media (prefers-reduced-motion: reduce) {
 	canvas {
 		transition: none;
+	}
+}
+@media print {
+	button {
+		display: none;
 	}
 }
 </style>
