@@ -315,6 +315,21 @@ describe("headings", () => {
 	});
 });
 
+describe("widgets", () => {
+	it("records the height of a widget that declares one", () => {
+		expect(
+			refineNoteHtml('<notes-widget name="hadamard-tiling" props="{}"></notes-widget>'),
+		).toMatch(
+			/^<notes-widget name="hadamard-tiling" props="{}" style="--widget-height: calc\([^"]+\)"><\/notes-widget>$/,
+		);
+	});
+
+	it("leaves a widget without a declared height alone", () => {
+		const widget = '<notes-widget name="parity-explorer" props="{}">fallback</notes-widget>';
+		expect(refineNoteHtml(widget)).toBe(widget);
+	});
+});
+
 describe("unrelated markup", () => {
 	it("keeps a code block that starts with a blank line", () => {
 		const code = "<pre><code>\n\nfirst</code></pre>";

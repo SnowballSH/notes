@@ -1,0 +1,28 @@
+@media print {
+	body > div > :is(header, footer),
+	main nav {
+		display: none;
+	}
+
+	main {
+		max-width: none;
+		padding: 0;
+	}
+
+	.note :is(.card, .gallery, figure, .equation) {
+		break-inside: avoid;
+	}
+
+	.note :is(h2, h3, summary) {
+		break-after: avoid;
+	}
+
+	.note .equation {
+		overflow: visible;
+		background: none;
+	}
+
+	.note a {
+		text-decoration: none;
+	}
+}

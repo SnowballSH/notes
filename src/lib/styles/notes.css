@@ -296,3 +296,10 @@
 .note notes-widget:not([data-mounted]) {
 	color: var(--fui-ink-secondary);
 }
+
+/* A widget that is still loading already takes its mounted height, so the page does not jump. */
+@media (scripting: enabled) {
+	.note notes-widget:not([data-mounted], [data-failed]) {
+		min-height: var(--widget-height, 0);
+	}
+}

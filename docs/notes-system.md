@@ -98,6 +98,14 @@ previous and next links cannot drift apart.
 site name. `src/routes/+error.svelte` is the page for an address that does not
 exist.
 
+## Printing
+
+`src/lib/styles/print.css` drops the site header, footer and navigation, and
+keeps cards, figures and equations from splitting across pages.
+`src/lib/notes/print.ts` opens every collapsed proof and switches to the light
+theme before the page prints, and undoes both afterwards, so a printout has
+the proofs on white paper. A widget hides its own controls in print.
+
 ## Editor preview
 
 `.vscode/settings.json` points tinymist at `notes/` as the Typst root and
@@ -118,6 +126,12 @@ A widget is a Svelte component registered by name in
 only on pages that use it. Props are the named arguments of `#widget`, passed
 as JSON.
 
+A widget's registry entry may state the height it takes once mounted. The
+compile step records that height on the placeholder, and while the widget is
+loading the placeholder already takes it, so the text below does not jump.
+Without JavaScript, or if the widget fails to load, the fallback content stays
+at its own height.
+
 ### hadamard-tiling
 
 `#widget("hadamard-tiling", start: 1, max: 6)` shows the Walsh-Hadamard matrix
@@ -129,7 +143,9 @@ entry. A stage says how far those copies are along the construction: stacked at
 full size, shrunk into the top-left quarter, spread into the four quarters, and
 finally with the bottom-right copy inverted. The last stage of one level is the
 same picture as the first stage of the next, so each press first regroups to
-whichever of the two it needs and then plays three stages. Regrouping repaints
+whichever of the two it needs and then plays three stages. A press during an
+animation jumps to its end and starts the move just asked for, so the controls
+never lock. Regrouping repaints
 and repositions the canvases with transitions switched off, inside the click,
 so the swap is never visible. `max` is capped at 6 so every entry covers a
 whole number of pixels on the 320px board.
