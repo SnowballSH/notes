@@ -2,6 +2,7 @@
 import { Badge } from "foundationui/svelte";
 import ActionLink from "#lib/components/ActionLink.svelte";
 import Breadcrumb from "#lib/components/Breadcrumb.svelte";
+import PageMeta from "#lib/components/PageMeta.svelte";
 import SectionRow from "#lib/components/SectionRow.svelte";
 import { allSections, readingOrder } from "#lib/outlines/contents.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
@@ -22,10 +23,7 @@ const partsLabel = (parts: string): string =>
 	/^\d+$/.test(parts) ? `part ${parts}` : `parts ${parts}`;
 </script>
 
-<svelte:head>
-	<title>{pageTitle(course.title)}</title>
-	<meta name="description" content={course.description} />
-</svelte:head>
+<PageMeta title={pageTitle(course.title)} description={course.description} />
 
 <Breadcrumb trail={[{ label: siteName, href: "/" }, { label: data.category }]} />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{course.title}</h1>

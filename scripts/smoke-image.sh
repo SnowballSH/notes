@@ -63,6 +63,11 @@ grep -q '"href":"/walsh-hadamard/boolean-functions' "${body}" || {
   printf 'FAIL the search index does not list the notes\n' >&2
   exit 1
 }
+expect /sitemap.xml 200
+grep -q '<loc>https://notes.snowballsh.com/walsh-hadamard/boolean-functions</loc>' "${body}" || {
+  printf 'FAIL the sitemap does not list the notes\n' >&2
+  exit 1
+}
 expect /absent 404
 grep -q '_app/' "${body}" || {
   printf 'FAIL the 404 is not the site page\n' >&2
