@@ -366,6 +366,10 @@
 	opacity: 0;
 }
 
+.note .reference-preview .anchor {
+	display: none;
+}
+
 .note :is(h2, h3, .card > header, .card > summary):hover > .anchor,
 .note .anchor:focus-visible {
 	opacity: 1;
@@ -398,10 +402,6 @@
 
 .note .reference-preview > .equation {
 	padding: 0.75rem 1rem;
-}
-
-.note .reference-preview .anchor {
-	display: none;
 }
 
 .note .reference-preview > .reference-go {
