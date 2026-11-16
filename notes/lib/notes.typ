@@ -86,6 +86,9 @@
 #let note(title: none, summary: none, order: 0, draft: false, body) = {
   [#metadata((title: title, summary: summary, order: order, draft: draft)) <note-meta>]
   set page(width: 16cm, height: auto, margin: 1.2cm) if preview
-  show figure: it => if is-card(it) { it.body } else { it }
+  // The wrapper carries the card's label to the site, which makes it the card's id.
+  show figure: it => if not is-card(it) { it } else if preview or not it.has("label") { it.body } else {
+    html.elem("div", attrs: ("data-label": str(it.label)), it.body)
+  }
   body
 }

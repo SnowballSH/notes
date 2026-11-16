@@ -10,10 +10,25 @@ import {
 	type Element,
 	elementsNamed,
 	type ParentNode,
+	replace,
 	setAttribute,
 	setText,
 	textOf,
 } from "./dom";
+
+/**
+ * Typst gives a card an id only when the same note refers to it. The library wraps every
+ * labelled card in a `div[data-label]`; the label becomes the card's id and the wrapper goes.
+ */
+function adoptLabels(root: ParentNode): void {
+	for (const wrapper of elementsNamed(root, "div")) {
+		const label = attribute(wrapper, "data-label");
+		const [card, ...others] = childElements(wrapper);
+		if (label === undefined || !card || others.length > 0) continue;
+		setAttribute(card, "id", label);
+		replace(wrapper, card);
+	}
+}
 
 const isCard = (element: Element): boolean =>
 	(attribute(element, "class") ?? "").split(/\s+/).includes("card");
@@ -47,6 +62,7 @@ function appendAnchor(target: Element, id: string, name: string): void {
  * its id; the others are named after their kind and number. Returns the cards, in order.
  */
 export function addAnchors(root: ParentNode): NoteCard[] {
+	adoptLabels(root);
 	const taken = new Set(descendants(root).flatMap((element) => attribute(element, "id") ?? []));
 	const cards = descendants(root)
 		.filter(isCard)

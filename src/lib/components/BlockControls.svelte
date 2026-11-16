@@ -1,16 +1,14 @@
 <script lang="ts">
-import { setAllBlocks } from "#lib/notes/blocks.ts";
+import { blocksIn, setAllBlocks } from "#lib/notes/blocks.ts";
 
 /** The element that holds the note, by selector, since the note is rendered after this control. */
 const { container }: { container: string } = $props();
 
 let allOpen = $state(false);
 
-const blocks = (): HTMLDetailsElement[] => [
-	...document.querySelectorAll<HTMLDetailsElement>(`${container} details`),
-];
 const refresh = () => {
-	allOpen = blocks().every((block) => block.open);
+	const note = document.querySelector(container);
+	allOpen = note !== null && blocksIn(note).every((block) => block.open);
 };
 
 $effect(() => {
@@ -25,7 +23,7 @@ function toggleAll(): void {
 }
 </script>
 
-<button type="button" class="block-controls" aria-pressed={allOpen} onclick={toggleAll}>
+<button type="button" class="block-controls" onclick={toggleAll}>
 	{allOpen ? "Close all proofs" : "Open all proofs"}
 </button>
 

@@ -267,12 +267,20 @@
 	padding-inline: 0.4em;
 }
 
-/* The brackets of a matrix already stand clear of its entries. */
-.note math mtable:not(.cases, .aligned, .multiline-equation) > mtr > mtd:first-child {
+/* The brackets of a matrix already stand clear of its entries, in a multi-line equation too. */
+.note
+	math
+	:is(mtable, mtable.multiline-equation mtable):not(.cases, .aligned, .multiline-equation)
+	> mtr
+	> mtd:first-child {
 	padding-inline-start: 0.1em;
 }
 
-.note math mtable:not(.cases, .aligned, .multiline-equation) > mtr > mtd:last-child {
+.note
+	math
+	:is(mtable, mtable.multiline-equation mtable):not(.cases, .aligned, .multiline-equation)
+	> mtr
+	> mtd:last-child {
 	padding-inline-end: 0.1em;
 }
 
@@ -298,7 +306,7 @@
 	max-width: calc(100% + var(--gutter-start) + var(--gutter-end));
 	margin-inline: calc(-1 * var(--gutter-start)) calc(-1 * var(--gutter-end));
 	padding: 0.25rem var(--gutter-end) 0.25rem var(--gutter-start);
-	overflow-x: auto;
+	overflow: auto hidden;
 	background:
 		linear-gradient(to right, var(--note-surface) 0.75rem, transparent) left / 1.5rem 100% no-repeat
 		local,
@@ -350,6 +358,7 @@
 }
 
 .note summary {
+	scroll-margin-top: 5rem;
 	padding-block: 0.375rem;
 	cursor: pointer;
 	color: var(--fui-accent-strong);
@@ -377,7 +386,7 @@
 
 @media (hover: none) {
 	.note .anchor {
-		opacity: 0.6;
+		opacity: 1;
 	}
 }
 

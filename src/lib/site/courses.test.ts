@@ -11,7 +11,9 @@ import { pageTitle } from "./title";
 describe.each(courses)("the $slug course", (course) => {
 	it("has an outline that agrees with its notes", async () => {
 		const contents = await loadCourseContents(course, { showDrafts: false });
-		expect(readingOrder(contents).length).toBeGreaterThan(0);
+		expect(
+			readingOrder(contents).every((section) => section.href.startsWith(`/${course.slug}/`)),
+		).toBe(true);
 	});
 
 	it("keeps its outline in the file that error messages name", async () => {

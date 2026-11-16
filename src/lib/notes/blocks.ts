@@ -36,8 +36,9 @@ function write(path: string, saved: SavedBlocks): void {
 	} catch {}
 }
 
-const blocksIn = (container: Element): HTMLDetailsElement[] => [
-	...container.querySelectorAll<HTMLDetailsElement>("details"),
+/** The collapsible blocks of a note, leaving out the copy a reference preview shows. */
+export const blocksIn = (container: Element): HTMLDetailsElement[] => [
+	...container.querySelectorAll<HTMLDetailsElement>("details:not(.reference-preview *)"),
 ];
 
 export function setAllBlocks(container: Element, open: boolean): void {
@@ -46,10 +47,11 @@ export function setAllBlocks(container: Element, open: boolean): void {
 
 let documentJustLoaded = true;
 
-function cameBackToDocument(): boolean {
-	const [entry] = performance.getEntriesByType("navigation");
-	const type = (entry as PerformanceNavigationTiming | undefined)?.type;
-	return type === "reload" || type === "back_forward";
+/** Whether the document was loaded at this very page by a reload or by going back or forward. */
+function cameBackToThisPage(): boolean {
+	const [entry] = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+	if (!entry || new URL(entry.name).pathname !== location.pathname) return false;
+	return entry.type === "reload" || entry.type === "back_forward";
 }
 
 /**
@@ -63,7 +65,7 @@ export const rememberBlocks: Attachment = (container) => {
 	const blocks = blocksIn(container);
 	if (saved?.open.length === blocks.length) {
 		for (const [index, block] of blocks.entries()) block.open = saved.open[index] ?? block.open;
-		if (documentJustLoaded && cameBackToDocument()) {
+		if (documentJustLoaded && cameBackToThisPage()) {
 			requestAnimationFrame(() => window.scrollTo(0, saved.scroll));
 		}
 	}
@@ -110,7 +112,8 @@ export const closableBlocks: Attachment = (container) => {
 		if (!needed) existing?.remove();
 	};
 	const onToggle = (event: Event) => {
-		if (event.target instanceof HTMLDetailsElement) offerClosing(event.target);
+		const isCopy = event.target instanceof Element && event.target.closest(".reference-preview");
+		if (event.target instanceof HTMLDetailsElement && !isCopy) offerClosing(event.target);
 	};
 	for (const block of blocksIn(container)) offerClosing(block);
 	container.addEventListener("toggle", onToggle, true);

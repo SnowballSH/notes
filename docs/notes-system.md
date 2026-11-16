@@ -242,6 +242,7 @@ line at a window width of 320px, which the reserved height relies on.
 
 ## Not built yet
 
-- Course index pages generated from the notes.
-- References between notes.
-- Diagrams and images.
+- A helper for references between notes that checks the target and writes its
+  name; a plain `#link` to the other note's address works today.
+- Equation numbers: Typst's HTML export drops them, and the build cannot tell.
+- Drawings that follow the theme: an image is embedded as it is.

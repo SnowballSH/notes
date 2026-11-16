@@ -11,8 +11,6 @@ export const isElement = (node: Tree.Node | undefined): node is Element =>
 export const isText = (node: Tree.Node | undefined): node is TextNode =>
 	node !== undefined && adapter.isTextNode(node);
 
-export const isMath = (element: Element): boolean => element.namespaceURI === html.NS.MATHML;
-
 export function descendants(root: ParentNode): Element[] {
 	return root.childNodes.filter(isElement).flatMap((child) => [child, ...descendants(child)]);
 }

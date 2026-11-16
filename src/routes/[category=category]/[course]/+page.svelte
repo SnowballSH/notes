@@ -67,9 +67,11 @@ const partsLabel = (parts: string): string =>
 	{/each}
 </ol>
 
-<h2 class="mt-12 font-display text-xl font-semibold text-ink">Sources</h2>
-<ul class="mt-4 space-y-2 text-sm text-ink-secondary">
-	{#each data.sources as source (source.work)}
-		<li>{source.work} <span class="text-ink-muted">({partsLabel(source.chapters)})</span></li>
-	{/each}
-</ul>
+{#if data.sources.length > 0}
+	<h2 class="mt-12 font-display text-xl font-semibold text-ink">Sources</h2>
+	<ul class="mt-4 space-y-2 text-sm text-ink-secondary">
+		{#each data.sources as source (source.work)}
+			<li>{source.work} <span class="text-ink-muted">({partsLabel(source.chapters)})</span></li>
+		{/each}
+	</ul>
+{/if}

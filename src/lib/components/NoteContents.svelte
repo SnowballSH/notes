@@ -15,11 +15,20 @@ function toTop(event: MouseEvent): void {
 /** A heading counts as reached once it is this close to the top of the window. */
 const reachedWithin = 120;
 let current = $state<string>();
+/** While the reader moves down the page the corner button steps aside, so it never covers the line being read. */
+let steppedAside = $state(false);
+const scrollStep = 4;
 
 $effect(() => {
 	const targets = headings.flatMap((heading) => document.getElementById(heading.id) ?? []);
+	let lastScroll = window.scrollY;
 	const update = () => {
 		const page = document.documentElement;
+		const moved = window.scrollY - lastScroll;
+		if (Math.abs(moved) >= scrollStep) {
+			steppedAside = moved > 0 && window.scrollY > window.innerHeight / 2;
+			lastScroll = window.scrollY;
+		}
 		const atEnd = window.innerHeight + window.scrollY >= page.scrollHeight - 2;
 		const reached = targets.filter((target) => target.getBoundingClientRect().top <= reachedWithin);
 		current = (atEnd ? targets : reached).at(-1)?.id;
@@ -56,7 +65,9 @@ $effect(() => {
 		{@render links()}
 	</nav>
 
-	<button type="button" class="jump-button" popovertarget={menuId}>Contents</button>
+	<button type="button" class="jump-button" class:aside={steppedAside} popovertarget={menuId}>
+		Contents
+	</button>
 	<nav id={menuId} popover aria-label="Jump to a section" class="jump-menu" bind:this={menu}>
 		{@render links(() => menu?.hidePopover())}
 		<a href="#top" class="to-top" onclick={toTop}>Top of the page</a>
@@ -116,6 +127,14 @@ ol a[aria-current] {
 	font-size: 0.875rem;
 	color: var(--fui-ink);
 	cursor: pointer;
+}
+.jump-button.aside:not(:focus-visible, :has(+ .jump-menu:popover-open)) {
+	transform: translateY(calc(100% + 1.5rem));
+}
+@media (prefers-reduced-motion: no-preference) {
+	.jump-button {
+		transition: transform 0.2s ease;
+	}
 }
 .jump-menu {
 	inset: auto 1rem 4.25rem auto;

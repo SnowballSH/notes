@@ -361,6 +361,20 @@ describe("anchors", () => {
 		);
 	});
 
+	it("makes the label the library passes along the id of the card, referenced or not", () => {
+		const card = (id: string): string =>
+			`<section${id} class="card card-lemma"><header><strong>Lemma 1</strong></header></section>`;
+		const refined = refineNoteHtml(
+			`<div data-label="lem-a">${card("")}</div><div id="lem-b" data-label="lem-b">${card("")}</div>`,
+		);
+		expect(refined).not.toContain("data-label");
+		expect(refined).not.toContain("<div");
+		expect(refined.match(/<section[^>]*>/g)).toEqual([
+			'<section class="card card-lemma" id="lem-a">',
+			'<section class="card card-lemma" id="lem-b">',
+		]);
+	});
+
 	it("does not reuse an id that is already on the page", () => {
 		const html =
 			'<p id="theorem-1"></p><section class="card card-theorem"><header><strong>Theorem 1</strong></header></section>';

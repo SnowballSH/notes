@@ -1,6 +1,7 @@
 import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { isName, noteHref } from "#lib/notes/names.ts";
+import { placeholderSummary } from "#lib/notes/template.ts";
 import type {
 	CompiledNote,
 	NoteLink,
@@ -53,6 +54,9 @@ function parseMeta(value: unknown, file: string): NoteMeta {
 	if (typeof draft !== "boolean") {
 		throw new TypstError(`${file}: draft must be true or false`);
 	}
+	if (!draft && summary === placeholderSummary) {
+		throw new TypstError(`${file}: write the note's summary before publishing it`);
+	}
 	return { title, summary, order, draft };
 }
 
@@ -93,7 +97,11 @@ async function notesOfCourse(course: string): Promise<(NoteRef & { meta: NoteMet
 
 /** Every note of one course and whether it is a draft, in no particular order. */
 export async function courseNoteStatuses(course: string): Promise<NoteStatus[]> {
-	return (await notesOfCourse(course)).map(({ slug, meta }) => ({ slug, draft: meta.draft }));
+	return (await notesOfCourse(course)).map(({ slug, meta }) => ({
+		slug,
+		draft: meta.draft,
+		title: meta.title,
+	}));
 }
 
 /**

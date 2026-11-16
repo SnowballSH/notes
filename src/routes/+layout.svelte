@@ -11,7 +11,7 @@ let { children } = $props();
 	<SearchDialog />
 	<ThemeToggle />
 </Header>
-<main class="mx-auto w-full max-w-3xl px-4 py-12">
+<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-12">
 	{@render children()}
 </main>
 <Footer>
