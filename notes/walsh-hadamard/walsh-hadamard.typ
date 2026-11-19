@@ -91,7 +91,7 @@ Despite being called the Walsh-Hadamard matrices, it is not entirely obvious tha
 
 #proposition(title: "The Walsh-Hadamard Matrices are Hadamard Matrices")[
   For all $n >= 0$, $H_(2^n)$ is a Hadamard matrix.
-]
+] <prop-walsh-hadamard-is-hadamard>
 
 Intuitively, this is true by induction: for two different rows $r_1$ and $r_2$, the first half of $r_1$ and $r_2$ are orthogonal inductively, and the second half of $r_1$ and $r_2$ are also orthogonal inductively, since every row is just two copies of a row in the previous matrix in the sequence, potentially multiplied by $-1$. We can prove this more rigorously.
 
@@ -185,7 +185,7 @@ This is an amazing result, because it reminds us of the idea of parity functions
   $
     hat(f) = 1/2^n H_(2^n) f.
   $
-]
+] <thm-wht>
 
 #proof[
   For any $gamma in FF_2^n$, we have
@@ -233,7 +233,7 @@ Again, not all hope is lost. The matrices $H_(2^n)$ are defined recursively usin
 
 #theorem(title: "Fast Walsh-Hadamard Transform (FWHT)")[
   There exists an algorithm (using the WHT) that computes the Fourier expansion of a function $f : FF_2^n -> RR$ in $O(N log N) = O(n 2^n)$ time.
-]
+] <thm-fwht>
 
 #proof[
   The algorithm is based on divide and conquer, splitting $f$ into two equal halves, recursively solving each half, then efficiently combining the answers.
