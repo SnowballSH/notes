@@ -1,6 +1,6 @@
 #import "/lib/notes.typ": *
 #show: note.with(
-  title: "XOR Convolution",
+  title: "XOR convolution",
   summary: "Application of the fast Walsh-Hadamard transform: recovering the function from Fourier coefficients and efficiently computing the XOR convolution.",
   order: 3,
 )
@@ -48,7 +48,7 @@ There is an obvious "brute-force" $O(N^2) = O(2^(2n))$ algorithm for doing this,
 
 Recall that the Walsh-Hadamard transform computes the Fourier coefficients of a Boolean function efficiently. To apply the Walsh-Hadamard transform to the XOR convolution problem, we should consider converting the problem to Fourier coefficient space.
 
-Let's work backwards from what we want to compute. At the end of the algorithm, we need to output the function $f * g$. Ideally, at this point, we somehow have the Fourier coefficients of $f * g$, i.e. $hat(f * g)$, and we need to convert this to $f * g$ efficiently. It might seem like we don't have an "inverse Walsh-Hadamard transform" yet, and it's not immediately obvious how to convert Fourier coefficients to a function in $O(N log N)$ time. Amazingly, we already have all the tools to compute the inverse Walsh-Hadamard transform.
+Let's work backwards from what we want to compute. At the end of the algorithm, we need to output the function $f * g$. Ideally, at this point, we somehow have the Fourier coefficients of $f * g$, i.e. $hat(f * g)$, and we need to convert this to $f * g$ efficiently. It might seem like we don't have an "inverse Walsh-Hadamard transform" yet, and it's not immediately obvious how to convert Fourier coefficients to a function in $O(N log N)$ time. Surprisingly, we already have all the tools to compute the inverse Walsh-Hadamard transform.
 
 Let's recall the important theorems we proved last time. In #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], we showed that $hat(f) = 1/2^n H_(2^n) f$. Furthermore, using #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices], we showed in #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the proof that the Walsh-Hadamard matrices are Hadamard matrices] that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$. Also, the Walsh-Hadamard matrices are symmetric, so $H_(2^n) = H_(2^n)^"T"$. Can we conclude something from these theorems?
 
@@ -65,4 +65,30 @@ Let's recall the important theorems we proved last time. In #noteref("walsh-hada
     H_(2^n) hat(f) = 1/2^n H_(2^n) H_(2^n) f.
   $
   Since $H_(2^n)$ is symmetric, $H_(2^n) = H_(2^n)^"T"$, and since $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$, the right-hand side simplifies to $1/2^n dot (2^n I_(2^n)) dot f = f$. Therefore, $f = H_(2^n) hat(f)$, as desired. $square$
+]
+
+This is quite a remarkable result. Intuitively, this means that the Walsh-Hadamard transform itself is (up to a constant factor) its own inverse! We know that we can compute $H_(2^n) g$ for any $g$ in $O(N log N)$ time, so setting $g = hat(f)$ means we can compute $H_(2^n) hat(f) = f$ in $O(N log N)$ time using the fast Walsh-Hadamard transform.
+
+Cool. Now, it suffices to compute $hat(f * g)$ efficiently. But what is $hat(f * g)$? Let's chase the definition and find out.
+
+First, we will need a helpful lemma.
+
+#lemma(title: "Parity of a Sum")[
+  For all $gamma, x, y in FF_2^n$, $chi_gamma (x xor y) = chi_gamma (x) chi_gamma (y)$.
+]
+
+The proof of this lemma was left as an exericse in a previous chapter (TODO: add exercises and cite later).
+
+#theorem(title: "XOR Convolution Theorem")[
+  For all $gamma in FF_2^n$,
+  $
+    hat(f * g)(gamma) = 2^n hat(f)(gamma) hat(g)(gamma).
+  $
+]
+
+#proof[
+  The proof follows directly by chasing the definition and applying the facts we know already.
+  $
+    hat(f * g)(gamma) & = 1/2^n sum_(z in FF_2^n) (f*g)(z) chi_gamma (z) quad & ("Fourier expansion")
+  $
 ]
