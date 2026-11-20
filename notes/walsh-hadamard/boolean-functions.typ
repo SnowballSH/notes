@@ -92,7 +92,7 @@ There are $2^n$ parity functions, one for each subset of $[n]$. Our first theore
                 & = 1 - 2 dot ((1 - x_1) (1 - x_2)) / 4 \
                 & = 1/2 + 1/2 x_1 + 1/2 x_2 - 1/2 x_1 x_2,
   $
-  which matches @ex-and. Its Fourier coefficients are $hat(f)(emptyset) = hat(f)({1}) = hat(f)({2}) = 1/2$ and $hat(f)({1, 2}) = -1/2$.
+  which matches @ex-and. Writing $f = "AND"_2$, its Fourier coefficients are $hat(f)(emptyset) = hat(f)({1}) = hat(f)({2}) = 1/2$ and $hat(f)({1, 2}) = -1/2$.
 ]
 
 = Orthonormality of the Parity Functions

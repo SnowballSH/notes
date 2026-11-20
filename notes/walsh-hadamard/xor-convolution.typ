@@ -19,7 +19,7 @@ $
 $
 for polynomials $A(x) = sum_(i=0)^(n-1) a_i x^i$ and $B(x) = sum_(i=0)^(n-1) b_i x^i$. In all these cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
 
-The same definition seems intuitive in the standard vector space of Boolean functions $FF_2^n -> RR$ on $chevron.l FF_2; xor, dot chevron.r$. In this world, we can also talk about which two scalars sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
+The same definition seems intuitive in the standard vector space of Boolean functions $FF_2^n -> RR$ on $chevron.l FF_2; xor, dot chevron.r$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
 
 #definition(title: "XOR Convolution")[
   Let $f : FF_2^n -> RR$ and $g : FF_2^n -> RR$ be Boolean functions. The _XOR convolution_ of $f$ and $g$ is the function $f * g : FF_2^n -> RR$ given by
@@ -32,7 +32,7 @@ In other words, $(f * g)(z)$ is the sum of all possible values of $f(x) g(y)$ su
 
 A careful reader might observe that this form is not exactly the same as the examples enumerated above. In one of the above examples, we could have also defined $(A * B)_k = sum_(i + j = k) a_i b_j$, but always writing the convolution in this way seems a bit cumbersome to work with.
 
-Interestingly, $xor$ is an involution (i.e. $x xor x = 0$) and commutative, so $x xor y = z <==> y = z xor x$. Therefore, we can rewrite the XOR convolution of @def-xor-convolution as follows.
+Interestingly, $xor$ is self-inverse (i.e. $x xor x = 0$) and commutative, so $x xor y = z <==> y = z xor x$. Therefore, we can rewrite the XOR convolution of @def-xor-convolution as follows.
 
 #proposition(title: "Alternative Expression for the XOR Convolution")[
   $
@@ -84,21 +84,108 @@ The proof of this lemma was left as #noteref("boolean-functions", <exr-parity-of
   $
     hat(f * g)(gamma) = 2^n hat(f)(gamma) hat(g)(gamma).
   $
-]
+] <thm-xor-convolution>
 
 #proof[
   The proof follows directly by chasing definitions and applying the facts we know already.
   $
-    hat(f * g)(gamma) & = 1/2^n sum_(z in FF_2^n) (f*g)(z) chi_gamma (z) & ("Fourier expansion")\
-    &= 1/2^n sum_(z in FF_2^n) sum_(x in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Definition of " f * g)\
+    hat(f * g)(gamma) & = 1/2^n sum_(z in FF_2^n) (f*g)(z) chi_gamma (z) & ("Coefficient formula")\
+    &= 1/2^n sum_(z in FF_2^n) sum_(x in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Alternative expression for " f * g)\
     &= 1/2^n sum_(x in FF_2^n) sum_(z in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Swapping finite sums")\
     &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) g(y) chi_gamma (x xor y) & ("Let" y := x xor z, "a bijection")\
     &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) chi_gamma (x) g(y) chi_gamma (y) & ("Lemma")\
     &= 1/2^n (sum_(x in FF_2^n) f(x) chi_gamma (x))(sum_(y in FF_2^n) g(y) chi_gamma (y)) & ("Independence")\
-    &= 1/2^n (2^n hat(f)(gamma))(2^n hat(g)(gamma)) & ("Fourier expansion")\
+    &= 1/2^n (2^n hat(f)(gamma))(2^n hat(g)(gamma)) & ("Coefficient formula")\
     &= 2^n hat(f)(gamma) hat(g)(gamma).
   $
   $square$
 ]
 
+This is a very clean result. In Fourier coefficient space, the complicated-looking XOR convolution becomes a simple product: to find the coefficient of $f * g$ at $gamma$, we only need the coefficients of $f$ and $g$ at the same $gamma$.
 
+= The Fast Algorithm
+
+Now we have all the pieces of the puzzle. Let's put them together.
+
+#theorem(title: "Fast XOR Convolution")[
+  There exists an algorithm that computes the XOR convolution $f * g$ of two functions $f, g : FF_2^n -> RR$ in $O(N log N) = O(n 2^n)$ time.
+] <thm-fast-xor-convolution>
+
+#proof[
+  The algorithm has three steps, and uses only three calls to the fast Walsh-Hadamard transform.
+
+  + Compute the Fourier coefficients $hat(f)$ and $hat(g)$ using #noteref("walsh-hadamard", <thm-fwht>)[the fast Walsh-Hadamard transform]. This takes $O(N log N)$ time.
+  + For every $gamma in FF_2^n$, compute $hat(f * g)(gamma) = 2^n hat(f)(gamma) hat(g)(gamma)$. This is correct by @thm-xor-convolution. The computation for each of the $2^n$ values of $gamma$ takes constant time, so this step takes $O(N)$ time.
+  + Compute $f * g = H_(2^n) hat(f * g)$. This is correct by @prop-inverse-wht, and it is one more product with $H_(2^n)$, so the fast Walsh-Hadamard transform does it in $O(N log N)$ time.
+
+  Therefore, the entire algorithm takes $O(N log N + N + N log N) = O(N log N)$ time. $square$
+]
+
+In practice, we can tidy up the algorithm a little. Computing $hat(f)$ means computing $H_(2^n) f$ and then dividing every entry by $2^n$, and the same goes for $hat(g)$. It would be nicer to skip these divisions and only divide once at the end. Let $F = H_(2^n) f$ and $G = H_(2^n) g$, so that $hat(f) = 1/2^n F$ and $hat(g) = 1/2^n G$. Then, by @thm-xor-convolution,
+$
+  hat(f * g)(gamma) = 2^n dot (F(gamma)) / 2^n dot (G(gamma)) / 2^n = 1/2^n F(gamma) G(gamma).
+$
+Writing $F dot.o G$ for the pointwise product of the two vectors, @prop-inverse-wht gives
+$
+  f * g = H_(2^n) hat(f * g) = 1/2^n H_(2^n) (F dot.o G).
+$
+So the simplified algorithm proceeds as follows: transform $f$, transform $g$, multiply $F$ and $G$ pointwise, transform the result, and finally divide by $2^n$.
+
+#example(title: "Convolving on One Bit by Hand")[
+  Let $n = 1$, and let $f$ and $g$ have the vectors of values $(1, 2)$ and $(3, 4)$. Directly from @def-xor-convolution,
+  $
+    (f * g)(0) = f(0) g(0) + f(1) g(1) = 11, quad (f * g)(1) = f(0) g(1) + f(1) g(0) = 10.
+  $
+  Now let's follow the algorithm. Since $H_2 = mat(delim: "[", 1, 1; 1, -1)$, we get $F = (1 + 2, 1 - 2) = (3, -1)$ and $G = (3 + 4, 3 - 4) = (7, -1)$, so $F dot.o G = (21, 1)$. Transforming once more gives $(21 + 1, 21 - 1) = (22, 20)$, and dividing by $2$ gives $(11, 10)$, which is indeed the correct answer.
+]
+
+= Implementation
+
+The above proof translates directly into code. We reuse the function `fwht` from #link("/walsh-hadamard/walsh-hadamard#implementation")[the implementation in the previous chapter], which replaces an array $f$ with $H_(2^n) f$.
+
+```cpp
+vector<long long> xor_convolution(vector<long long> f, vector<long long> g) {
+    int size = f.size();
+    fwht(f);
+    fwht(g);
+    for (int i = 0; i < size; i++) f[i] *= g[i];
+    fwht(f);
+    for (int i = 0; i < size; i++) f[i] /= size;
+    return f;
+}
+```
+
+= Conclusion
+
+In this chapter, we defined the XOR convolution $f * g$ and found a fast way to compute it. The Walsh-Hadamard transform is its own inverse up to a factor of $2^n$, so we can move between a function and its Fourier coefficients in $O(N log N)$ time in both directions. In Fourier coefficient space, the XOR convolution is just a product of coefficients. Together, these give an $O(N log N)$ algorithm in place of the $O(N^2)$ brute-force one, where $N = 2^n$.
+
+#remark[
+  The XOR convolution theorem follows Section 1.5 of O'Donnell's _Analysis of Boolean Functions_. O'Donnell defines the convolution as an average instead of a sum, which is why the factor $2^n$ does not appear there. See @exr-averaged-convolution for the relationship between the two definitions.
+
+  The algorithm is a standard tool in competitive programming. See, for example, #link("https://codeforces.com/blog/entry/127823")[a Codeforces blog on XOR Convolutions] and
+  #link("https://oi-wiki.org/math/poly/fwt/")[OI Wiki's article on the fast Walsh-Hadamard transform].
+]
+
+= Exercises
+
+#exercise(title: "XOR Convolution is Commutative")[
+  Show that $f * g = g * f$ for all $f, g : FF_2^n -> RR$.
+] <exr-commutative>
+
+#exercise(title: "The Identity for XOR Convolution")[
+  Let $delta : FF_2^n -> RR$ be the function with $delta(0) = 1$ and $delta(x) = 0$ for all $x != 0$. Show that $f * delta = f$ for every $f : FF_2^n -> RR$. Then compute the Fourier coefficients of $delta$, and check that your answer agrees with @thm-xor-convolution.
+] <exr-identity>
+
+#exercise(title: "Averaged Convolution")[
+  Define the _averaged convolution_ of $f, g : FF_2^n -> RR$ by
+  $
+    (f convolve.o g)(z) = EE_x [f(x) g(z xor x)] = 1/2^n sum_(x in FF_2^n) f(x) g(z xor x).
+  $
+  Show that $hat(f convolve.o g)(gamma) = hat(f)(gamma) hat(g)(gamma)$ for all $gamma in FF_2^n$. Hint: consider #noteref("boolean-functions", <exr-linear>)[the linearity of Fourier coefficients].
+] <exr-averaged-convolution>
+
+#exercise(title: "Counting Pairs by XOR")[
+  Suppose we are given a list of $n$ integers $a_1, ..., a_n$ with $0 <= a_i < n$ for all $1 <= i <= n$. We would like to output an array $c$ of length $n$, such that for each $0 <= k < n$, $c_(k+1)$ equals the number of pairs $(i, j)$ with $1 <= i, j <= n$ such that $a_i xor a_j = k$. Prove that this problem can be solved in $O(n log n)$ time. For simplicity, you may assume that $n$ is a power of two.
+
+  (Hint: let $f(x)$ be the number of times $x$ appears in the list, and apply what we learned in this chapter.)
+] <exr-counting-pairs>

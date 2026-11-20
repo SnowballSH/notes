@@ -1,4 +1,5 @@
 import type { Attachment } from "svelte/attachments";
+import { reachIfScrolling } from "./scrolling.ts";
 
 /** An equation this much too wide is shrunk to fit; a wider one scrolls sideways instead. */
 const smallestScale = 0.82;
@@ -21,12 +22,6 @@ function shrinkToFit(equation: HTMLElement): void {
 		}
 		math.style.fontSize = `${size}px`;
 	}
-}
-
-/** An equation that still scrolls can be reached and scrolled with the keyboard. */
-function reachIfScrolling(equation: HTMLElement): void {
-	if (equation.scrollWidth > equation.clientWidth + 1) equation.tabIndex = 0;
-	else equation.removeAttribute("tabindex");
 }
 
 function settle(equation: HTMLElement): void {
