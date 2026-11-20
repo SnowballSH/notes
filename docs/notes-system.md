@@ -19,7 +19,7 @@ the page. Names are lowercase words joined by hyphens. A note whose header says
 
 | Function | Renders as |
 |---|---|
-| `definition`, `theorem`, `proposition`, `lemma`, `example`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. Definitions and results are filled boxes, an example is an outlined box, and a remark is an aside with a rule down its side. |
+| `definition`, `theorem`, `proposition`, `lemma`, `example`, `exercise`, `remark` | A numbered card. `title:` is optional; `collapsed: true` or `false` makes it collapsible. A label makes it a target for `@label`. Definitions and results are filled boxes, an example or an exercise is an outlined box, and a remark is an aside with a rule down its side. |
 | `proof`, `solution` | A collapsible block with a rule down its side, closed unless `collapsed: false`. |
 | `gallery(columns: n, ..items)` | Items laid out in `n` columns (two on narrow screens). Use it in place of `grid`, which Typst drops in HTML export. |
 | `noteref(note, <label>)[words]` | A link to a labelled card of another note, written as the card's name ("Theorem 2") unless words are given. `note` is a slug of the same course, or `course/slug`. The compile step resolves it against the other note and fails if the note or the label is missing, or if a published note points into a draft. |

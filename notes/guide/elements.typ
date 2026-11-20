@@ -63,6 +63,8 @@ A card in another note is referenced with `noteref`, which writes the card's nam
   Any card can be collapsible: pass `collapsed: true` or `collapsed: false`.
 ]
 
+#exercise(title: "Exercise")[An exercise is outlined like an example.]
+
 #solution[A solution is collapsed like a proof.]
 
 #remark[A remark is an aside with a rule down its side.]

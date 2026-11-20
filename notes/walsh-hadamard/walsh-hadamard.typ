@@ -91,7 +91,7 @@ Despite being called the Walsh-Hadamard matrices, it is not entirely obvious tha
 
 #proposition(title: "The Walsh-Hadamard Matrices are Hadamard Matrices")[
   For all $n >= 0$, $H_(2^n)$ is a Hadamard matrix.
-]
+] <prop-walsh-hadamard-is-hadamard>
 
 Intuitively, this is true by induction: for two different rows $r_1$ and $r_2$, the first half of $r_1$ and $r_2$ are orthogonal inductively, and the second half of $r_1$ and $r_2$ are also orthogonal inductively, since every row is just two copies of a row in the previous matrix in the sequence, potentially multiplied by $-1$. We can prove this more rigorously.
 
@@ -185,7 +185,7 @@ This is an amazing result, because it reminds us of the idea of parity functions
   $
     hat(f) = 1/2^n H_(2^n) f.
   $
-]
+] <thm-wht>
 
 #proof[
   For any $gamma in FF_2^n$, we have
@@ -233,7 +233,7 @@ Again, not all hope is lost. The matrices $H_(2^n)$ are defined recursively usin
 
 #theorem(title: "Fast Walsh-Hadamard Transform (FWHT)")[
   There exists an algorithm (using the WHT) that computes the Fourier expansion of a function $f : FF_2^n -> RR$ in $O(N log N) = O(n 2^n)$ time.
-]
+] <thm-fwht>
 
 #proof[
   The algorithm is based on divide and conquer, splitting $f$ into two equal halves, recursively solving each half, then efficiently combining the answers.
@@ -277,6 +277,34 @@ Again, not all hope is lost. The matrices $H_(2^n)$ are defined recursively usin
   $
 ]
 
+= Implementation
+
+The proof of @thm-fwht is already an algorithm, so let's turn it into code. We store $f$ as an array of length $N = 2^n$, where the index $x$, read in binary, holds $f(x)$. The function below replaces this array with $H_(2^n) f$.
+
+```cpp
+#include <vector>
+using namespace std;
+
+void fwht(vector<long long>& f) {
+    int size = f.size();
+    for (int half = 1; half < size; half *= 2) {
+        for (int start = 0; start < size; start += 2 * half) {
+            for (int j = start; j < start + half; j++) {
+                long long u = f[j], v = f[j + half];
+                f[j] = u + v;
+                f[j + half] = u - v;
+            }
+        }
+    }
+}
+```
+
+The proof works from the top down: it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
+
+A block of size $1$ is already its own transform, since $H_1 = [1]$. So whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
+
+The outer loop runs $n$ times, once for each level of the recursion, and each round touches every entry of the array once. So the running time is $O(n 2^n) = O(N log N)$, which agrees with @thm-fwht. The code assumes that the values of $f$ are integers, so every entry stays an integer. To obtain the Fourier coefficients of $f$, we divide every entry of the result by $N$, which may no longer give integers.
+
 = Conclusion
 
 In this chapter, we defined the Walsh-Hadamard matrices $H_(2^n)$ recursively and showed that they are Hadamard matrices. Their entries are $(-1)^(arrow(gamma) dot arrow(x))$, which are exactly the values of the parity functions, so multiplying the vector of values of $f$ by $H_(2^n)$ and dividing by $2^n$ gives the Fourier coefficients of $f$. Finally, the recursive structure of $H_(2^n)$ lets us compute this product in $O(N log N)$ time instead of $O(N^2)$, where $N = 2^n$.
@@ -288,3 +316,16 @@ In this chapter, we defined the Walsh-Hadamard matrices $H_(2^n)$ recursively an
   The propositions are from Exercise 1.12 of O'Donnell.
 ]
 
+= Exercises
+
+#exercise(title: "The Walsh-Hadamard Matrices are Symmetric")[
+  Show that $H_(2^n)^"T" = H_(2^n)$ for all $n >= 0$.
+] <exr-symmetric>
+
+#exercise(title: "Balanced Rows")[
+  Let $n >= 1$. Show that every row of $H_(2^n)$ other than the first has exactly $2^(n-1)$ entries equal to $1$ and $2^(n-1)$ entries equal to $-1$.
+] <exr-balanced-rows>
+
+#exercise(title: "Transform of a Parity Function")[
+  Let $gamma in FF_2^n$. Compute the vector $H_(2^n) chi_gamma$, and use it to read off the Fourier coefficients of $chi_gamma$.
+] <exr-transform-of-parity>

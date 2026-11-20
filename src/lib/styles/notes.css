@@ -381,8 +381,8 @@
 	background: var(--note-surface);
 }
 
-/* A worked example is set apart without the fill that marks a statement to remember. */
-.note .card-example {
+/* A worked example or an exercise is set apart without the fill that marks a statement to remember. */
+.note :is(.card-example, .card-exercise) {
 	--note-surface: var(--fui-surface-base);
 	background: none;
 }

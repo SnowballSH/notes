@@ -18,9 +18,13 @@ export const walshHadamard: NotesOutline = {
 					note: "walsh-hadamard",
 				},
 				{
+					title: "XOR convolution",
+					summary: "Combining two functions on bitstrings quickly, using the fast transform.",
+					note: "xor-convolution",
+				},
+				{
 					title: "Classical applications",
-					summary:
-						"XOR convolution, linearity testing, and an error-correcting code built from parity functions.",
+					summary: "Linearity testing, and an error-correcting code built from parity functions.",
 				},
 			],
 		},

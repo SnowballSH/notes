@@ -77,7 +77,7 @@ line to publish.
 | A section, a subsection | `= Title`, `== Title` |
 | A defined term | `_term_` |
 | Inline and display math | `$x^2$`, and `$ x^2 $` with spaces inside the dollars |
-| A numbered card | `#definition(title: "Name")[...]`, and likewise `theorem`, `proposition`, `lemma`, `example`, `remark` |
+| A numbered card | `#definition(title: "Name")[...]`, and likewise `theorem`, `proposition`, `lemma`, `example`, `exercise`, `remark` |
 | A collapsed proof | `#proof[... $square$]`, or `#solution[...]` |
 | A reference to a card | Put `<thm-name>` after the card, then write `@thm-name` |
 | A reference to a card in another note | `#noteref("<slug>", <thm-name>)` writes "Theorem 2" and links to it; `#noteref("<slug>", <thm-name>)[other words]` keeps your words. Use `"<course>/<slug>"` for a note of another course. The build fails if the note or the label does not exist. |
