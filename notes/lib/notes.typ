@@ -4,6 +4,7 @@
   proposition: "Proposition",
   lemma: "Lemma",
   example: "Example",
+  exercise: "Exercise",
   remark: "Remark",
 )
 
@@ -54,6 +55,7 @@
 #let proposition = card.with("proposition")
 #let lemma = card.with("lemma")
 #let example = card.with("example")
+#let exercise = card.with("exercise")
 #let remark = card.with("remark")
 
 #let proof(collapsed: true, body) = collapsible("proof", strong[Proof], collapsed, body)

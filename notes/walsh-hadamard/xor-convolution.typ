@@ -50,7 +50,7 @@ Recall that the Walsh-Hadamard transform computes the Fourier coefficients of a 
 
 Let's work backwards from what we want to compute. At the end of the algorithm, we need to output the function $f * g$. Ideally, at this point, we somehow have the Fourier coefficients of $f * g$, i.e. $hat(f * g)$, and we need to convert this to $f * g$ efficiently. It might seem like we don't have an "inverse Walsh-Hadamard transform" yet, and it's not immediately obvious how to convert Fourier coefficients to a function in $O(N log N)$ time. Surprisingly, we already have all the tools to compute the inverse Walsh-Hadamard transform.
 
-Let's recall the important theorems we proved last time. In #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], we showed that $hat(f) = 1/2^n H_(2^n) f$. Furthermore, using #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices], we showed in #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the proof that the Walsh-Hadamard matrices are Hadamard matrices] that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$. Also, the Walsh-Hadamard matrices are symmetric, so $H_(2^n) = H_(2^n)^"T"$. Can we conclude something from these theorems?
+Let's recall the important theorems we proved last time. In #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], we showed that $hat(f) = 1/2^n H_(2^n) f$. Furthermore, using #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices], we showed in #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the proof that the Walsh-Hadamard matrices are Hadamard matrices] that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$. Also, the Walsh-Hadamard matrices are symmetric (#noteref("walsh-hadamard", <exr-symmetric>)[an exercise in the previous chapter]), so $H_(2^n) = H_(2^n)^"T"$. Can we conclude something from these theorems?
 
 #proposition(title: "Inverse Walsh-Hadamard Transform")[
   Let $f : FF_2^n -> RR$. Then,
@@ -77,7 +77,7 @@ First, we will need a helpful lemma.
   For all $gamma, x, y in FF_2^n$, $chi_gamma (x xor y) = chi_gamma (x) chi_gamma (y)$.
 ]
 
-The proof of this lemma was left as an exericse in a previous chapter (TODO: add exercises and cite later).
+The proof of this lemma was left as #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the first chapter].
 
 #theorem(title: "XOR Convolution Theorem")[
   For all $gamma in FF_2^n$,
@@ -87,8 +87,18 @@ The proof of this lemma was left as an exericse in a previous chapter (TODO: add
 ]
 
 #proof[
-  The proof follows directly by chasing the definition and applying the facts we know already.
+  The proof follows directly by chasing definitions and applying the facts we know already.
   $
-    hat(f * g)(gamma) & = 1/2^n sum_(z in FF_2^n) (f*g)(z) chi_gamma (z) quad & ("Fourier expansion")
+    hat(f * g)(gamma) & = 1/2^n sum_(z in FF_2^n) (f*g)(z) chi_gamma (z) & ("Fourier expansion")\
+    &= 1/2^n sum_(z in FF_2^n) sum_(x in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Definition of " f * g)\
+    &= 1/2^n sum_(x in FF_2^n) sum_(z in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Swapping finite sums")\
+    &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) g(y) chi_gamma (x xor y) & ("Let" y := x xor z, "a bijection")\
+    &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) chi_gamma (x) g(y) chi_gamma (y) & ("Lemma")\
+    &= 1/2^n (sum_(x in FF_2^n) f(x) chi_gamma (x))(sum_(y in FF_2^n) g(y) chi_gamma (y)) & ("Independence")\
+    &= 1/2^n (2^n hat(f)(gamma))(2^n hat(g)(gamma)) & ("Fourier expansion")\
+    &= 2^n hat(f)(gamma) hat(g)(gamma).
   $
+  $square$
 ]
+
+

@@ -195,3 +195,17 @@ In this chapter, we wrote Boolean functions as functions on ${-1, 1}^n$ and show
 #remark[
   The material from this chapter follows Sections 1.2 to 1.4 of O'Donnell's _Analysis of Boolean Functions_.
 ]
+
+= Exercises
+
+#exercise(title: "Parity of a Sum")[
+  Let $gamma, x, y in FF_2^n$. Show that $chi_gamma (x + y) = chi_gamma (x) chi_gamma (y)$, where $x + y$ is the bitwise XOR of $x$ and $y$.
+] <exr-parity-of-a-sum>
+
+#exercise(title: "The Empty Coefficient is the Average")[
+  Let $f : {-1, 1}^n -> RR$. Show that $hat(f)(emptyset) = EE_x [f(x)]$.
+] <exr-average>
+
+#exercise(title: "Fourier Coefficients are Linear")[
+  Let $f, g : {-1, 1}^n -> RR$ and $c in RR$. Show that $hat(f + g)(S) = hat(f)(S) + hat(g)(S)$ and $hat(c f)(S) = c hat(f)(S)$ for all $S subset.eq [n]$.
+] <exr-linear>
