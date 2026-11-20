@@ -92,7 +92,9 @@ there as its bare symbols.
 
 On a narrow screen `src/lib/notes/equations.ts` sets a display equation that
 is up to about a fifth too wide smaller, so that it shows whole. Wider ones
-scroll sideways.
+scroll sideways. Whatever scrolls sideways on its own (such an equation, or a
+code block or table too wide for the screen) is put in the tab order by
+`src/lib/notes/scrolling.ts`, so the keyboard can reach and scroll it.
 
 Every card also gets an id: its label if the author gave it one, otherwise its
 kind and number, such as `theorem-3`. Each card heading and section heading
@@ -275,7 +277,8 @@ without errors, never scrolls
 sideways and passes the axe accessibility checks in both themes; opened
 proofs survive a reload; a reference previews its target; search reaches a
 named theorem; the widget loads without moving the page; on a phone the note
-starts on the first screen and every equation fits or scrolls on its own.
+starts on the first screen and every equation and code block fits or scrolls
+on its own.
 It needs the browsers once: `pnpm exec playwright install chromium firefox`.
 CI runs it on every pull request, keeps the traces of a failed run, and does
 not publish the image unless it passes.

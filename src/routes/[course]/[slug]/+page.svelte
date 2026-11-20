@@ -12,6 +12,7 @@ import { zoomableFigures } from "#lib/notes/figures.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
 import { recordLastRead } from "#lib/notes/progress.ts";
 import { referencePreviews } from "#lib/notes/references.ts";
+import { reachScrollingBlocks } from "#lib/notes/scrolling.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 import { widgets } from "#lib/widgets/mount.ts";
 
@@ -66,6 +67,7 @@ $effect(() => {
 		{@attach closableBlocks}
 		{@attach referencePreviews}
 		{@attach fitEquations}
+		{@attach reachScrollingBlocks}
 		{@attach zoomableFigures}
 		{@attach prepareForPrint}
 	>

@@ -38,6 +38,7 @@ export const markers = {
 	nextNote: 'rel="next"',
 	tiling: 'name="hadamard-tiling"',
 	equation: 'class="equation"',
+	code: "<pre",
 	contents: 'class="jump-button',
 } as const;
 

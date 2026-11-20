@@ -214,4 +214,22 @@ test.describe("on a phone", () => {
 		expect(equations.filter((equation) => equation.pastScreen)).toEqual([]);
 		expect(equations.filter((equation) => equation.scrolls !== equation.focusable)).toEqual([]);
 	});
+
+	test("a code block either fits the screen or scrolls on its own and takes focus", async ({
+		page,
+		request,
+	}) => {
+		await page.goto(await pageWith(request, markers.note, markers.code), {
+			waitUntil: "networkidle",
+		});
+		await page.evaluate(() => document.fonts.ready);
+		const blocks = await page.evaluate(() =>
+			[...document.querySelectorAll<HTMLElement>("article.note pre")].map((block) => ({
+				scrolls: block.scrollWidth > block.clientWidth + 1,
+				focusable: block.tabIndex === 0,
+			})),
+		);
+		expect(blocks.length).toBeGreaterThan(0);
+		expect(blocks.filter((block) => block.scrolls !== block.focusable)).toEqual([]);
+	});
 });
