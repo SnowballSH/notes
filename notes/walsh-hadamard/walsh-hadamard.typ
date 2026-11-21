@@ -93,7 +93,7 @@ Despite being called the Walsh-Hadamard matrices, it is not entirely obvious tha
   For all $n >= 0$, $H_(2^n)$ is a Hadamard matrix.
 ] <prop-walsh-hadamard-is-hadamard>
 
-Intuitively, this is true by induction: for two different rows $r_1$ and $r_2$, the first halves of $r_1$ and $r_2$ are orthogonal inductively, and the second halves of $r_1$ and $r_2$ are also orthogonal inductively, since every row is just two copies of a row in the previous matrix in the sequence, potentially multiplied by $-1$. We can prove this more rigorously.
+Intuitively, this is true by induction: every row is just two copies of a row in the previous matrix in the sequence, with the second copy potentially multiplied by $-1$. Take two different rows $r_1$ and $r_2$. If they come from two different rows of the previous matrix, then the first halves of $r_1$ and $r_2$ are orthogonal inductively, and the second halves of $r_1$ and $r_2$ are also orthogonal inductively. If they come from the same row of the previous matrix, then their first halves are equal and their second halves are negatives of each other, so the contributions of the two halves to the dot product cancel. We can prove this more rigorously.
 
 #proof[
   By @hadamard-criterion, it suffices to show that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$ for all $n >= 0$.

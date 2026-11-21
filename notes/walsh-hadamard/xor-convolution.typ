@@ -5,7 +5,7 @@
   order: 3,
 )
 
-In this chapter, we will explore a practical application of the fast Walsh-Hadamard transform by discussing a fast algorithm for computing the XOR convolution of two Boolean functions.
+In this chapter, we will explore a practical application of the fast Walsh-Hadamard transform by discussing a fast algorithm for computing the XOR convolution of two functions on $FF_2^n$.
 
 = XOR Convolution
 
@@ -19,10 +19,10 @@ $
 $
 for polynomials $A(x) = sum_(i=0)^(n-1) a_i x^i$ and $B(x) = sum_(i=0)^(n-1) b_i x^i$. In all these cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
 
-The same definition seems intuitive in the standard vector space of Boolean functions $FF_2^n -> RR$ on $chevron.l FF_2; xor, dot chevron.r$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
+The same definition seems intuitive in the standard vector space of functions $FF_2^n -> RR$ on $chevron.l FF_2; xor, dot chevron.r$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
 
 #definition(title: "XOR Convolution")[
-  Let $f : FF_2^n -> RR$ and $g : FF_2^n -> RR$ be Boolean functions. The _XOR convolution_ of $f$ and $g$ is the function $f * g : FF_2^n -> RR$ given by
+  Let $f : FF_2^n -> RR$ and $g : FF_2^n -> RR$. The _XOR convolution_ of $f$ and $g$ is the function $f * g : FF_2^n -> RR$ given by
   $
     (f * g)(z) := sum_(x xor y = z) f(x) g(y).
   $
@@ -46,7 +46,7 @@ There is an obvious "brute-force" $O(N^2) = O(2^(2n))$ algorithm for doing this,
 
 = Fourier Transforming the Convolution
 
-Recall that the Walsh-Hadamard transform computes the Fourier coefficients of a Boolean function efficiently. To apply the Walsh-Hadamard transform to the XOR convolution problem, we should consider converting the problem to Fourier coefficient space.
+Recall that the Walsh-Hadamard transform computes the Fourier coefficients of a function efficiently. To apply the Walsh-Hadamard transform to the XOR convolution problem, we should consider converting the problem to Fourier coefficient space.
 
 Let's work backwards from what we want to compute. At the end of the algorithm, we need to output the function $f * g$. Ideally, at this point, we somehow have the Fourier coefficients of $f * g$, i.e. $hat(f * g)$, and we need to convert this to $f * g$ efficiently. It might seem like we don't have an "inverse Walsh-Hadamard transform" yet, and it's not immediately obvious how to convert Fourier coefficients to a function in $O(N log N)$ time. Surprisingly, we already have all the tools to compute the inverse Walsh-Hadamard transform.
 
