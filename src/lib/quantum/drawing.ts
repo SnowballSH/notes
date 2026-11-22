@@ -17,6 +17,9 @@ export const amplitudeAt = (down: number): number => {
 	return clamp(Number(snapped.toFixed(2)), -1, 1);
 };
 
+/** How far down a plot an amplitude sits, as a fraction of its height: the inverse of amplitudeAt. */
+export const plotPosition = (amplitude: number): number => (1 - clamp(amplitude, -1, 1)) / 2;
+
 /** The unit vector in the direction of a drawing, which the zero vector does not have. */
 export function normalise(drawing: readonly number[]): Amplitudes | undefined {
 	const length = Math.hypot(...drawing);

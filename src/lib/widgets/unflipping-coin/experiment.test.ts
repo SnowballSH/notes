@@ -7,6 +7,7 @@ import {
 	formatTerms,
 	hadamardTerms,
 	measure,
+	result,
 	start,
 	stateName,
 	summarise,
@@ -70,6 +71,15 @@ describe("the unflipping experiment", () => {
 		const points = [0.1, 0.9];
 		const result = measure(applyHadamard(start), () => points.shift() ?? 0);
 		expect(result.steps.at(-1)).toEqual({ kind: "measurement", qubit: 0, coin: 1 });
+	});
+
+	it("shows a result only straight after a measurement", () => {
+		const once = applyHadamard(start);
+		expect(result(start)).toBe("");
+		expect(result(once)).toBe("");
+		expect(result(measure(once, () => 0.75))).toBe("Measured 1");
+		expect(result(measure(applyHadamard(once), () => 0.75))).toBe("Measured 0");
+		expect(result(applyHadamard(measure(once, () => 0.75)))).toBe("");
 	});
 
 	it("records its steps in order without changing the experiment it extends", () => {

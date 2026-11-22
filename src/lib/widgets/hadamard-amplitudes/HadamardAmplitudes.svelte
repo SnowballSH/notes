@@ -102,7 +102,7 @@ function applyGates(): void {
 	</div>
 	<div class="states">
 		<div class="state">
-			<p class="title">{ket("ψ")} <span class="hint">draw</span></p>
+			<p class="title">{ket("ψ")}</p>
 			<AmplitudeChart
 				name="Amplitudes of the state, drawable"
 				{labels}
@@ -125,11 +125,6 @@ function applyGates(): void {
 	</div>
 	{#snippet caption()}
 		<p class="spoken">{announcement}</p>
-		<p class="legend">
-			<span><span class="swatch plus" aria-hidden="true"></span>positive</span>
-			<span><span class="swatch minus" aria-hidden="true"></span>negative</span>
-			<span><span class="swatch chance" aria-hidden="true"></span>probability</span>
-		</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -207,11 +202,6 @@ sup {
 	font-family: var(--fui-font-mono);
 	color: var(--fui-ink);
 }
-.hint {
-	margin-left: 0.5rem;
-	font-size: 0.75rem;
-	color: var(--fui-ink-muted);
-}
 .spoken {
 	position: absolute;
 	width: 1px;
@@ -221,39 +211,9 @@ sup {
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
-.legend {
-	margin: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 1rem;
-}
-.legend > span {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-}
-.swatch {
-	width: 0.75rem;
-	height: 0.75rem;
-	border-radius: var(--fui-radius-xs);
-}
-.swatch.plus {
-	background: var(--fui-accent);
-}
-.swatch.minus {
-	background: var(--fui-code-warm);
-}
-.swatch.chance {
-	border: 1px solid var(--fui-line);
-	background: linear-gradient(to right, transparent, var(--fui-ink));
-}
 @media print {
-	button,
-	.hint {
+	button {
 		display: none;
-	}
-	.swatch {
-		print-color-adjust: exact;
 	}
 }
 </style>

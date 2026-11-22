@@ -85,7 +85,7 @@ const describeCoin = (coin: readonly number[]): string => {
 	return face === -1 ? "coin fair" : `coin ${face}`;
 };
 
-/** The state of both sides in a few words, for the caption. */
+/** The state of both sides in a few words, for screen readers. */
 export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 	const last = steps.at(-1);
 	const cancelled = terms?.findIndex(cancels) ?? -1;
@@ -96,6 +96,12 @@ export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 				? `Qubit ${stateName(qubit)}`
 				: `Qubit ${stateName(qubit)}, the ${ket(String(cancelled))} terms cancel`;
 	return `${qubitNow}; ${describeCoin(coin)}.`;
+}
+
+/** What the caption shows: the outcome when the last step was a measurement, and nothing otherwise. */
+export function result({ steps }: Experiment): string {
+	const last = steps.at(-1);
+	return last?.kind === "measurement" ? `Measured ${last.qubit}` : "";
 }
 
 export function describeStep(step: Step): string {

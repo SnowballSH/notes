@@ -10,6 +10,7 @@ import {
 	type Experiment,
 	formatTerms,
 	measure,
+	result,
 	start,
 	stateName,
 	summarise,
@@ -58,7 +59,7 @@ const interfering = $derived(
 			/>
 		</div>
 		<div class="side" role="group" aria-label="Classical coin">
-			<p class="name">Coin <span class="hint">H tosses it</span></p>
+			<p class="name">Coin</p>
 			<AmplitudeChart
 				name="Probabilities of the coin"
 				labels={[...bits]}
@@ -77,7 +78,8 @@ const interfering = $derived(
 		{/if}
 	</p>
 	{#snippet caption()}
-		<p>{summarise(experiment)}</p>
+		<p class="spoken">{summarise(experiment)}</p>
+		<p class="result" aria-hidden="true">{result(experiment)}</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -149,11 +151,8 @@ p {
 	font-weight: 600;
 	color: var(--fui-ink);
 }
-.hint {
-	margin-left: 0.375rem;
-	font-size: 0.75rem;
-	font-weight: 400;
-	color: var(--fui-ink-muted);
+.result {
+	min-height: 1.5em;
 }
 .terms {
 	display: flex;
