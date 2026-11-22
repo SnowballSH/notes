@@ -1,5 +1,5 @@
 <script lang="ts">
-import { amplitudeAt, columnAt } from "./drawing.ts";
+import { amplitudeAt, columnAt, plotPosition } from "./drawing.ts";
 import { formatAmplitude, formatDyadic, minusSign } from "./format.ts";
 
 interface Props {
@@ -15,6 +15,15 @@ interface Props {
 	ondrawend?: () => void;
 	/** Called with a column and a key pressed on it; returns whether the key did something. */
 	onkey?: (index: number, key: string) => boolean;
+	/**
+	 * Columns to pick out, such as a marked input. When given, even if empty, only these
+	 * columns have accent-coloured bars and every other bar is neutral, whatever its sign.
+	 */
+	highlighted?: readonly number[];
+	/** An amplitude to rule across the plots, such as the mean, with a short label. */
+	level?: { value: number; label: string };
+	/** For more columns than have room for text: no numbers under the bars, labels on their side. */
+	dense?: boolean;
 }
 
 const {
@@ -26,6 +35,9 @@ const {
 	ondraw,
 	ondrawend,
 	onkey,
+	highlighted,
+	level,
+	dense = false,
 }: Props = $props();
 
 let chart = $state<HTMLElement>();
@@ -66,8 +78,11 @@ function pressKey(event: KeyboardEvent, index: number): void {
 	if (onkey?.(index, event.key)) event.preventDefault();
 }
 
+const isHighlighted = (index: number): boolean => highlighted?.includes(index) ?? false;
+
 const describe = (index: number): string =>
 	[
+		isHighlighted(index) && "highlighted",
 		amplitudes && `amplitude ${formatAmplitude(amplitudes[index] ?? 0)}`,
 		`probability ${formatDyadic(probabilities[index] ?? 0)}`,
 	]
@@ -79,15 +94,17 @@ const describe = (index: number): string =>
 	{@const amplitude = amplitudes?.[index]}
 	{#if amplitude !== undefined}
 		<span class="plot" aria-hidden="true">
-			<span class="bar" class:negative={amplitude < 0} style:--size={Math.abs(amplitude)}></span>
+			<span class="bar" class:negative={amplitude < 0} style:--amplitude={amplitude}></span>
 		</span>
-		{@const shown = formatAmplitude(amplitude)}
-		<span class="amplitude" class:negative={shown.startsWith(minusSign)} aria-hidden="true">
-			{shown}
-		</span>
+		{#if !dense}
+			{@const shown = formatAmplitude(amplitude)}
+			<span class="amplitude" class:negative={shown.startsWith(minusSign)} aria-hidden="true">
+				{shown}
+			</span>
+		{/if}
 	{/if}
 	<span class="chance" style:--chance={probabilities[index] ?? 0} aria-hidden="true"></span>
-	{#if showProbabilityValues}
+	{#if showProbabilityValues && !dense}
 		<span class="chance-value" aria-hidden="true">{formatDyadic(probabilities[index] ?? 0)}</span>
 	{/if}
 	<span class="label" aria-hidden="true">{labels[index]}</span>
@@ -97,7 +114,9 @@ const describe = (index: number): string =>
 	class="chart"
 	class:drawable={ondraw !== undefined}
 	class:drawing={stroke !== undefined}
-	class:dense={labels.length > 4}
+	class:crowded={labels.length > 4}
+	class:dense
+	class:highlighting={highlighted !== undefined}
 	bind:this={chart}
 	style:--columns={labels.length}
 	role={ondraw ? "group" : "list"}
@@ -112,6 +131,7 @@ const describe = (index: number): string =>
 		{#if ondraw}
 			<div
 				class="column"
+				class:highlighted={isHighlighted(index)}
 				role="slider"
 				tabindex="0"
 				aria-orientation="vertical"
@@ -125,16 +145,22 @@ const describe = (index: number): string =>
 				{@render column(index)}
 			</div>
 		{:else}
-			<div class="column" role="listitem">
+			<div class="column" class:highlighted={isHighlighted(index)} role="listitem">
 				<span class="spoken">{label}: {describe(index)}</span>
 				{@render column(index)}
 			</div>
 		{/if}
 	{/each}
+	{#if level && amplitudes}
+		<span class="level" style:--down={plotPosition(level.value)} aria-hidden="true">
+			<span class="level-label">{level.label}</span>
+		</span>
+	{/if}
 </div>
 
 <style>
 .chart {
+	position: relative;
 	--unit: var(--chart-unit, 4.5rem);
 	width: min(100%, var(--columns) * 3.25rem);
 	display: grid;
@@ -184,16 +210,27 @@ const describe = (index: number): string =>
 }
 .bar {
 	position: absolute;
-	inset: auto 18% 50%;
-	height: calc(var(--size) * 50%);
+	inset: 0 18% 50%;
+	/* A negative scale mirrors the bar below the axis, so a sign flip animates through zero. */
+	transform: scaleY(var(--amplitude));
+	transform-origin: bottom;
 	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
 	background: var(--fui-accent);
-	transition: height 250ms ease-out;
+	transition:
+		transform 250ms ease-out,
+		background-color 250ms ease-out;
 }
 .bar.negative {
-	inset: 50% 18% auto;
-	border-radius: 0 0 var(--fui-radius-xs) var(--fui-radius-xs);
 	background: var(--fui-code-warm);
+}
+.highlighting .bar {
+	background: var(--fui-ink-muted);
+}
+.highlighting .highlighted .bar {
+	background: var(--fui-accent);
+}
+.dense .bar {
+	inset-inline: 10%;
 }
 .drawing .bar {
 	transition: none;
@@ -203,7 +240,7 @@ const describe = (index: number): string =>
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
-.dense .amplitude {
+.crowded .amplitude {
 	font-size: 0.625rem;
 	letter-spacing: -0.03em;
 }
@@ -221,12 +258,42 @@ const describe = (index: number): string =>
 .chance-value {
 	font-variant-numeric: tabular-nums;
 }
+.dense .chance {
+	width: 80%;
+}
 .label {
 	color: var(--fui-ink-secondary);
 }
+.dense .label {
+	writing-mode: vertical-rl;
+	line-height: 1;
+}
+.highlighted {
+	box-shadow: inset 0 -2px 0 var(--fui-accent);
+}
+.highlighted .label {
+	color: var(--fui-accent-strong);
+	font-weight: 700;
+}
+.level {
+	position: absolute;
+	inset: calc(var(--down) * 2 * var(--unit)) 0 auto;
+	border-top: 1px dashed var(--fui-ink-secondary);
+	pointer-events: none;
+	transition: top 250ms ease-out;
+}
+.level-label {
+	position: absolute;
+	right: 0;
+	bottom: 1px;
+	color: var(--fui-ink-secondary);
+	line-height: 1;
+	white-space: nowrap;
+}
 @media (prefers-reduced-motion: reduce) {
 	.bar,
-	.chance {
+	.chance,
+	.level {
 		transition: none;
 	}
 }

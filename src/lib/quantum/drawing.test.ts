@@ -5,6 +5,7 @@ import {
 	keyEdit,
 	keyedAmplitude,
 	normalise,
+	plotPosition,
 	presets,
 	withAmplitude,
 } from "./drawing";
@@ -30,6 +31,23 @@ describe("where a pointer draws", () => {
 		expect(amplitudeAt(0.83)).toBe(-0.65);
 		expect(amplitudeAt(-0.3)).toBe(1);
 		expect(amplitudeAt(1.4)).toBe(-1);
+	});
+});
+
+describe("plotPosition", () => {
+	it("puts +1 at the top, 0 on the axis and -1 at the bottom, staying on the plot", () => {
+		expect(plotPosition(1)).toBe(0);
+		expect(plotPosition(0)).toBe(0.5);
+		expect(plotPosition(-1)).toBe(1);
+		expect(plotPosition(0.5)).toBe(0.25);
+		expect(plotPosition(-0.3)).toBe(0.65);
+		expect(plotPosition(1.7)).toBe(0);
+		expect(plotPosition(-2)).toBe(1);
+	});
+
+	it("is where a pointer draws that amplitude", () => {
+		for (const amplitude of [-1, -0.65, -0.05, 0, 0.35, 0.5, 1])
+			expect(amplitudeAt(plotPosition(amplitude))).toBe(amplitude);
 	});
 });
 
