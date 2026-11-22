@@ -301,20 +301,28 @@ line at a window width of 320px, which the reserved height relies on.
 
 ### The quantum widgets
 
-Two widgets illustrate the chapter on qubits. Both say little and draw the
-state instead. Their arithmetic is in `src/lib/quantum/`, away from the
-components: `state.ts` (a state as its list of amplitudes, and the Hadamard
-gate on every qubit), `sampling.ts` (a measurement outcome, drawn from a
-random source the caller passes, so the tests are deterministic), `drawing.ts`
-(what a pointer position or a key makes of an amplitude, and normalising a
-drawing) and `format.ts` (an amplitude as `+1/√2` rather than 0.71).
+The widgets of the Walsh-Hadamard notes say little and draw instead: a
+caption is at most one short line of numbers, and what a screen reader needs
+in words sits in a visually hidden paragraph of the caption. Their arithmetic
+is in `src/lib/quantum/`, away from the components: `state.ts` (a state as
+its list of amplitudes, and the Hadamard gate on every qubit), `fourier.ts`
+(the Walsh-Hadamard matrix times a vector, and Fourier coefficients),
+`grover.ts` (the sign oracle, inversion about the mean, and the angle and
+success probability of Grover's algorithm), `sampling.ts` (a measurement
+outcome, drawn from a random source the caller passes, so the tests are
+deterministic), `drawing.ts` (what a pointer position or a key makes of an
+amplitude, and normalising a drawing) and `format.ts` (an amplitude as
+`+1/√2` rather than 0.71).
 
 `AmplitudeChart.svelte` is the picture they share. Each basis state is a
 column: a bar that rises from the axis in the accent colour for a positive
 amplitude and hangs below it in the warm colour for a negative one, the
 amplitude written under it with its sign, and a cell that darkens with the
 probability, which is why two amplitudes of opposite sign get the same cell.
-Given an `ondraw` handler the bars become sliders.
+Given an `ondraw` handler the bars become sliders. `highlighted` draws the
+named columns in the accent colour and the rest in a neutral one, `level`
+draws a dashed line at an amplitude with a label such as μ, and `dense` drops
+the numbers so that sixteen columns fit.
 
 - `#widget("unflipping-coin")` takes one qubit and one classical coin through
   the same steps: "Apply H" also tosses the coin, and "Measure" also looks at
@@ -327,6 +335,32 @@ Given an `ondraw` handler the bars become sliders.
   which follows the drawing as it is made. "Apply H" makes the transformed
   state the drawing, so pressing it twice returns the original. Three qubits
   is the most whose eight bars and numbers fit a note 288px wide.
+- `#widget("fourier-spectrum")` has the truth table of a function on three
+  bits as eight tiles, the bars of its eight Fourier coefficients, and its
+  polynomial.
+- `#widget("fwht-butterfly")` is the butterfly diagram of the fast transform
+  on eight values, one round of the loop at a time; focusing an entry shows
+  the two entries it came from.
+- `#widget("convolution-grid")` is the 4 by 4 grid of products f(x) g(y) for
+  two-bit inputs, tinted by x xor y, with the four sums under it.
+- `#widget("qubit-circle")` draws a qubit with real amplitudes on the unit
+  circle, where the Hadamard gate is a reflection.
+- `#widget("fourier-sampling", qubits: 2, preset: "and")` shows the state
+  after each step of Fourier sampling for a truth table the reader sets, and
+  measures the last one.
+- `#widget("circuit", kind: "fourier-sampling")` draws the circuit of
+  Fourier sampling or, with `kind: "grover"`, of Grover's algorithm.
+- `#widget("grover-mean")` runs Grover's algorithm one query and one
+  diffusion gate at a time on bars with their average drawn in.
+- `#widget("diffusion-fourier")` shows a drawable state above its Fourier
+  coefficients, and the diffusion gate acting on both.
+- `#widget("grover-rotation")` shows the state of Grover's algorithm turning
+  by the same angle each iteration.
+- `#widget("grover-success")` plots the success probability of Grover's
+  algorithm against the number of queries, with the classical bound.
+
+The last four have no published note yet: their browser tests skip until the
+note on Grover's algorithm is published.
 
 Drawing: press on a bar's plot and drag, up for positive and down for
 negative; dragging sideways draws on the bars passed over. The plot has
