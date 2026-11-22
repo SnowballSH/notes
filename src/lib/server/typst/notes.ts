@@ -10,7 +10,8 @@ import type {
 	NoteRef,
 } from "#lib/notes/types.ts";
 import type { NoteStatus } from "#lib/outlines/contents.ts";
-import { compileHtml, readMetadata, TypstError } from "./cli";
+import { siteOrigin } from "#lib/site/title.ts";
+import { compileHtml, compilePdf, readMetadata, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
 import {
 	linkNoteReferences,
@@ -249,34 +250,81 @@ async function referenceTarget(
 	return { href: `${noteHref(ref)}#${card.id}`, name: card.name };
 }
 
-/** A note ready to serve: compiled, with its references to other notes resolved. */
-export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
-	const note = await compileSource(ref);
+const referenceKey = ({ note, target }: NoteReference): string => `${note}#${target}`;
+
+/** The card each `noteref` of a note points at, by the reference's note and label. */
+async function referenceTargets(note: CompiledNote): Promise<Map<string, ReferenceTarget>> {
 	const references = noteReferences(note.html);
-	if (references.length === 0) return note;
-	const [untitled] = wordlessReferencesInTitles(note.html);
-	if (untitled) {
-		throw new TypstError(
-			`${shownPath(ref)}: a noteref in a heading or a card's title needs its own words: #noteref("${untitled.note}", <${untitled.target}>)[...]`,
-		);
-	}
-	const key = ({ note: name, target }: NoteReference) => `${name}#${target}`;
 	const outcomes = await Promise.allSettled(
 		references.map(
-			async (reference) => [key(reference), await referenceTarget(note, reference)] as const,
+			async (reference) =>
+				[referenceKey(reference), await referenceTarget(note, reference)] as const,
 		),
 	);
 	const failures = outcomes.flatMap((outcome) =>
 		outcome.status === "rejected" ? [String(outcome.reason?.message ?? outcome.reason)] : [],
 	);
 	if (failures.length > 0) throw new TypstError([...new Set(failures)].join("\n"));
-	const targets = new Map(
+	return new Map(
 		outcomes.flatMap((outcome) => (outcome.status === "fulfilled" ? [outcome.value] : [])),
 	);
+}
+
+/** A note ready to serve: compiled, with its references to other notes resolved. */
+export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
+	const note = await compileSource(ref);
+	if (noteReferences(note.html).length === 0) return note;
+	const [untitled] = wordlessReferencesInTitles(note.html);
+	if (untitled) {
+		throw new TypstError(
+			`${shownPath(ref)}: a noteref in a heading or a card's title needs its own words: #noteref("${untitled.note}", <${untitled.target}>)[...]`,
+		);
+	}
+	const targets = await referenceTargets(note);
 	const html = linkNoteReferences(note.html, (reference) => {
-		const target = targets.get(key(reference));
-		if (!target) throw new TypstError(`${shownPath(ref)}: unresolved noteref ${key(reference)}`);
+		const target = targets.get(referenceKey(reference));
+		if (!target) {
+			throw new TypstError(`${shownPath(ref)}: unresolved noteref ${referenceKey(reference)}`);
+		}
 		return target;
 	});
 	return { ...note, html };
+}
+
+/** What the site knows about a note's place, for the pages of its PDF edition. */
+export interface NotePlacement {
+	courseTitle: string | null;
+	number: string | null;
+}
+
+/** The inputs print.typ reads: the note's place on the site and where its `noteref`s lead. */
+export async function printInputs(
+	ref: NoteRef,
+	{ courseTitle, number }: NotePlacement,
+): Promise<Record<string, string>> {
+	const targets = await referenceTargets(await compileSource(ref));
+	const references = Object.fromEntries(
+		[...targets].map(([key, { href, name }]) => [key, { href: `${siteOrigin}${href}`, name }]),
+	);
+	return {
+		print: "true",
+		site: siteOrigin,
+		path: noteHref(ref),
+		references: JSON.stringify(references),
+		...(courseTitle !== null && { course: courseTitle }),
+		...(number !== null && { number }),
+	};
+}
+
+export interface PrintedNote {
+	meta: NoteMeta;
+	pdf: Uint8Array<ArrayBuffer>;
+	warnings: string[];
+}
+
+/** A note's PDF edition: every proof shown, no widgets, and links that lead back to the site. */
+export async function printNote(ref: NoteRef, placement: NotePlacement): Promise<PrintedNote> {
+	const [meta, inputs] = await Promise.all([readMeta(ref), printInputs(ref, placement)]);
+	const { stdout: pdf, warnings } = await compilePdf(notesRoot, sourcePath(ref), inputs);
+	return { meta, pdf, warnings };
 }

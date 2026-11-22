@@ -6,6 +6,7 @@ import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import NoteContents from "#lib/components/NoteContents.svelte";
 import NoteNeighbours from "#lib/components/NoteNeighbours.svelte";
 import PageMeta from "#lib/components/PageMeta.svelte";
+import PdfLink from "#lib/components/PdfLink.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { fitEquations } from "#lib/notes/equations.ts";
 import { zoomableFigures } from "#lib/notes/figures.ts";
@@ -56,6 +57,7 @@ $effect(() => {
 	<AuthorNotice title="Typst left something out of this page" details={note.warnings} />
 {/if}
 
+<PdfLink course={note.course} slug={note.slug} />
 {#key note.html}
 	{#if note.html.includes("<details")}
 		<BlockControls container="article.note" />

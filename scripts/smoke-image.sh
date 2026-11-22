@@ -58,6 +58,15 @@ grep -q 'aria-label="Breadcrumb"' "${body}" && grep -q 'rel="next"' "${body}" ||
   printf 'FAIL the note has no breadcrumb or no link to the next note\n' >&2
   exit 1
 }
+expect /walsh-hadamard/boolean-functions.pdf 200
+[[ "$(head -c 5 "${body}")" == "%PDF-" ]] || {
+  printf 'FAIL the PDF edition of the note is not a PDF\n' >&2
+  exit 1
+}
+curl -fsI "http://127.0.0.1:${port}/walsh-hadamard/boolean-functions.pdf" | grep -qi '^content-type: application/pdf' || {
+  printf 'FAIL the PDF edition is not served as application/pdf\n' >&2
+  exit 1
+}
 expect /search.json 200
 grep -q '"href":"/walsh-hadamard/boolean-functions' "${body}" || {
   printf 'FAIL the search index does not list the notes\n' >&2
