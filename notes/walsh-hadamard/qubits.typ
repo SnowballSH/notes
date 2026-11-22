@@ -1,18 +1,18 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Qubits, measurement, and the Hadamard gate",
-  summary: "The minimum of quantum computing we need: states as unit vectors, measurement, gates as unitary matrices, and the Hadamard gate as a Walsh-Hadamard matrix.",
+  summary: "Basics of quantum computing: states, measurement, gates as unitary matrices, and the Hadamard gate as a Walsh-Hadamard matrix.",
   order: 4,
 )
 
 #let ket(x) = $lr(| #x chevron.r)$
 #let Hn = $H^(times.o n)$
 
-So far, everything we did could be run on an ordinary computer. In the rest of these notes, we will see that a quantum computer can apply the Walsh-Hadamard transform in a completely different way. This chapter introduces the small amount of quantum computing we need: what a quantum state is, what happens when we measure it, and what operations we are allowed to perform on it. We only need linear algebra, and no physics.
+So far, everything we did could be run on a classical computer. In the rest of these notes, we will see that a quantum computer can apply the Walsh-Hadamard transform in a completely different way. This chapter introduces the small amount of quantum computing and mathematics we need to understand the quantum algorithms we will be discussing later on.
 
 = Qubits
 
-A classical bit is either $0$ or $1$. A quantum bit is a combination of both.
+While a classical bit is either $0$ or $1$, a quantum bit is a combination of both.
 
 #definition(title: "Qubit")[
   Let $ket(0) = mat(delim: "[", 1; 0)$ and $ket(1) = mat(delim: "[", 0; 1)$. The state of a _qubit_ is a vector
@@ -24,9 +24,13 @@ A classical bit is either $0$ or $1$. A quantum bit is a combination of both.
 
 In other words, the state of a qubit is a unit vector in $CC^2$. The notation $ket(dot)$ is called a _ket_, and it is simply the way quantum computing writes column vectors.
 
-Amplitudes are complex numbers in general, but every amplitude that appears in these notes is real. You can safely read $CC$ as $RR$ and $abs(alpha)^2$ as $alpha^2$ throughout.
+#remark(title: "Note on Amplitudes")[
+  Amplitudes are complex numbers in general, but every amplitude for our uses will end up being real (due to the limited set of operations we will be applying). For our purposes, you can safely read $CC$ as $RR$ and $abs(alpha)^2$ as $alpha^2$.
+]
 
 With $n$ qubits, there are $2^n$ classical bitstrings, and the state is a combination of all of them.
+
+Recall one of the great ideas we used in the classical applications in earlier chapters: when dealing with structures indexed by $2^n$ indices, it is often convenient to view the index as a vector in $FF_2^n$, and simply use the $n$-bit bitstrings as indices rather than numbers in $[0, 2^n)$. We will continue to employ this idea throughout the quantum sections.
 
 #definition(title: "State of Several Qubits")[
   For $x in FF_2^n$, let $ket(x)$ be the standard basis vector of $CC^(2^n)$ with a $1$ at index $x$ and $0$ everywhere else. The state of $n$ qubits is a vector
@@ -37,6 +41,10 @@ With $n$ qubits, there are $2^n$ classical bitstrings, and the state is a combin
 ] <def-state>
 
 This should look familiar. A state of $n$ qubits is a column vector indexed by $FF_2^n$, exactly like the vectors of values of functions on $FF_2^n$ in the previous chapters. The only new requirement is that the squares of the entries sum to $1$.
+
+#remark(title: "States are Unit Vectors")[
+  Note that each state is a linear combination of the $2^n$ basis vectors in $CC^(2^n)$, and the sum of the squared magnitudes of the coefficients is $1$, so each state is a unit vector in $CC^(2^n)$, and every unit vector in $CC^(2^n)$ is a state.
+]
 
 = Measurement
 
@@ -53,7 +61,9 @@ The requirement that the squares of the amplitudes sum to $1$ is exactly what ma
   $
     ket(+) = 1/sqrt(2) ket(0) + 1/sqrt(2) ket(1), quad ket(-) = 1/sqrt(2) ket(0) - 1/sqrt(2) ket(1).
   $
-  Measuring either one outputs $0$ with probability $1/2$ and $1$ with probability $1/2$, since $(1/sqrt(2))^2 = (-1/sqrt(2))^2 = 1/2$. A measurement cannot tell these two states apart, even though they are different vectors.
+  Measuring either one outputs $0$ with probability $1/2$ and $1$ with probability $1/2$, since $(1/sqrt(2))^2 = (-1/sqrt(2))^2 = 1/2$.
+
+  Unfortunately, a measurement cannot tell these two states apart, even though they are different vectors.
 ] <ex-fair-coins>
 
 = Gates
@@ -61,27 +71,33 @@ The requirement that the squares of the amplitudes sum to $1$ is exactly what ma
 Before measuring, we are allowed to change the state. The operations we may perform are called _gates_.
 
 #definition(title: "Gate")[
-  A _gate_ on $n$ qubits is a $2^n times 2^n$ unitary matrix $U$, that is, a matrix with $U^dagger U = I$, where $U^dagger$ is the conjugate transpose of $U$. Applying the gate to the state $ket(psi)$ produces the state $U ket(psi)$.
+  A _gate_ on $n$ qubits is a $2^n times 2^n$ unitary matrix $U$. Applying the gate to the state $ket(psi)$ produces the state $U ket(psi)$.
 ] <def-gate>
 
-For a real matrix, $U^dagger = U^"T"$, so a real matrix is unitary exactly when $U^"T" U = I$. We should check that the result of applying a gate is still a valid state.
+Recall from linear algebra that $U$ is called a _unitary matrix_ if $U^dagger U = I$, where $U^dagger$ is the conjugate transpose of $U$. For a real matrix, $U^dagger = U^"T"$, so a real matrix is unitary exactly when $U^"T" U = I$.
+
+Let's be a bit careful with this definition. Why do we only allow gates to be unitary matrices, rather than any matrix?
+
+When we think about a gate, we often assume it satisfies some "closure properties," i.e., in this case, the result $U ket(psi)$ is still a valid state. This is not given to us for free, and it is not entirely obvious why it is the case in general.
+
+Fortunately, the magical property of unitary matrices allows us to show that the result is still a state.
 
 #proposition(title: "Gates Send States to States")[
   If $U$ is unitary and $ket(psi)$ is a state, then $U ket(psi)$ is a state.
 ] <prop-gates-preserve-states>
 
 #proof[
-  Write $v = ket(psi)$. The sum of the squared absolute values of the entries of a vector $w$ is $w^dagger w$, so we need to show that $(U v)^dagger (U v) = 1$. Indeed,
+  Let $v = ket(psi)$. The sum of the squared absolute values of the entries of a vector $w$ is $w^dagger w$, so we need to show that $(U v)^dagger (U v) = 1$. Indeed,
   $
-    (U v)^dagger (U v) = v^dagger U^dagger U v = v^dagger v = 1. quad square
+    (U v)^dagger (U v) = (v^dagger U^dagger) (U v) = v^dagger (U^dagger U) v = v^dagger v = 1. quad square
   $
 ]
 
-A gate is a matrix, so it is linear. To know what a gate does to every state, it is enough to know what it does to the basis states: $U ket(x)$ is column $x$ of $U$.
+A gate is a matrix, so it is also linear. Therefore, to understand what a gate does to every state, it is enough to know what it does to the basis states. For a gate $U$, we can discuss $U ket(x)$, which is column $x$ of $U$.
 
 = The Hadamard Gate
 
-The most important gate in these notes is one we have already met.
+The most important gate (at least for our purposes) turns out to be the one we have already met.
 
 #definition(title: "Hadamard Gate")[
   The _Hadamard gate_ is the gate on one qubit given by
@@ -90,14 +106,16 @@ The most important gate in these notes is one we have already met.
   $
 ] <def-hadamard-gate>
 
-Reading off the columns, $H ket(0) = ket(+)$ and $H ket(1) = ket(-)$, the two states of @ex-fair-coins. So the Hadamard gate turns a definite bit into a fair coin. Surprisingly, it also turns the fair coin back into a definite bit.
+Reading off the columns, $H ket(0) = ket(+)$ and $H ket(1) = ket(-)$, the two states of @ex-fair-coins, so the Hadamard gate turns a definite bit into a fair coin. Surprisingly, it also turns the fair coin back into a definite bit.
 
 #example(title: "Unflipping a Coin")[
   Start with $ket(0)$ and apply $H$ to get $ket(+)$. Applying $H$ again gives
   $
     H ket(+) = 1/sqrt(2) H ket(0) + 1/sqrt(2) H ket(1) = 1/2 (ket(0) + ket(1)) + 1/2 (ket(0) - ket(1)) = ket(0).
   $
-  Measuring now outputs $0$ with certainty. The two contributions to the amplitude of $ket(1)$ have opposite signs and cancel. This cancellation is called _interference_, and it is something that ordinary probabilities, which are never negative, cannot do.
+  Therefore, measuring $H ket(+)$ outputs $0$ with certainty.
+
+  The two contributions to the amplitude of $ket(1)$ have opposite signs and cancel. This cancellation is called _interference_, something that ordinary probabilities (which are never negative) cannot do.
 ] <ex-unflipping>
 
 To apply the Hadamard gate to every one of $n$ qubits at once, we need to know how to combine gates on separate qubits into one large matrix.
@@ -114,7 +132,8 @@ We write $Hn$ for the gate that applies $H$ to each of $n$ qubits. That is, $H^(
 $
   H^(times.o (n+1)) = 1/sqrt(2) mat(delim: "[", Hn, Hn; Hn, -Hn).
 $
-Up to the factor of $1/sqrt(2)$, this is precisely the recursive definition of the Walsh-Hadamard matrices!
+
+The matrix on the right-hand side should look extremely familiar to you. In fact, the entire equation should. This equation is, up to a factor, the recursive definition of the Walsh-Hadamard matrices! We started with a matrix about conversion between definite bits and coin flips, and somehow ended up with an expression containing the same matrix that computes Fourier coefficients as seen in previous chapters. Is this a coincidence?
 
 #theorem(title: "Hadamard Gates are the Walsh-Hadamard Matrices")[
   For all $n >= 1$,
@@ -124,21 +143,21 @@ Up to the factor of $1/sqrt(2)$, this is precisely the recursive definition of t
 ] <thm-hadamard-gates>
 
 #proof[
-  We proceed by induction on $n$. The base case $n = 1$ is @def-hadamard-gate. For the inductive case, let $n >= 1$. Then,
+  We proceed by induction on $n$. The base case $n = 1$ is @def-hadamard-gate. For the inductive case, let $n >= 1$ and suppose the claim holds for $n$. Then, by the inductive hypothesis and the recursive definition of the Walsh-Hadamard matrices, we have
   $
     H^(times.o (n+1)) & = 1/sqrt(2) mat(delim: "[", Hn, Hn; Hn, -Hn) \
-    & = 1/sqrt(2) dot 1/sqrt(2^n) mat(delim: "[", H_(2^n), H_(2^n); H_(2^n), -H_(2^n)) \
-    & = 1/sqrt(2^(n+1)) H_(2^(n+1)). quad square
+                      & = 1/sqrt(2) dot 1/sqrt(2^n) mat(delim: "[", H_(2^n), H_(2^n); H_(2^n), -H_(2^n)) \
+                      & = 1/sqrt(2^(n+1)) H_(2^(n+1)). quad square
   $
 ]
 
-Everything we proved about the Walsh-Hadamard matrices now tells us something about $Hn$.
+This motivates us to make lots of connections between what we learned about Walsh-Hadamard matrices and Hadamard gates: everything we proved about $H_(2^n)$ now tells us something about $Hn$. In fact, we have been calling $Hn$ a Hadamard "gate" without ever proving it is actually a gate! Let's now prove some properties about $Hn$.
 
 #proposition(title: "Properties of the Hadamard Gates")[
   For all $n >= 1$:
 
-  + $Hn$ is unitary, so it really is a gate.
   + $Hn Hn = I$. That is, $Hn$ is its own inverse.
+  + $Hn$ is unitary, so it is a gate.
   + For every $x in FF_2^n$,
     $
       Hn ket(x) = 1/sqrt(2^n) sum_(gamma in FF_2^n) (-1)^(gamma dot x) ket(gamma).
@@ -150,24 +169,26 @@ Everything we proved about the Walsh-Hadamard matrices now tells us something ab
   $
     Hn Hn = 1/2^n H_(2^n) H_(2^n) = 1/2^n H_(2^n) H_(2^n)^"T" = I.
   $
-  This is the second claim. Since $(Hn)^dagger = (Hn)^"T" = Hn$, it is also the first.
+  This proves the first claim. Since $(Hn)^dagger = (Hn)^"T" = Hn$, this also proves the second claim.
 
   For the third claim, $Hn ket(x)$ is column $x$ of $1/sqrt(2^n) H_(2^n)$. By #noteref("walsh-hadamard", <prop-entries>)[the formula for the entries of the Walsh-Hadamard matrices], the entry of this column at index $gamma$ is $1/sqrt(2^n) (-1)^(gamma dot x)$. $square$
 ]
 
 Two consequences of the third property will be used again and again.
 
-First, take $x = 0$. Every sign is $+1$, so
+First, take $x = 0$. Every sign $(-1)^(gamma dot x)$ evaluates to $+1$, so
 $
   Hn ket(0) = 1/sqrt(2^n) sum_(gamma in FF_2^n) ket(gamma).
 $
-This state is called the _uniform superposition_: measuring it outputs each of the $2^n$ bitstrings with the same probability $1/2^n$. Notice how little work this takes. We applied one small gate to each of $n$ qubits, and the result has $2^n$ nonzero amplitudes.
+This state is called the _uniform superposition_: measuring it outputs each of the $2^n$ bitstrings with the same probability $1\/2^n$. Notice how little work this takes: we applied one small gate to each of $n$ qubits, and the result has $2^n$ nonzero amplitudes.
 
 Second, the signs $(-1)^(gamma dot x)$ are the values of the parity functions $chi_gamma (x)$. Let $ket(psi) = sum_(x in FF_2^n) alpha_x ket(x)$ be a state with real amplitudes, and view $alpha$ as a function $FF_2^n -> RR$. By #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], $hat(alpha) = 1/2^n H_(2^n) alpha$, so
 $
   Hn ket(psi) = 1/sqrt(2^n) H_(2^n) alpha = sqrt(2^n) hat(alpha).
 $
-In words, applying a Hadamard gate to every qubit replaces the amplitudes of a state by its Fourier coefficients, scaled by $sqrt(2^n)$. Classically, the fast Walsh-Hadamard transform needed $O(n 2^n)$ operations to do this. Here it takes $n$ gates. The catch is the measurement: we do not get to read the Fourier coefficients, only to sample one bitstring $gamma$ with probability $2^n hat(alpha)(gamma)^2$.
+In words, applying a Hadamard gate to every qubit replaces the amplitudes of a state by its Fourier coefficients, scaled by $sqrt(2^n)$. This is quite an amazing result.
+
+Recall that classically, the fast Walsh-Hadamard transform needed $O(n 2^n)$ operations to do this. Here, it only takes $n$ gates. Unfortunately, we do not yet get to directly read the Fourier coefficients, but can only sample one bitstring $gamma$ with probability $2^n hat(alpha)(gamma)^2$.
 
 = Conclusion
 
@@ -181,14 +202,14 @@ In the next chapter, we will see how to load a function into the amplitudes of a
 
 = Exercises
 
-#exercise(title: "Measuring After Hadamard Gates")[
-  Let $n = 2$ and $x = (0, 1)$. Write $H^(times.o 2) ket(x)$ as a combination of the four basis states $ket(gamma)$, and find the probability of each outcome when it is measured.
-] <exr-measuring>
-
 #exercise(title: "Composing Gates")[
-  Show that if $U$ and $V$ are unitary matrices of the same size, then $U V$ is unitary. This means that applying one gate after another is again a gate.
+  Let $U$ and $V$ be two gates on $n$ qubits. Show that $U V$ is also a gate.
 ] <exr-composing-gates>
 
-#exercise(title: "Back to All Zeros")[
-  Let $ket(psi)$ be the uniform superposition on $n$ qubits. Without any computation, explain why $Hn ket(psi) = ket(0)$. Then verify it directly using #noteref("walsh-hadamard", <exr-balanced-rows>)[the exercise on balanced rows].
-] <exr-back-to-zeros>
+#exercise(title: "Back to the Void")[
+  Let $ket(psi)$ be the uniform superposition on $n$ qubits. Intuitively, what is $Hn ket(psi)$? Prove your answer mathematically using #noteref("walsh-hadamard", <exr-balanced-rows>)[the exercise on balanced rows].
+] <exr-back-to-the-void>
+
+#exercise(title: "Inverse Fourier Transform")[
+  Let $alpha : FF_2^n -> RR$ be a function with $sum_(x in FF_2^n) alpha(x)^2 = 1$ and let $ket(psi) = sqrt(2^n) sum_(x in FF_2^n) hat(alpha)(x) ket(x)$. How do we use the Hadamard gates to obtain a state whose amplitudes are the values $alpha(x)$?
+] <exr-inverse-fourier-transform-with-hadamard-gates>
