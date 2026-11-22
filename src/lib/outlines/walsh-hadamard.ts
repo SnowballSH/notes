@@ -41,6 +41,7 @@ export const walshHadamard: NotesOutline = {
 					title: "Quantum oracles and Fourier sampling",
 					summary:
 						"How a quantum computer queries a function, then applies the transform and measures.",
+					note: "oracles",
 				},
 			],
 		},
