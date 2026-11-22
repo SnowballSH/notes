@@ -35,6 +35,7 @@ export const walshHadamard: NotesOutline = {
 					title: "Qubits, measurement, and the Hadamard gate",
 					summary:
 						"Quantum states from linear algebra, and the gate that applies the transform to qubits.",
+					note: "qubits",
 				},
 				{
 					title: "Quantum oracles and Fourier sampling",
@@ -68,7 +69,7 @@ export const walshHadamard: NotesOutline = {
 			chapters: "1",
 		},
 		{
-			work: "O'Donnell and Wright, Quantum Computation lecture notes, especially Lectures 4-10",
+			work: "O'Donnell and Wright, Quantum Computation lecture notes, especially Lectures 1-10",
 			chapters: "2-3",
 		},
 		{
