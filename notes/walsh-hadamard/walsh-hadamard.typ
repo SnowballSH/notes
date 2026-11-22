@@ -125,7 +125,7 @@ Let us analyze the entries of the Walsh-Hadamard matrices. Before doing so, we n
 
 Furthermore, when analyzing row $i$ of $H_(2^n)$, we would like to case on whether $i$ is in the first or second half of the indices, because the definition of the row differs in the recursive definition based on which half $i$ is in. Casing on whether $i <= 2^(n-1)$ and constructing the sub-index $i' = i$ in the first case and $i' = i - 2^(n-1)$ in the second seems quite annoying and unintuitive.
 
-But not all hope is lost, and a natural but interesting idea surfaces. First, we will use $0$-based indexing, so the indices for the rows and columns of $H_(2^n)$ are from $0$ to $2^n - 1$. For an index $i in [0, 2^n - 1]$, let us write $i$ as a sequence of bits: $arrow(i) = (i_0, i_1, ..., i_(n-1))$, where $i_0$ is the least significant bit and $i_(n-1)$ is the most significant bit. For example, if $i=6$ and $n=3$, we can write $arrow(i) = (0, 1, 1)$, since $6_(10) = 110_2$.
+But not all hope is lost, and a natural but interesting idea surfaces. First, we will use $0$-based indexing, so the indices for the rows and columns of $H_(2^n)$ are from $0$ to $2^n - 1$. For an index $i in {0, 1, ..., 2^n - 1}$, let us write $i$ as a sequence of bits: $arrow(i) = (i_0, i_1, ..., i_(n-1))$, where $i_0$ is the least significant bit and $i_(n-1)$ is the most significant bit. For example, if $i=6$ and $n=3$, we can write $arrow(i) = (0, 1, 1)$, since $6_(10) = 110_2$.
 
 With this notation, given an index $arrow(i) = (i_0, i_1, ..., i_(n-1))$, to get the index $i'$ for the submatrix from the previous iteration of the recursive definition, we can simply drop the most significant bit and write
 $
@@ -304,6 +304,12 @@ void fwht(vector<long long>& f) {
 ```
 
 The proof works from the top down: it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
+
+Here is a small interactive widget that runs the code on eight values, one round of the outer loop at a time.
+
+#widget("fwht-butterfly")[
+  The interactive diagram of the fast transform needs JavaScript.
+]
 
 A block of size $1$ is already its own transform, since $H_1 = [1]$. So whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
 
