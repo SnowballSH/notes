@@ -23,6 +23,8 @@ test("the convolution grid sums the cells that share an XOR", async ({ page, req
 	await expect(chip("(f ∗ g)(00) = 5")).toBeVisible();
 	await expect(chip("(f ∗ g)(01) = 9")).toHaveAttribute("aria-pressed", "true");
 	await expect(chip("(f ∗ g)(11) = 7")).toBeVisible();
+	await expect(chip("(f ∗ g)(00) = 5")).toContainText("(f ∗ g)(00)");
+	await expect(widget.getByRole("cell", { name: "⊕", exact: true })).toBeVisible();
 
 	await chip("(f ∗ g)(10) = 3").click();
 	await expect(chip("(f ∗ g)(10) = 3")).toHaveAttribute("aria-pressed", "true");

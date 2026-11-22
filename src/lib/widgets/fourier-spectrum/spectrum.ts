@@ -69,6 +69,8 @@ const transformIndex = (subset: readonly number[]): number =>
 export const subsetLabel = (subset: readonly number[]): string =>
 	subset.length === 0 ? "∅" : `{${subset.join(",")}}`;
 
+export const coefficientSymbol = "f\u0302(S)";
+
 const subscripts = ["₀", "₁", "₂", "₃"];
 
 export const monomial = (subset: readonly number[]): string =>

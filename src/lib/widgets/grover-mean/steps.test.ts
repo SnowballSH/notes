@@ -1,6 +1,15 @@
 import { expect, it, describe as suite } from "vitest";
 import { mean } from "../../quantum/grover";
-import { caption, defaultMarked, describe, iterationsDone, nextStep, stateAfter } from "./steps";
+import {
+	caption,
+	defaultMarked,
+	describe,
+	describeColumn,
+	iterationsDone,
+	nextStep,
+	shownAmplitude,
+	stateAfter,
+} from "./steps";
 
 const root8 = Math.sqrt(8);
 
@@ -93,5 +102,36 @@ suite("caption", () => {
 		expect(caption(2, 3, 1)).toBe("μ = 1/4");
 		expect(caption(4, 15, 1)).toBe("μ = 0.22");
 		expect(caption(3, 5, 5)).toBe("μ = −0.20");
+	});
+});
+
+suite("shownAmplitude", () => {
+	it("is two decimals without a plus sign", () => {
+		expect(stateAfter(3, 5, 0).map(shownAmplitude)).toEqual(Array(8).fill("0.35"));
+		expect(shownAmplitude(stateAfter(3, 5, 2)[5] ?? 0)).toBe("0.88");
+		expect(shownAmplitude(stateAfter(3, 5, 2)[0] ?? 0)).toBe("0.18");
+	});
+
+	it("keeps the minus sign", () => {
+		expect(shownAmplitude(stateAfter(3, 5, 1)[5] ?? 0)).toBe("−0.35");
+		expect(shownAmplitude(stateAfter(3, 5, 4)[0] ?? 0)).toBe("−0.09");
+		expect(shownAmplitude(stateAfter(3, 5, 3)[5] ?? 0)).toBe("−0.88");
+	});
+
+	it("shows whole numbers and zero without decimals or a sign", () => {
+		expect(stateAfter(2, 2, 2).map(shownAmplitude)).toEqual(["0", "0", "1", "0"]);
+		expect(shownAmplitude(stateAfter(2, 2, 3)[2] ?? 0)).toBe("−1");
+		expect(shownAmplitude(-0.004)).toBe("0");
+		expect(shownAmplitude(0.5)).toBe("0.50");
+	});
+});
+
+suite("describeColumn", () => {
+	it("gives the exact amplitude and the probability, and says which bar is marked", () => {
+		expect(describeColumn("101", -1 / root8, true)).toBe(
+			"101: marked, amplitude −1/√8, probability 1/8",
+		);
+		expect(describeColumn("000", 1 / root8, false)).toBe("000: amplitude +1/√8, probability 1/8");
+		expect(describeColumn("10", 0, false)).toBe("10: amplitude 0, probability 0");
 	});
 });

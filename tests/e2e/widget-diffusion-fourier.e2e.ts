@@ -85,8 +85,15 @@ test("D keeps the Fourier coefficient at zero, negates the others, and undoes it
 	const average = widget.getByText(`μ = ${values.average}`, { exact: true });
 	const spokenAverage = widget.getByText(`The average amplitude is ${values.average}.`);
 
+	const ghosts = widget.locator(".ghost");
+
 	await expect(average).toBeVisible();
 	await expect(spokenAverage).toBeAttached();
+	await expect(widget.getByText("a(x)", { exact: true })).toBeVisible();
+	await expect(widget.getByText("√N·â(γ)", { exact: true })).toBeVisible();
+	await expect(widget.getByText("√N·μ", { exact: true })).toBeVisible();
+	await expect(widget.locator(".chance").first()).toBeHidden();
+	await expect(ghosts).toHaveCount(0);
 	await expect(widget.getByText("draw", { exact: true })).toHaveCount(0);
 	await expect(widget.getByText("average", { exact: true })).toHaveCount(0);
 	await expect(coefficients).toHaveText(values.coefficients);
@@ -97,6 +104,7 @@ test("D keeps the Fourier coefficient at zero, negates the others, and undoes it
 	await expect(amplitudes.first()).toHaveAttribute("aria-valuetext", values.firstAmplitude);
 	await expect(amplitudes.last()).toHaveAttribute("aria-valuetext", values.lastAmplitude);
 	await expect(average).toBeVisible();
+	await expect(ghosts).toHaveCount(2 * (await amplitudes.count()));
 	await expect(startOver).not.toHaveAttribute("aria-disabled", "true");
 
 	await applyD.click();
@@ -143,6 +151,7 @@ test("a state edited from the keyboard moves the average, and Start over restore
 	);
 
 	await widget.getByRole("button", { name: "Start over", exact: true }).click();
+	await expect(widget.locator(".ghost")).toHaveCount(0);
 	await expect(coefficients).toHaveText(values.coefficients);
 	await expect(widget.getByText(`μ = ${values.average}`, { exact: true })).toBeVisible();
 });

@@ -1,8 +1,7 @@
 <script lang="ts">
 import { untrack } from "svelte";
-import AmplitudeChart from "../../quantum/AmplitudeChart.svelte";
 import { mean } from "../../quantum/grover.ts";
-import { bitstring, probabilities } from "../../quantum/state.ts";
+import { bitstring } from "../../quantum/state.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
@@ -10,8 +9,10 @@ import {
 	caption as captionText,
 	defaultMarked,
 	describe,
+	describeColumn,
 	nextStep,
 	type Step,
+	shownAmplitude,
 	stateAfter,
 } from "./steps.ts";
 
@@ -49,21 +50,36 @@ function take(step: Step): void {
 			Start over
 		</button>
 	</div>
-	<AmplitudeChart
-		name="Amplitudes of the {size} inputs, with the marked input highlighted"
-		{labels}
-		amplitudes={current}
-		probabilities={probabilities(current)}
-		highlighted={[marked]}
-		level={{ value: mean(current), label: "μ" }}
-	/>
-	<div class="marking" role="radiogroup" aria-label="Marked input" style:--columns={size}>
-		{#each labels as label, index (label)}
-			<label class:chosen={marked === index}>
-				<input type="radio" name={groupName} value={index} bind:group={marked} />
-				{label}
-			</label>
-		{/each}
+	<div class="figure" class:crowded={size > 4} style:--columns={size}>
+		<div
+			class="chart"
+			role="list"
+			aria-label="Amplitudes of the {size} inputs, with the marked input highlighted"
+		>
+			{#each labels as label, index (label)}
+				{@const amplitude = current[index] ?? 0}
+				<div class="column" class:marked={marked === index} role="listitem">
+					<span class="spoken">{describeColumn(label, amplitude, marked === index)}</span>
+					<span class="plot" aria-hidden="true">
+						<span class="bar" style:--amplitude={amplitude}></span>
+					</span>
+					<span class="amplitude" class:negative={amplitude < 0} aria-hidden="true">
+						{shownAmplitude(amplitude)}
+					</span>
+				</div>
+			{/each}
+			<span class="level" style:--level={mean(current)} aria-hidden="true">
+				<span class="level-label">μ</span>
+			</span>
+		</div>
+		<div class="marking" role="radiogroup" aria-label="Marked input">
+			{#each labels as label, index (label)}
+				<label class:chosen={marked === index}>
+					<input type="radio" name={groupName} value={index} bind:group={marked} />
+					{label}
+				</label>
+			{/each}
+		</div>
 	</div>
 	{#snippet caption()}
 		<p class="spoken">{describe(qubits, marked, steps)}</p>
@@ -106,10 +122,77 @@ label:has(:focus-visible) {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
 }
+.figure {
+	--unit: 4.5rem;
+	--gutter: 0.875rem;
+	--number-size: 0.6875rem;
+	width: min(100%, var(--columns) * 3.25rem + var(--gutter));
+	display: grid;
+	gap: 0.25rem;
+	font-family: var(--fui-font-mono);
+	font-size: var(--number-size);
+	line-height: 1.5;
+}
+.figure.crowded {
+	--number-size: 0.625rem;
+}
+.chart,
 .marking {
-	width: min(100%, var(--columns) * 3.25rem);
 	display: grid;
 	grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+	padding-right: var(--gutter);
+}
+.chart {
+	position: relative;
+}
+.column {
+	display: grid;
+	justify-items: center;
+	gap: 0.125rem;
+}
+.plot {
+	position: relative;
+	width: 100%;
+	height: calc(2 * var(--unit));
+	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
+		no-repeat;
+}
+.bar {
+	position: absolute;
+	inset: 0 18% 50%;
+	/* A negative scale mirrors the bar below the axis, so a sign flip animates through zero. */
+	transform: scaleY(var(--amplitude));
+	transform-origin: bottom;
+	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
+	background: var(--fui-ink-muted);
+	transition:
+		transform 250ms ease-out,
+		background-color 250ms ease-out;
+}
+.marked .bar {
+	background: var(--fui-accent);
+}
+.amplitude {
+	color: var(--fui-accent-strong);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.amplitude.negative {
+	color: var(--fui-code-warm);
+}
+.level {
+	position: absolute;
+	inset: calc((1 - var(--level)) * var(--unit)) 0 auto;
+	border-top: 1px dashed var(--fui-ink-secondary);
+	pointer-events: none;
+	transition: top 250ms ease-out;
+}
+.level-label {
+	position: absolute;
+	right: 0.125rem;
+	bottom: 0.125rem;
+	color: var(--fui-ink-secondary);
+	line-height: 1;
 }
 label {
 	position: relative;
@@ -119,7 +202,6 @@ label {
 	place-items: center;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-sm);
-	font-family: var(--fui-font-mono);
 	font-size: 0.6875rem;
 	color: var(--fui-ink-secondary);
 }
@@ -156,10 +238,18 @@ input {
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
+@media (prefers-reduced-motion: reduce) {
+	.bar,
+	.level {
+		transition: none;
+	}
+}
 @media print {
-	.controls,
-	.marking {
+	.controls {
 		display: none;
+	}
+	.bar {
+		print-color-adjust: exact;
 	}
 }
 </style>

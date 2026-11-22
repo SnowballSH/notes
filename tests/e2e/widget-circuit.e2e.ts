@@ -15,7 +15,7 @@ test("the circuit diagram draws its gates in order and reads them out", async ({
 	await page.goto(path, { waitUntil: "networkidle" });
 	const widget = page.locator('notes-widget[name="circuit"]').first();
 	const circuit = widget.getByRole("img", { name: /^Circuit on n qubits, each starting in \|0⟩/ });
-	const toggle = widget.getByRole("button", { name: "Expand D", exact: true });
+	const toggle = widget.getByRole("button", { name: /^(Expand|Hide) D$/ });
 
 	await expect(circuit).toBeVisible();
 	await expect(circuit.locator(".lead")).toHaveText(["|0⟩", "|0⟩", "|0⟩"]);
@@ -40,15 +40,19 @@ test("the circuit diagram draws its gates in order and reads them out", async ({
 
 	const diffusion = widget.getByRole("img", { name: /^The diffusion gate D on n qubits/ });
 	await expect(toggle).toHaveAttribute("aria-expanded", "false");
+	await expect(toggle).toHaveText("Expand D");
 	await expect(diffusion).toHaveCount(0);
 
 	await toggle.click();
 	await expect(toggle).toHaveAttribute("aria-expanded", "true");
+	await expect(toggle).toHaveText("Hide D");
+	await expect(circuit.locator(".name").first()).toHaveCSS("font-family", /STIX Two Math/);
 	await expect(diffusion.locator(".lead")).toHaveText("D =");
 	await expect(diffusion.locator(".gate .name")).toHaveText(["H⊗n", "Z0", "H⊗n"]);
 	await expect(diffusion.locator(".meter")).toHaveCount(0);
 
 	await toggle.click();
 	await expect(toggle).toHaveAttribute("aria-expanded", "false");
+	await expect(toggle).toHaveText("Expand D");
 	await expect(diffusion).toHaveCount(0);
 });

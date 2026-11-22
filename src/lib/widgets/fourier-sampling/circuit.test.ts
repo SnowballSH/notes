@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { formatAmplitude } from "../../quantum/format";
 import { fourierCoefficients } from "../../quantum/fourier";
 import {
+	depthBelowZero,
 	describeOutcomes,
 	emptyTally,
+	formatProbability,
 	fourierSampling,
 	measure,
 	presetNames,
@@ -125,6 +127,47 @@ describe("measuring", () => {
 	});
 });
 
+describe("the room a row needs below its axis", () => {
+	it("is none when no amplitude is negative", () => {
+		for (const preset of presetNames)
+			expect(depthBelowZero(fourierSampling(presetTable(preset, 3)).afterHadamard)).toBe(0);
+		expect(depthBelowZero(sampled(presetTable("parity", 2)))).toBe(0);
+	});
+
+	it("is the size of the most negative amplitude", () => {
+		expect(depthBelowZero(fourierSampling(presetTable("and", 2)).afterQuery)).toBeCloseTo(0.5, 12);
+		expect(depthBelowZero(sampled(presetTable("one-marked", 3)))).toBeCloseTo(0.25, 12);
+		expect(depthBelowZero(sampled([1, 1, 1, 1]))).toBeCloseTo(1, 12);
+	});
+});
+
+describe("formatProbability", () => {
+	it("writes the square of an amplitude as an exact fraction", () => {
+		expect(formatProbability(0.75 ** 2, 3)).toBe("9/16");
+		expect(formatProbability(0.25 ** 2, 3)).toBe("1/16");
+		expect(formatProbability(0.875 ** 2, 4)).toBe("49/64");
+		expect(formatProbability(1 / 8, 3)).toBe("1/8");
+		expect(formatProbability(0.25, 2)).toBe("1/4");
+	});
+
+	it("writes certainty and impossibility as whole numbers", () => {
+		expect(formatProbability(1, 4)).toBe("1");
+		expect(formatProbability(0, 2)).toBe("0");
+	});
+
+	it("gives fractions that sum to one for every preset", () => {
+		for (const preset of presetNames) {
+			const shown = sampled(presetTable(preset, 3)).map((amplitude) =>
+				formatProbability(amplitude ** 2, 3),
+			);
+			const total = shown
+				.map((fraction) => fraction.split("/").map(Number))
+				.reduce((sum, [top = 0, bottom = 1]) => sum + top / bottom, 0);
+			expect(total).toBeCloseTo(1, 12);
+		}
+	});
+});
+
 describe("describeOutcomes", () => {
 	it("names a certain outcome", () => {
 		expect(describeOutcomes(sampled(presetTable("parity", 2)))).toBe("The outcome is always 11.");
@@ -144,10 +187,10 @@ describe("describeOutcomes", () => {
 
 	it("names the likeliest outcome and its probability", () => {
 		expect(describeOutcomes(sampled(presetTable("and", 3)))).toBe(
-			"The likeliest outcome is 000, with probability 0.56.",
+			"The likeliest outcome is 000, with probability 9/16.",
 		);
 		expect(describeOutcomes(sampled(presetTable("one-marked", 4)))).toBe(
-			"The likeliest outcome is 0000, with probability 0.77.",
+			"The likeliest outcome is 0000, with probability 49/64.",
 		);
 	});
 

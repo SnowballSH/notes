@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	afterQueryingAnd,
 	averageLabel,
+	barBox,
 	describeAverage,
 	diffuse,
 	isSameState,
@@ -113,5 +114,18 @@ describe("averageLabel", () => {
 	it("puts a minus sign on a negative average and none on zero", () => {
 		expect(averageLabel([-0.5, -0.5, -0.5, 0.5])).toBe("μ = −1/4");
 		expect(averageLabel([-1e-13, 0, 0, 0])).toBe("μ = 0");
+	});
+});
+
+describe("barBox", () => {
+	it("stands a positive bar on the axis and hangs a negative one from it", () => {
+		expect(barBox(0.5)).toEqual({ top: 25, height: 25 });
+		expect(barBox(-0.5)).toEqual({ top: 50, height: 25 });
+		expect(barBox(1)).toEqual({ top: 0, height: 50 });
+	});
+
+	it("has no height at zero and stays inside the plot", () => {
+		expect(barBox(0).height).toBe(0);
+		expect(barBox(-1.5)).toEqual({ top: 50, height: 50 });
 	});
 });

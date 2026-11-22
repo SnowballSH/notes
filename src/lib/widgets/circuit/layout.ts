@@ -29,24 +29,42 @@ const bottomMargin = 8;
 const wireStart = 26;
 const wireEnd = 286;
 const leadCentre = 11;
+const nameCentre = 12;
+const stubCentre = (wireStart + 46) / 2;
 
 export const meterWidth = 26;
 export const meterHeight = 20;
 
-export const baseFontSize = 14;
-export const scriptFontSize = 11;
-export const leadFontSize = 12;
-/** Every glyph of the mono font is this fraction of the font size wide. */
-const monoAdvance = 0.6;
-export const baseBaseline = gateCentreRow + 5;
-export const supBaseline = baseBaseline - 8;
-export const subBaseline = baseBaseline + 4;
-const scriptGap = 0.5;
+export const baseFontSize = 18;
+export const scriptFontSize = 13;
+export const leadFontSize = 13;
+/** How wide each glyph of STIX Two Math is, as a fraction of the font size (from its hmtx table). */
+const advances: Readonly<Record<string, number>> = {
+	H: 0.777,
+	O: 0.738,
+	D: 0.73,
+	Z: 0.594,
+	n: 0.576,
+	f: 0.307,
+	"0": 0.495,
+	"±": 0.72,
+	"⊗": 0.862,
+	"|": 0.267,
+	"⟩": 0.339,
+	"=": 0.72,
+	" ": 0.235,
+};
+const widestAdvance = 0.862;
+export const baseBaseline = gateCentreRow + 6;
+export const supBaseline = baseBaseline - 9;
+export const subBaseline = baseBaseline + 5;
+const scriptGap = 1;
 
 const bracketDrop = 6;
 const bracketDepth = 6;
 const bracketReach = 6;
 const repeatLabelDrop = 14;
+const repeatMargin = 4;
 
 export interface Box {
 	x: number;
@@ -80,7 +98,7 @@ export interface Repeat {
 export interface Diagram {
 	height: number;
 	wire: { x1: number; x2: number };
-	/** What stands at the left end of the wires, centred on leadCentre. */
+	/** What stands at the left end of the wires, centred on leadX. */
 	leads: readonly Lead[];
 	leadX: number;
 	gates: readonly PlacedGate[];
@@ -135,12 +153,6 @@ const diffusionGates = [
 	gate(hadamardOnEveryQubit, 218),
 ];
 
-const gapsBetween = (gates: readonly PlacedGate[]): number[] =>
-	gates.slice(1).map((next, index) => {
-		const previous = gates[index] as PlacedGate;
-		return (previous.x + previous.width + next.x) / 2;
-	});
-
 const circuits: Record<Kind, Diagram> = {
 	"fourier-sampling": {
 		height: gateBottom + bottomMargin,
@@ -156,7 +168,7 @@ const circuits: Record<Kind, Diagram> = {
 		ellipsisColumns: [leadCentre, fourierMeters + meterWidth / 2],
 	},
 	grover: {
-		height: groverRepeat.labelY + bottomMargin,
+		height: groverRepeat.labelY + repeatMargin,
 		wire,
 		leads: kets,
 		leadX: leadCentre,
@@ -174,23 +186,26 @@ export const diffusionDiagram: Diagram = {
 	height: gateBottom + bottomMargin,
 	wire,
 	leads: [{ text: diffusionName, y: gateCentreRow }],
-	leadX: leadCentre,
+	leadX: nameCentre,
 	gates: diffusionGates,
 	meters: [],
-	ellipsisColumns: gapsBetween(diffusionGates),
+	ellipsisColumns: [stubCentre, wireStart + wireEnd - stubCentre],
 };
 
-const scriptLength = (label: GateLabel): number =>
-	Math.max(label.sup?.length ?? 0, label.sub?.length ?? 0);
+export const textWidth = (text: string, fontSize: number): number =>
+	[...text].reduce((sum, glyph) => sum + (advances[glyph] ?? widestAdvance), 0) * fontSize;
 
-const baseWidth = (label: GateLabel): number => label.base.length * baseFontSize * monoAdvance;
+const baseWidth = (label: GateLabel): number => textWidth(label.base, baseFontSize);
 
 export const labelWidth = (label: GateLabel): number => {
-	const scripts = scriptLength(label) * scriptFontSize * monoAdvance;
+	const scripts = Math.max(
+		textWidth(label.sup ?? "", scriptFontSize),
+		textWidth(label.sub ?? "", scriptFontSize),
+	);
 	return baseWidth(label) + (scripts > 0 ? scriptGap + scripts : 0);
 };
 
-export const leadWidth = (lead: Lead): number => lead.text.length * leadFontSize * monoAdvance;
+export const leadWidth = (lead: Lead): number => textWidth(lead.text, leadFontSize);
 
 export interface LabelAnchors {
 	/** Where the letter starts. */

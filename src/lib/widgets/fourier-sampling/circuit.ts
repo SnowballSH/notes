@@ -1,4 +1,3 @@
-import { formatDyadic } from "../../quantum/format.ts";
 import { signOracle, uniformSuperposition } from "../../quantum/grover.ts";
 import { type Random, sampleIndex } from "../../quantum/sampling.ts";
 import {
@@ -71,6 +70,21 @@ export const recorded = (tally: readonly number[], outcome: number): readonly nu
 export const measure = (state: Amplitudes, random: Random): number =>
 	sampleIndex(probabilities(state), random);
 
+/** How far the most negative amplitude of the state reaches below zero. */
+export const depthBelowZero = (state: Amplitudes): number =>
+	Math.max(0, ...state.map((amplitude) => -amplitude));
+
+/** A probability of a state of Fourier sampling as an exact fraction: each is a whole number over 4^n. */
+export function formatProbability(chance: number, qubits: number): string {
+	let denominator = 4 ** qubits;
+	let numerator = Math.round(chance * denominator);
+	while (denominator > 1 && numerator % 2 === 0) {
+		numerator /= 2;
+		denominator /= 2;
+	}
+	return denominator === 1 ? String(numerator) : `${numerator}/${denominator}`;
+}
+
 const tolerance = 1e-9;
 
 /** One line on what measuring the state gives: its likeliest outcomes and their probability. */
@@ -80,7 +94,7 @@ export function describeOutcomes(state: Amplitudes): string {
 	const likeliest = chances.flatMap((chance, outcome) =>
 		highest - chance < tolerance ? [bitstring(outcome, qubitCount(state))] : [],
 	);
-	const shown = formatDyadic(highest);
+	const shown = formatProbability(highest, qubitCount(state));
 	if (1 - highest < tolerance) return `The outcome is always ${likeliest[0] ?? ""}.`;
 	if (likeliest.length === chances.length) return `Every outcome has probability ${shown}.`;
 	if (likeliest.length === 1)

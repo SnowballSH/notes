@@ -28,3 +28,11 @@ export const describeAverage = (state: Amplitudes): string =>
 	`The average amplitude is ${formatSigned(mean(state))}.`;
 
 export const averageLabel = (state: Amplitudes): string => `μ = ${formatSigned(mean(state))}`;
+
+export const scaledAverageLabel = "√N·μ";
+
+/** Where a bar of the given amplitude sits in a plot from +1 at its top to −1, in percent of its height. */
+export function barBox(amplitude: number): { top: number; height: number } {
+	const height = Math.min(Math.abs(amplitude), 1) * 50;
+	return { top: amplitude < 0 ? 50 : 50 - height, height };
+}
