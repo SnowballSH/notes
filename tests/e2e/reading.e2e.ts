@@ -26,6 +26,21 @@ test("opened proofs and the scroll position survive a reload", async ({ page, re
 	await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(halfway);
 });
 
+test("one link downloads the note as a PDF", async ({ page, request }) => {
+	const note = await pageWith(request, markers.note);
+	await page.goto(note, { waitUntil: "networkidle" });
+	const link = page.getByRole("link", { name: "Download PDF" });
+	await expect(link).toHaveAttribute("href", `${note}.pdf`);
+
+	const [download] = await Promise.all([page.waitForEvent("download"), link.click()]);
+	expect(download.suggestedFilename()).toBe(`${note.split("/").pop()}.pdf`);
+
+	const response = await request.get(`${note}.pdf`);
+	expect(response.status()).toBe(200);
+	expect(response.headers()["content-type"]).toBe("application/pdf");
+	expect((await response.body()).subarray(0, 5).toString()).toBe("%PDF-");
+});
+
 test("one button opens every proof, and starts afresh on the next note", async ({
 	page,
 	request,

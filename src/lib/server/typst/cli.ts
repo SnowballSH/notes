@@ -8,8 +8,8 @@ const maxBuffer = 64 * 1024 * 1024;
 
 export class TypstError extends Error {}
 
-interface TypstOutput {
-	stdout: string;
+interface TypstOutput<Stdout = string> {
+	stdout: Stdout;
 	/** Typst's diagnostics for a run that succeeded, each with the place it points at. */
 	warnings: string[];
 }
@@ -27,15 +27,21 @@ function diagnostics(stderr: string): string[] {
 export const parseWarnings = (stderr: string): string[] =>
 	diagnostics(stderr).filter((block) => block.startsWith("warning: "));
 
-async function typst(args: string[]): Promise<TypstOutput> {
+async function typstBytes(args: string[]): Promise<TypstOutput<Buffer>> {
 	try {
-		const { stdout, stderr } = await run("typst", args, { maxBuffer });
-		return { stdout, warnings: parseWarnings(stderr) };
+		const { stdout, stderr } = await run("typst", args, { maxBuffer, encoding: "buffer" });
+		return { stdout, warnings: parseWarnings(stderr.toString()) };
 	} catch (cause) {
-		const { stderr } = cause as { stderr?: string };
-		const detail = stderr === undefined ? String(cause) : diagnostics(stderr).join("\n\n");
+		const { stderr } = cause as { stderr?: Buffer };
+		const detail =
+			stderr === undefined ? String(cause) : diagnostics(stderr.toString()).join("\n\n");
 		throw new TypstError(`typst ${args[0]} failed:\n${detail}`, { cause });
 	}
+}
+
+async function typst(args: string[]): Promise<TypstOutput> {
+	const { stdout, warnings } = await typstBytes(args);
+	return { stdout: stdout.toString(), warnings };
 }
 
 let versionChecked: Promise<void> | undefined;
@@ -58,6 +64,30 @@ function assertVersion(): Promise<void> {
 export async function compileHtml(root: string, file: string): Promise<TypstOutput> {
 	await assertVersion();
 	return typst(["compile", "--features", "html", "--format", "html", "--root", root, file, "-"]);
+}
+
+/**
+ * A note laid out on pages. `inputs` reach the note as `sys.inputs`. Only the fonts that
+ * ship with Typst are used, so every machine sets the same pages.
+ */
+export async function compilePdf(
+	root: string,
+	file: string,
+	inputs: Readonly<Record<string, string>>,
+): Promise<TypstOutput<Uint8Array<ArrayBuffer>>> {
+	await assertVersion();
+	const { stdout, warnings } = await typstBytes([
+		"compile",
+		"--format",
+		"pdf",
+		"--ignore-system-fonts",
+		"--root",
+		root,
+		...Object.entries(inputs).flatMap(([name, value]) => ["--input", `${name}=${value}`]),
+		file,
+		"-",
+	]);
+	return { stdout: new Uint8Array(stdout), warnings };
 }
 
 /** The value of every metadata element with the given label, in document order. */
