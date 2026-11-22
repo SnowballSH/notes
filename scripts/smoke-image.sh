@@ -45,7 +45,7 @@ grep -q '<title>Notes</title>' "${body}" || {
   exit 1
 }
 expect /special-topics/walsh-hadamard 200
-grep -q 'Hidden XOR periods' "${body}" || {
+grep -q 'Boolean functions and Fourier expansions' "${body}" || {
   printf 'FAIL the Walsh-Hadamard outline is not served\n' >&2
   exit 1
 }
