@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { kinds } from "./circuit";
 import {
 	type Box,
+	baseFontSize,
 	circuitDiagram,
 	type Diagram,
 	diffusionDiagram,
@@ -15,6 +16,7 @@ import {
 	scriptFontSize,
 	subBaseline,
 	supBaseline,
+	textWidth,
 	width,
 	wireRows,
 } from "./layout";
@@ -68,9 +70,10 @@ describe("the layout of the circuit diagrams", () => {
 			labelX: 158,
 			labelY: 138,
 		});
+		expect(height - (repeat?.labelY ?? 0)).toBe(4);
 		expect(repeat?.x1).toBeGreaterThan(right(gates[0] as Box) + clearance);
 		expect(repeat?.x2).toBeLessThan((meters[0] as Box).x - clearance);
-		expect(height).toBe(146);
+		expect(height).toBe(142);
 	});
 
 	it("writes D as three gates with no measurement", () => {
@@ -80,7 +83,11 @@ describe("the layout of the circuit diagrams", () => {
 			[218, "H"],
 		]);
 		expect(diffusionDiagram.meters).toEqual([]);
-		expect(diffusionDiagram.ellipsisColumns).toEqual([113, 199]);
+		expect(diffusionDiagram.ellipsisColumns).toEqual([36, 276]);
+		const [first, , last] = diffusionDiagram.gates;
+		if (!first || !last) throw new Error("the expansion of D has three gates");
+		expect(diffusionDiagram.ellipsisColumns[0]).toBeLessThan(first.x);
+		expect(diffusionDiagram.ellipsisColumns[1]).toBeGreaterThan(right(last));
 		expect(diffusionDiagram.leads).toEqual([{ text: "D =", y: 60 }]);
 		expect(diffusionDiagram.height).toBe(120);
 	});
@@ -119,13 +126,14 @@ describe("the layout of the circuit diagrams", () => {
 
 	it("centres a letter with its scripts", () => {
 		const [hadamard, oracle, d] = circuitDiagram("grover").gates;
-		expect(labelWidth((hadamard as Diagram["gates"][number]).label)).toBeCloseTo(22.1);
-		expect(labelAnchors(hadamard as Diagram["gates"][number]).base).toBeCloseTo(50.95);
-		expect(labelAnchors(hadamard as Diagram["gates"][number]).script).toBeCloseTo(59.85);
-		expect(labelWidth((oracle as Diagram["gates"][number]).label)).toBeCloseTo(15.5);
-		expect(labelAnchors(d as Diagram["gates"][number]).base).toBeCloseTo(183.8);
-		expect(subBaseline - supBaseline).toBe(12);
-		expect(scriptFontSize).toBe(11);
+		expect(labelWidth((hadamard as Diagram["gates"][number]).label)).toBeCloseTo(33.68);
+		expect(labelAnchors(hadamard as Diagram["gates"][number]).base).toBeCloseTo(45.16);
+		expect(labelAnchors(hadamard as Diagram["gates"][number]).script).toBeCloseTo(60.146);
+		expect(labelWidth((oracle as Diagram["gates"][number]).label)).toBeCloseTo(23.644);
+		expect(labelAnchors(d as Diagram["gates"][number]).base).toBeCloseTo(181.43);
+		expect(subBaseline - supBaseline).toBe(14);
+		expect(scriptFontSize / baseFontSize).toBeGreaterThanOrEqual(0.7);
+		expect(textWidth("|0⟩", 10)).toBeCloseTo(11.01);
 	});
 
 	it.each(diagrams)("marks the wires of %s as n qubits, clear of every box", (_, diagram) => {

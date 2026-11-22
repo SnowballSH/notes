@@ -44,7 +44,7 @@ const convolution = $derived(xorConvolution(f, g));
 <WidgetFrame>
 	<div class="grid" role="table" aria-label="Products f(x)·g(y), tinted by z = x ⊕ y">
 		<div class="row" role="row">
-			<div role="cell"></div>
+			<div class="corner" role="cell">⊕</div>
 			{#each g as value, y (y)}
 				{@const name = `g(${inputLabel(y)})`}
 				<div class="header across" role="columnheader" aria-label="{name} = {formatInteger(value)}">
@@ -89,15 +89,15 @@ const convolution = $derived(xorConvolution(f, g));
 				aria-pressed={z === selected}
 				onclick={() => (selected = z)}
 			>
-				<span class="z"
-					><span class="spoken">(f ∗ g)(</span>{inputLabel(z)}<span class="spoken">) = </span></span
-				><span class="result">{result}</span>
+				<span class="z">{resultName(z)}<span class="spoken"> = </span></span><span class="result"
+					>{result}</span
+				>
 			</button>
 		{/each}
 	</div>
 	{#snippet caption()}
 		<p class="sum">
-			<span class="result-name">{resultName(selected)}</span> = {sumExpression(f, g, selected)}
+			<span class="result-name">{resultName(selected)} ={" "}</span>{sumExpression(f, g, selected)}
 		</p>
 	{/snippet}
 </WidgetFrame>
@@ -105,7 +105,7 @@ const convolution = $derived(xorConvolution(f, g));
 <style>
 .grid,
 .results {
-	--header: 5.75rem;
+	--header: 6.25rem;
 	--gap: 0.25rem;
 	width: min(100%, 24rem);
 	font-family: var(--fui-font-mono);
@@ -153,8 +153,14 @@ const convolution = $derived(xorConvolution(f, g));
 	justify-items: center;
 	gap: 0.0625rem;
 }
+.corner {
+	display: grid;
+	place-content: center;
+	font-size: 1rem;
+	color: var(--fui-ink-secondary);
+}
 .name {
-	font-size: 0.625rem;
+	font-size: 0.75rem;
 	color: var(--fui-ink-secondary);
 	white-space: nowrap;
 }
@@ -194,7 +200,7 @@ button:focus-visible {
 }
 .step[aria-disabled="true"] {
 	color: var(--fui-ink-muted);
-	opacity: 0.4;
+	opacity: 0.45;
 	cursor: not-allowed;
 }
 .cell {
@@ -206,13 +212,10 @@ button:focus-visible {
 	border: 1px solid color-mix(in oklab, var(--tone) 35%, transparent);
 	border-radius: var(--fui-radius-sm);
 	background: color-mix(in oklab, var(--tone) 14%, transparent);
-	transition:
-		background-color 200ms ease-out,
-		box-shadow 200ms ease-out;
+	transition: box-shadow 200ms ease-out;
 }
 .cell[aria-current="true"] {
 	border-color: var(--tone);
-	background: color-mix(in oklab, var(--tone) 34%, transparent);
 	box-shadow: 0 0 0 2px var(--tone);
 }
 .product,
@@ -222,14 +225,15 @@ button:focus-visible {
 	color: var(--fui-ink);
 }
 .z {
-	font-size: 0.625rem;
+	font-size: 0.75rem;
 	color: color-mix(in oklab, var(--tone) 65%, var(--fui-ink));
 	white-space: nowrap;
 }
 .results {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: var(--gap);
+	gap: 0.5rem;
+	margin-top: 0.5rem;
 }
 .chip {
 	display: grid;
@@ -239,7 +243,7 @@ button:focus-visible {
 	min-height: 2.75rem;
 	padding: 0.25rem 0;
 	border: 1px solid color-mix(in oklab, var(--tone) 55%, var(--fui-line));
-	border-radius: var(--fui-radius-sm);
+	border-radius: var(--fui-radius-md);
 	background: color-mix(in oklab, var(--tone) 14%, transparent);
 	transition:
 		background-color 200ms ease-out,
@@ -250,8 +254,12 @@ button:focus-visible {
 }
 .chip[aria-pressed="true"] {
 	border-color: var(--tone);
-	background: color-mix(in oklab, var(--tone) 34%, transparent);
 	box-shadow: 0 0 0 2px var(--tone);
+}
+.chip .z {
+	font-size: clamp(0.625rem, 3.3vw, 0.75rem);
+	/* The name keeps its spaces for screen readers; a mono space is 1ch, so this draws it as (f∗g)(00). */
+	word-spacing: -1ch;
 }
 .chip .result {
 	font-size: 1.125rem;
@@ -261,9 +269,6 @@ button:focus-visible {
 	min-height: 3lh;
 	font-family: var(--fui-font-mono);
 	color: var(--fui-ink);
-}
-.result-name {
-	white-space: nowrap;
 }
 @media (min-width: 30rem) {
 	.sum {
@@ -286,6 +291,16 @@ button:focus-visible {
 	.cell,
 	.chip {
 		print-color-adjust: exact;
+	}
+}
+@media (max-width: 29.99rem) {
+	.result-name {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 }
 .spoken {

@@ -5,6 +5,7 @@ import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
 import {
+	coefficientSymbol,
 	describeSpectrum,
 	flipped,
 	formatValue,
@@ -59,16 +60,17 @@ const chosen = $derived(matchingPreset(table));
 		role="img"
 		aria-label="Fourier coefficients: {describeSpectrum(coefficients)}"
 	>
+		<span class="symbol">{coefficientSymbol}</span>
 		{#each coefficients as { subset, value } (subsetLabel(subset))}
 			{@const shown = formatAmplitude(value)}
-			<div class="column">
+			<div class="column" style:--coefficient={value}>
 				<span class="plot">
-					<span class="bar" class:negative={value < 0} style:--coefficient={value}></span>
+					<span class="bar" class:negative={value < 0}></span>
+					<span class="coefficient" class:negative={value < 0} class:zero={shown === "0"}>
+						{shown}
+					</span>
 				</span>
-				<span class="coefficient" class:negative={value < 0} class:zero={shown === "0"}>
-					{shown}
-				</span>
-				<span class="subset">{subsetLabel(subset)}</span>
+				<span class="subset" class:empty={subset.length === 0}>{subsetLabel(subset)}</span>
 			</div>
 		{/each}
 	</div>
@@ -135,7 +137,6 @@ button:focus-visible {
 }
 .tile.negative {
 	--tone: var(--fui-code-warm);
-	border-style: dashed;
 }
 .tile:hover {
 	background: color-mix(in oklab, var(--tone) 30%, transparent);
@@ -151,28 +152,33 @@ button:focus-visible {
 	color: color-mix(in oklab, var(--tone) 70%, var(--fui-ink));
 }
 .chart {
-	--unit: 3.5rem;
+	--unit: 2.75rem;
+	--label: 1.125rem;
 	width: min(100%, 26rem);
 	display: grid;
 	grid-template-columns: repeat(8, minmax(0, 1fr));
-	font-size: 0.625rem;
+	font-size: 0.75rem;
 	line-height: 1.5;
+}
+.symbol {
+	grid-column: 1 / -1;
+	color: var(--fui-ink-secondary);
+	font-style: italic;
 }
 .column {
 	display: grid;
 	justify-items: center;
-	gap: 0.125rem;
 }
 .plot {
 	position: relative;
 	width: 100%;
-	height: calc(2 * var(--unit));
+	height: calc(2 * (var(--unit) + var(--label)));
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
 		no-repeat;
 }
 .bar {
 	position: absolute;
-	inset: 0 18% 50%;
+	inset: var(--label) 18% 50%;
 	/* A negative scale mirrors the bar below the zero line, so a sign change passes through zero. */
 	transform: scaleY(var(--coefficient));
 	transform-origin: bottom;
@@ -186,12 +192,20 @@ button:focus-visible {
 	background: var(--fui-code-warm);
 }
 .coefficient {
+	position: absolute;
+	bottom: 50%;
+	left: 50%;
+	/* The label rides the tip of its bar: above a positive one, below a negative one. */
+	transform: translate(-50%, calc(var(--coefficient) * -1 * var(--unit)));
+	transition: transform 250ms ease-out;
 	font-family: var(--fui-font-mono);
 	font-variant-numeric: tabular-nums;
 	color: var(--fui-accent-strong);
 	white-space: nowrap;
 }
 .coefficient.negative {
+	top: 50%;
+	bottom: auto;
 	color: var(--fui-code-warm);
 }
 .coefficient.zero {
@@ -201,6 +215,10 @@ button:focus-visible {
 	color: var(--fui-ink-secondary);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
+}
+.subset.empty {
+	font-size: 1.25em;
+	line-height: 1.2;
 }
 .polynomial {
 	margin: 0;
@@ -212,7 +230,8 @@ button:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
 	.tile,
-	.bar {
+	.bar,
+	.coefficient {
 		transition: none;
 	}
 }

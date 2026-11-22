@@ -164,13 +164,18 @@ test("two Hadamard gates unflip the qubit but not the coin, unless it is measure
 	const applyGate = widget.getByRole("button", { name: "Apply H" });
 	const measure = widget.getByRole("button", { name: "Measure" });
 
+	await expect(widget.locator(".history")).toHaveText("");
+	await expect(coin.locator(".name")).toHaveText("Coin heads");
+	await expect(coin.locator(".label")).toHaveText(["heads", "tails"]);
 	await applyGate.click();
+	await expect(widget.locator(".history")).toContainText("|0⟩ → H");
 	await expect(qubit.locator(".amplitude")).toHaveText(["+1/√2", "+1/√2"]);
 	await expect(qubit.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
 	await applyGate.click();
 	await expect(qubit.locator(".amplitude")).toHaveText(["+1", "0"]);
 	await expect(qubit.locator(".chance-value")).toHaveText(["1", "0"]);
 	await expect(coin.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
+	await expect(coin.locator(".name")).toHaveText("Coin tossed");
 	await expect(widget.locator("figcaption .result")).toHaveText("");
 	await measure.click();
 	await expect(widget.locator("figcaption .result")).toHaveText("Measured 0");
@@ -194,9 +199,16 @@ test("a drawn state gets a Hadamard gate on every qubit, and a second one return
 	const widget = page.locator('notes-widget[name="hadamard-amplitudes"]').first();
 	const drawn = widget.getByRole("group", { name: /drawable/ }).locator(".amplitude");
 	const transformed = widget.getByRole("list", { name: /Hadamard gate/ }).locator(".amplitude");
+	const drawnChances = widget.getByRole("group", { name: /drawable/ }).locator(".chance-value");
+	const transformedChances = widget
+		.getByRole("list", { name: /Hadamard gate/ })
+		.locator(".chance-value");
 	const applyGates = widget.getByRole("button", { name: /^Apply H/ });
 	await expect(drawn).toHaveText(["+1", "0", "0", "0"]);
 	await expect(transformed).toHaveText(["+1/2", "+1/2", "+1/2", "+1/2"]);
+	await expect(drawnChances).toHaveText(["1", "0", "0", "0"]);
+	await expect(transformedChances).toHaveText(["1/4", "1/4", "1/4", "1/4"]);
+	await expect(widget.locator(".grip")).toHaveCount(4);
 
 	const last = widget.getByRole("slider", { name: "Amplitude of 11" });
 	await last.focus();
@@ -204,6 +216,8 @@ test("a drawn state gets a Hadamard gate on every qubit, and a second one return
 	await page.keyboard.press("Space");
 	await expect(drawn).toHaveText(["+1/√2", "0", "0", "−1/√2"]);
 	await expect(transformed).toHaveText(["0", "+1/√2", "+1/√2", "0"]);
+	await expect(drawnChances).toHaveText(["1/2", "0", "0", "1/2"]);
+	await expect(transformedChances).toHaveText(["0", "1/2", "1/2", "0"]);
 
 	const second = widget.getByRole("slider", { name: "Amplitude of 01" });
 	await second.focus();

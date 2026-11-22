@@ -1,7 +1,14 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import AmplitudeChart from "../../quantum/AmplitudeChart.svelte";
-import { keyEdit, normalise, type Preset, presets, withAmplitude } from "../../quantum/drawing.ts";
+import {
+	keyEdit,
+	normalise,
+	type Preset,
+	plotPosition,
+	presets,
+	withAmplitude,
+} from "../../quantum/drawing.ts";
 import { ket, listAmplitudes } from "../../quantum/format.ts";
 import {
 	type Amplitudes,
@@ -103,15 +110,26 @@ function applyGates(): void {
 	<div class="states">
 		<div class="state">
 			<p class="title">{ket("ψ")}</p>
-			<AmplitudeChart
-				name="Amplitudes of the state, drawable"
-				{labels}
-				amplitudes={input}
-				probabilities={probabilities(normalise(input) ?? drawn)}
-				ondraw={draw}
-				ondrawend={finishStroke}
-				onkey={pressKey}
-			/>
+			<div class="sketch" class:dragging={stroke !== undefined} style:--columns={input.length}>
+				<AmplitudeChart
+					name="Amplitudes of the state, drawable"
+					{labels}
+					amplitudes={input}
+					probabilities={probabilities(normalise(input) ?? drawn)}
+					showProbabilityValues
+					ondraw={draw}
+					ondrawend={finishStroke}
+					onkey={pressKey}
+				/>
+				{#each input as amplitude, index (index)}
+					<span
+						class="grip"
+						style:--across={(index + 0.5) / input.length}
+						style:--down={plotPosition(amplitude)}
+						aria-hidden="true"
+					></span>
+				{/each}
+			</div>
 		</div>
 		<div class="state">
 			<p class="title">H<sup>&otimes;{count}</sup>{ket("ψ")}</p>
@@ -120,6 +138,7 @@ function applyGates(): void {
 				{labels}
 				amplitudes={output}
 				probabilities={probabilities(output)}
+				showProbabilityValues
 			/>
 		</div>
 	</div>
@@ -163,9 +182,11 @@ button.apply {
 	border-color: var(--fui-accent);
 	font-weight: 600;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
+@media (hover: hover) {
+	button:not([aria-disabled="true"]):hover {
+		border-color: var(--fui-accent);
+		background: var(--fui-surface-raised);
+	}
 }
 button[aria-disabled="true"] {
 	border-style: dashed;
@@ -202,6 +223,35 @@ sup {
 	font-family: var(--fui-font-mono);
 	color: var(--fui-ink);
 }
+.sketch {
+	--chart-unit: 4.5rem;
+	position: relative;
+	width: min(100%, var(--columns) * 3.25rem);
+}
+.sketch :global(.chart.drawable .column:hover) {
+	background: transparent;
+}
+.grip {
+	position: absolute;
+	left: calc(var(--across) * 100%);
+	top: calc(var(--down) * 2 * var(--chart-unit));
+	width: 0.75rem;
+	height: 0.25rem;
+	border: 1px solid var(--fui-ink);
+	border-radius: var(--fui-radius-xs);
+	background: var(--fui-surface-base);
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	transition: top 250ms ease-out;
+}
+.dragging .grip {
+	transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.grip {
+		transition: none;
+	}
+}
 .spoken {
 	position: absolute;
 	width: 1px;
@@ -212,7 +262,8 @@ sup {
 	white-space: nowrap;
 }
 @media print {
-	button {
+	button,
+	.grip {
 		display: none;
 	}
 }

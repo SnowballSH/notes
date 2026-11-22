@@ -22,6 +22,8 @@ import { anchorAt, centre, pointAtAngle, pointOf, radius, size } from "./layout.
 const reflectionTime = 600;
 const labelDistance = radius + 14;
 const shortestLabelledLeg = 0.2;
+const outcomes = [ket("0"), ket("1")];
+const symbols = ["α", "β"];
 const mirror = {
 	from: pointAtAngle(mirrorAngle + Math.PI, radius + 16),
 	to: pointAtAngle(mirrorAngle, radius + 20),
@@ -167,9 +169,14 @@ function pressKey(event: KeyboardEvent): void {
 			</g>
 		</svg>
 		<div class="bars">
+			<div class="symbols" aria-hidden="true">
+				{#each symbols as symbol, index (symbol)}
+					<span class:negative={(current[index] ?? 0) < 0}>{symbol}</span>
+				{/each}
+			</div>
 			<AmplitudeChart
 				name="Amplitudes and measurement probabilities"
-				labels={["0", "1"]}
+				labels={outcomes}
 				amplitudes={current}
 				probabilities={probabilities(current)}
 				showProbabilityValues
@@ -220,6 +227,12 @@ button:hover {
 	border-color: var(--fui-accent);
 	background: var(--fui-surface-raised);
 }
+/* A hover that outlasts the click must not look like a pressed preset, so H thickens its outline instead of filling. */
+button.apply:hover {
+	border-color: var(--fui-code-violet);
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--fui-code-violet);
+}
 button:focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
@@ -228,6 +241,7 @@ p {
 	margin: 0;
 }
 .view {
+	container-type: inline-size;
 	width: 100%;
 	display: flex;
 	flex-wrap: wrap;
@@ -247,6 +261,42 @@ p {
 	flex: 0 0 6.5rem;
 	display: grid;
 	justify-items: center;
+}
+.symbols {
+	width: min(100%, 6.5rem);
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	justify-items: center;
+	color: var(--fui-accent-strong);
+	font-family: var(--fui-font-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.5;
+}
+.symbols .negative {
+	color: var(--fui-code-warm);
+}
+.bars :global(.chance) {
+	display: none;
+}
+.bars :global(.chance-value) {
+	min-width: 64%;
+	margin-block: 0.125rem;
+	padding: 0 0.25rem;
+	border: 1px solid var(--fui-ink-muted);
+	border-radius: var(--fui-radius-xs);
+	text-align: center;
+}
+/* Narrower than the circle, the gap and the bars together, the bars wrap under the circle. */
+@container (width < 26rem) {
+	.circle {
+		margin-inline: auto;
+	}
+	.bars {
+		flex-basis: 100%;
+		margin-top: -1.5rem;
+		--chart-unit: 3.5rem;
+	}
 }
 .axis {
 	stroke: var(--fui-line);

@@ -6,8 +6,10 @@ import WidgetFrame from "../WidgetFrame.svelte";
 import {
 	applyHadamard,
 	cancels,
+	coinName,
 	describeStep,
 	type Experiment,
+	faces,
 	formatTerms,
 	measure,
 	result,
@@ -46,7 +48,11 @@ const interfering = $derived(
 			Start over
 		</button>
 	</div>
-	<p class="history"><span class="spoken">Steps so far: </span>{history.join(" \u2192 ")}</p>
+	<p class="history">
+		{#if experiment.steps.length > 0}
+			<span class="spoken">Steps so far: </span>{history.join(" \u2192 ")}
+		{/if}
+	</p>
 	<div class="sides">
 		<div class="side" role="group" aria-label="Qubit">
 			<p class="name">Qubit {stateName(experiment.qubit)}</p>
@@ -59,10 +65,15 @@ const interfering = $derived(
 			/>
 		</div>
 		<div class="side" role="group" aria-label="Classical coin">
-			<p class="name">Coin</p>
+			<p class="name">Coin {coinName(experiment.coin)}</p>
+			<div class="tally" aria-hidden="true">
+				{#each experiment.coin as probability, face (face)}
+					<span style:--probability={probability}></span>
+				{/each}
+			</div>
 			<AmplitudeChart
 				name="Probabilities of the coin"
-				labels={[...bits]}
+				labels={[...faces]}
 				probabilities={experiment.coin}
 				showProbabilityValues
 			/>
@@ -99,9 +110,11 @@ button {
 	font: inherit;
 	cursor: pointer;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
+@media (hover: hover) {
+	button:not([aria-disabled="true"]):hover {
+		border-color: var(--fui-accent);
+		background: var(--fui-surface-raised);
+	}
 }
 button[aria-disabled="true"] {
 	border-style: dashed;
@@ -123,6 +136,7 @@ p {
 	line-height: 1.5;
 }
 .history {
+	min-height: 1.5em;
 	color: var(--fui-ink);
 	overflow-wrap: anywhere;
 }
@@ -133,20 +147,47 @@ p {
 	width: 100%;
 }
 .side {
-	display: grid;
 	--chart-unit: 2.5rem;
-	grid-template-rows: auto 1fr;
+	--chart-text: 0.75rem;
+	--chart-width: 6.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	gap: 0.5rem;
-	justify-items: center;
 	padding: 0.75rem 0.5rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-md);
 }
-.side > :global(.chart) {
-	align-self: end;
+.side :global(.chart) {
+	font-size: var(--chart-text);
+}
+.side :global(.label) {
+	color: var(--fui-ink);
+}
+.name + :global(*) {
+	margin-top: auto;
+}
+.tally {
+	display: grid;
+	grid-template: 100% / repeat(2, minmax(0, 1fr));
+	width: min(100%, var(--chart-width));
+	height: calc(2 * var(--chart-unit));
+	/* Leaves the room the qubit's row of amplitudes takes, so both sets of bars rise from one line. */
+	margin-bottom: calc(1.5 * var(--chart-text) - 0.25rem);
+	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
+		no-repeat;
+}
+.tally > span {
+	height: 50%;
+	margin-inline: 18%;
+	transform: scaleY(var(--probability));
+	transform-origin: bottom;
+	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
+	background: var(--fui-ink-muted);
+	transition: transform 250ms ease-out;
 }
 .name {
-	justify-self: start;
+	align-self: flex-start;
 	padding-left: 0.375rem;
 	font-weight: 600;
 	color: var(--fui-ink);
@@ -177,9 +218,17 @@ p {
 	color: var(--fui-ink);
 	font-weight: 700;
 }
+@media (prefers-reduced-motion: reduce) {
+	.tally > span {
+		transition: none;
+	}
+}
 @media print {
 	button {
 		display: none;
+	}
+	.tally > span {
+		print-color-adjust: exact;
 	}
 }
 </style>

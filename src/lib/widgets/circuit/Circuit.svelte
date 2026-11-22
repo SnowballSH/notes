@@ -76,7 +76,7 @@ const diffusionId = $props.id();
 			aria-controls={diffusionId}
 			onclick={() => (diffusionShown = !diffusionShown)}
 		>
-			Expand D
+			{diffusionShown ? "Hide D" : "Expand D"}
 		</button>
 		{#if diffusionShown}
 			{@render picture(diffusionDiagram, diffusionDescription, diffusionId)}
@@ -90,6 +90,13 @@ const diffusionId = $props.id();
 	width: 100%;
 	max-width: 24rem;
 	height: auto;
+	justify-self: center;
+}
+.lead,
+.name {
+	font-family: "STIX Two Math", math;
+	font-weight: 400;
+	fill: var(--fui-ink);
 }
 .wire {
 	stroke: var(--fui-ink-secondary);
@@ -99,8 +106,6 @@ const diffusionId = $props.id();
 	fill: var(--fui-ink-secondary);
 }
 .lead {
-	font-family: var(--fui-font-mono);
-	fill: var(--fui-ink);
 	text-anchor: middle;
 	dominant-baseline: central;
 }
@@ -113,11 +118,6 @@ const diffusionId = $props.id();
 	fill: color-mix(in oklab, var(--fui-accent) 20%, var(--fui-surface-base));
 	stroke: var(--fui-accent);
 	stroke-width: 2;
-}
-.name {
-	font-family: var(--fui-font-mono);
-	font-weight: 600;
-	fill: var(--fui-ink);
 }
 .meter .box {
 	fill: var(--fui-surface-base);
@@ -141,6 +141,7 @@ const diffusionId = $props.id();
 	text-anchor: middle;
 }
 button {
+	justify-self: center;
 	min-height: 2.75rem;
 	padding: 0 1rem;
 	border: 1px solid var(--fui-line);

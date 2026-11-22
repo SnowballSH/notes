@@ -22,6 +22,13 @@ test("the Hadamard gate reflects a qubit on the circle, and twice returns it", a
 	const amplitudes = widget.locator(".amplitude");
 	const chances = widget.locator(".chance-value");
 
+	await expect(widget.locator(".symbols span")).toHaveText(["α", "β"]);
+	await expect(widget.locator(".bars .label")).toHaveText(["|0⟩", "|1⟩"]);
+	await expect(widget.locator(".chance").first()).toBeHidden();
+	await expect(
+		widget.getByRole("list", { name: "Amplitudes and measurement probabilities" }),
+	).toContainText("|0⟩: amplitude +1, probability 1");
+
 	await preset("|0⟩").click();
 	await expect(caption).toHaveText("α = +1, β = 0");
 	await expect(chances).toHaveText(["1", "0"]);
@@ -41,6 +48,7 @@ test("the Hadamard gate reflects a qubit on the circle, and twice returns it", a
 	await expect(caption).toHaveText("α = +1/√2, β = −1/√2");
 	await expect(preset("|−⟩")).toHaveAttribute("aria-pressed", "true");
 	await expect(amplitudes).toHaveText(["+1/√2", "−1/√2"]);
+	await expect(widget.locator(".symbols .negative")).toHaveText("β");
 	await expect(chances).toHaveText(["1/2", "1/2"]);
 
 	await preset("|0⟩").click();

@@ -1,4 +1,4 @@
-import { formatAmplitude, formatDyadic } from "../../quantum/format.ts";
+import { formatAmplitude, formatDyadic, minusSign } from "../../quantum/format.ts";
 import {
 	invertAboutMean,
 	mean,
@@ -54,3 +54,23 @@ export function describe(qubits: number, marked: number, steps: number): string 
 	const when = iterations === 0 ? "Before any query" : `After ${countIterations(iterations)}`;
 	return `${when}, ${label} is measured with probability ${chance}.`;
 }
+
+/** The number under a bar: two decimals, with a sign only when negative, since the bar shows the direction. */
+export function shownAmplitude(amplitude: number): string {
+	const hundredths = Math.round(Math.abs(amplitude) * 100);
+	if (hundredths === 0) return "0";
+	const magnitude =
+		hundredths % 100 === 0 ? String(hundredths / 100) : (hundredths / 100).toFixed(2);
+	return `${amplitude < 0 ? minusSign : ""}${magnitude}`;
+}
+
+/** One bar in words, for a screen reader, with its exact amplitude. */
+export const describeColumn = (label: string, amplitude: number, marked: boolean): string =>
+	[
+		`${label}:`,
+		marked && "marked,",
+		`amplitude ${formatAmplitude(amplitude)},`,
+		`probability ${formatDyadic(amplitude ** 2)}`,
+	]
+		.filter(Boolean)
+		.join(" ");
