@@ -358,9 +358,13 @@ the numbers so that sixteen columns fit.
   by the same angle each iteration.
 - `#widget("grover-success")` plots the success probability of Grover's
   algorithm against the number of queries, with the classical bound.
+- `#widget("roadmap")` draws the sections of the course as boxes with arrows
+  from each section to those that need it. A box links to its note once
+  `/search.json` lists that note, so drafts and planned sections stay plain.
+  The dependencies are in `roadmap/dependencies.ts`, keyed by section number.
 
-The last four have no published note yet: their browser tests skip until the
-note on Grover's algorithm is published.
+The last five have no published note yet: their browser tests skip until the
+overview and the note on Grover's algorithm are published.
 
 Drawing: press on a bar's plot and drag, up for positive and down for
 negative; dragging sideways draws on the bars passed over. The plot has
