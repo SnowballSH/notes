@@ -142,6 +142,10 @@ before the widget loads, without JavaScript, in the editor preview, and if the
 widget fails to load. Say what the reader is missing, or give the same
 information as static text or a figure. It is optional but worth a sentence.
 
+The PDF edition of a note shows neither the widget nor this content, only a
+line that points to the online page, so the text around a widget should read
+sensibly without it. See [`notes-system.md`](notes-system.md#pdf-edition).
+
 ## The shared frame
 
 Wrap the widget in `WidgetFrame` (`src/lib/widgets/WidgetFrame.svelte`). It

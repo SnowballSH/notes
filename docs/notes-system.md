@@ -203,6 +203,41 @@ keeps cards, figures and equations from splitting across pages.
 theme before the page prints, and undoes both afterwards, so a printout has
 the proofs on white paper. A widget hides its own controls in print.
 
+## PDF edition
+
+Every published note also has a PDF, served at the note's address with `.pdf`
+added (`/walsh-hadamard/qubits.pdf`) and offered by the "Download PDF" link
+above the note. It is the same Typst source set on A4 pages, so nothing is
+converted from the HTML:
+
+- The build passes `--input print=true`, and `notes/lib/notes.typ` then hands
+  each element to `notes/lib/print.typ` instead of writing HTML: a card is a
+  lightly tinted block in the colour of its kind, a proof or solution is shown
+  in full, and a widget becomes one line that points to the online edition.
+- The site also passes what Typst cannot know (`printInputs` in
+  `src/lib/server/typst/notes.ts`): the site's origin and the note's path,
+  its course title and number, and where each `noteref` leads, taken from the
+  compiled HTML of the note it points into. A link written for the site, such
+  as `/walsh-hadamard/walsh-hadamard#implementation`, is given the origin, so
+  every link in the PDF leads to the site.
+- `compilePdf` in `src/lib/server/typst/cli.ts` runs Typst with
+  `--ignore-system-fonts`. The pages use only the fonts that ship with Typst
+  (Libertinus Serif, New Computer Modern Math, DejaVu Sans Mono), so a
+  laptop, CI and the image build set identical pages.
+- `src/routes/[course]/[slug].pdf/+server.ts` is prerendered like the note's
+  page: one PDF per published note lands in `build/`, a draft has one only
+  while developing, and a Typst warning fails the build.
+
+To look at the pages while writing, open the PDF's address on the dev server,
+or run Typst yourself:
+
+```bash
+typst compile --root notes --input print=true notes/<course>/<slug>.typ note.pdf
+```
+
+Without the site's inputs the title has no course or number, and a `noteref`
+without words of its own shows the note and label it names.
+
 ## Editor preview
 
 `.vscode/settings.json` points tinymist at `notes/` as the Typst root and
@@ -267,7 +302,8 @@ line at a window width of 320px, which the reserved height relies on.
 ## Tests
 
 `pnpm run test` runs the unit tests: each rule of the HTML repair pass, the
-outline logic, search matching, the widget contract and the scaffolds.
+outline logic, search matching, the widget contract and the scaffolds, and
+that every note compiles to HTML and to a PDF without a warning.
 
 `pnpm run test:e2e` builds the site, serves it, and checks it in Chromium and
 Firefox (`tests/e2e/`). The tests find the site's pages by following its links
@@ -276,7 +312,8 @@ reference to a card), so editing a note does not break them: every page loads
 without errors, never scrolls
 sideways and passes the axe accessibility checks in both themes; opened
 proofs survive a reload; a reference previews its target; search reaches a
-named theorem; the widget loads without moving the page; on a phone the note
+named theorem; one link downloads the note as a PDF; the widget loads without
+moving the page; on a phone the note
 starts on the first screen and every equation and code block fits or scrolls
 on its own.
 It needs the browsers once: `pnpm exec playwright install chromium firefox`.

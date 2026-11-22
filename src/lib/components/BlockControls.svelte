@@ -23,36 +23,6 @@ function toggleAll(): void {
 }
 </script>
 
-<button type="button" class="block-controls" onclick={toggleAll}>
+<button type="button" class="note-control" onclick={toggleAll}>
 	{allOpen ? "Close all proofs" : "Open all proofs"}
 </button>
-
-<style>
-.block-controls {
-	margin-top: 1rem;
-	padding: 0.375rem 0.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	font-size: 0.875rem;
-	color: var(--fui-ink-secondary);
-	cursor: pointer;
-}
-.block-controls:hover {
-	border-color: var(--fui-accent);
-	color: var(--fui-accent-strong);
-}
-.block-controls:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
-}
-@media (pointer: coarse) {
-	.block-controls {
-		min-height: 2.75rem;
-	}
-}
-@media print {
-	.block-controls {
-		display: none;
-	}
-}
-</style>

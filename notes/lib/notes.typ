@@ -1,3 +1,5 @@
+#import "print.typ"
+
 #let card-kinds = (
   definition: "Definition",
   theorem: "Theorem",
@@ -12,6 +14,9 @@
 
 // An editor preview sets this input: it renders pages, where HTML elements are dropped.
 #let preview = "preview" in sys.inputs
+// The build sets this input for the PDF edition of a note, which print.typ lays out.
+#let printed = "print" in sys.inputs
+#let paged = preview or printed
 
 #let preview-frame(dashed: false, body) = block(
   width: 100%,
@@ -23,11 +28,12 @@
 
 #let card-heading(kind, title) = {
   let label = context [#card-kinds.at(kind) #counter(figure.where(kind: kind)).display()]
-  if preview { strong(label) } else { html.elem("strong", label) }
+  if paged { strong(label) } else { html.elem("strong", label) }
   if title != none [ (#title)]
 }
 
 #let collapsible(class, heading, collapsed, body) = {
+  if printed { return print.aside(heading, body) }
   if preview { return preview-frame(heading + parbreak() + body) }
   let attrs = (class: class)
   if not collapsed { attrs.insert("open", "") }
@@ -42,7 +48,9 @@
   {
     let class = "card card-" + kind
     let heading = card-heading(kind, title)
-    if collapsed == none and not preview {
+    if printed {
+      print.card(kind, heading, body)
+    } else if collapsed == none and not preview {
       html.elem("section", attrs: (class: class), html.elem("header", heading) + body)
     } else {
       collapsible(class, heading, collapsed, body)
@@ -58,8 +66,8 @@
 #let exercise = card.with("exercise")
 #let remark = card.with("remark")
 
-#let proof(collapsed: true, body) = collapsible("proof", strong[Proof], collapsed, body)
-#let solution(collapsed: true, body) = collapsible("solution", strong[Solution], collapsed, body)
+#let proof(collapsed: true, body) = collapsible("proof", if printed [Proof] else { strong[Proof] }, collapsed, body)
+#let solution(collapsed: true, body) = collapsible("solution", if printed [Solution] else { strong[Solution] }, collapsed, body)
 
 // Named arguments become the widget's props. The optional body shows until the widget loads.
 #let widget(name, ..args) = {
@@ -69,6 +77,7 @@
     message: "widget props must be named, with at most one content body",
   )
   let fallback = bodies.at(0, default: none)
+  if printed { return print.widget-note }
   if preview { return preview-frame(dashed: true, strong[Widget: #name] + parbreak() + fallback) }
   html.elem(
     "notes-widget",
@@ -81,12 +90,13 @@
 // The site writes the card's name, such as "Theorem 2", unless a body gives other words.
 #let noteref(note, target, ..body) = {
   let words = body.pos().at(0, default: none)
+  if printed { return print.reference(note, str(target), words) }
   if preview { return if words != none { words } else { emph[#note, #str(target)] } }
   html.elem("a", attrs: (class: "noteref", "data-note": note, "data-target": str(target)), words)
 }
 
 // Typst drops grids in HTML export, so the site lays the items out with CSS instead.
-#let gallery(columns: 2, ..items) = if preview {
+#let gallery(columns: 2, ..items) = if paged {
   grid(columns: columns, gutter: 12pt, ..items)
 } else {
   html.elem("div", attrs: (class: "gallery", style: "--columns: " + str(columns)), items.pos().join())
@@ -97,8 +107,8 @@
   [#metadata((title: title, summary: summary, order: order, draft: draft)) <note-meta>]
   set page(width: 16cm, height: auto, margin: 1.2cm) if preview
   // The wrapper carries the card's label to the site, which makes it the card's id.
-  show figure: it => if not is-card(it) { it } else if preview or not it.has("label") { it.body } else {
+  show figure: it => if not is-card(it) { it } else if paged or not it.has("label") { it.body } else {
     html.elem("div", attrs: ("data-label": str(it.label)), it.body)
   }
-  body
+  if printed { print.pages(title, body) } else { body }
 }

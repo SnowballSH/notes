@@ -23,6 +23,11 @@ Open the address it prints. A note at `notes/<course>/<slug>.typ` is served at
 In VS Code, the tinymist preview panel also works on a note. It shows the
 content and structure, not the site's styling.
 
+Each note also has a PDF edition, at the note's address with `.pdf` added and
+behind the "Download PDF" link above the note. It shows every proof and leaves
+out the widgets; [`notes-system.md`](notes-system.md#pdf-edition) explains how
+it is made.
+
 ## Add a note to a course
 
 1. Create the file:
@@ -107,6 +112,9 @@ Things to know:
   element was left out. Equation numbers are dropped without a warning: a
   reference says "Equation 1" but no equation shows a number, so do not number
   equations.
+- A page cannot scroll: in the PDF edition a display equation or a code line
+  wider than the page runs into the margin, so check the PDF of a note with
+  very wide ones.
 
 ## Start a course
 
