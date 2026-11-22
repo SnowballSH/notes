@@ -138,7 +138,7 @@ With this idea, let us prove a crucial property about the entries of the Walsh-H
     H_(2^n) [gamma, x] = (-1)^(arrow(gamma) dot arrow(x)),
   $
   where $arrow(gamma) dot arrow(x)$ is the dot product of $arrow(gamma)$ and $arrow(x)$ when $x$ and $gamma$ are viewed as vectors in $FF_2^n$ using their binary representations.
-]
+] <prop-entries>
 
 #proof[
   We proceed by induction on $n$.
