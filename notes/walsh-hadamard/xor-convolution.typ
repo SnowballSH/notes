@@ -17,9 +17,9 @@ or the discrete Fourier transform, where we defined
 $
   (A * B)_k = sum_(i=0)^k a_i b_(k-i)
 $
-for polynomials $A(x) = sum_(i=0)^(n-1) a_i x^i$ and $B(x) = sum_(i=0)^(n-1) b_i x^i$. In all these cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
+for polynomials $A(x) = sum_(i=0)^(m-1) a_i x^i$ and $B(x) = sum_(i=0)^(m-1) b_i x^i$, where the coefficients $a_i$ and $b_i$ with $i >= m$ are taken to be $0$. In all these cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
 
-The same definition seems intuitive in the standard vector space of functions $FF_2^n -> RR$ on $chevron.l FF_2; xor, dot chevron.r$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
+The same definition seems intuitive for functions $FF_2^n -> RR$, where two inputs in $FF_2^n$ are added with $xor$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
 
 #definition(title: "XOR Convolution")[
   Let $f : FF_2^n -> RR$ and $g : FF_2^n -> RR$. The _XOR convolution_ of $f$ and $g$ is the function $f * g : FF_2^n -> RR$ given by
@@ -35,6 +35,7 @@ A careful reader might observe that this form is not exactly the same as the exa
 Interestingly, $xor$ is self-inverse (i.e. $x xor x = 0$) and commutative, so $x xor y = z <==> y = z xor x$. Therefore, we can rewrite the XOR convolution of @def-xor-convolution as follows.
 
 #proposition(title: "Alternative Expression for the XOR Convolution")[
+  Let $f, g : FF_2^n -> RR$. For all $z in FF_2^n$,
   $
     (f * g)(z) = sum_(x in FF_2^n) f(x) g(z xor x).
   $
@@ -50,7 +51,7 @@ Recall that the Walsh-Hadamard transform computes the Fourier coefficients of a 
 
 Let's work backwards from what we want to compute. At the end of the algorithm, we need to output the function $f * g$. Ideally, at this point, we somehow have the Fourier coefficients of $f * g$, i.e. $hat(f * g)$, and we need to convert this to $f * g$ efficiently. It might seem like we don't have an "inverse Walsh-Hadamard transform" yet, and it's not immediately obvious how to convert Fourier coefficients to a function in $O(N log N)$ time. Surprisingly, we already have all the tools to compute the inverse Walsh-Hadamard transform.
 
-Let's recall the important theorems we proved last time. In #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], we showed that $hat(f) = 1/2^n H_(2^n) f$. Furthermore, using #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices], we showed in #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the proof that the Walsh-Hadamard matrices are Hadamard matrices] that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$. Also, the Walsh-Hadamard matrices are symmetric (#noteref("walsh-hadamard", <exr-symmetric>)[an exercise in the previous chapter]), so $H_(2^n) = H_(2^n)^"T"$. Can we conclude something from these theorems?
+Let's recall the important theorems we proved last time. In #noteref("walsh-hadamard", <thm-wht>)[the Walsh-Hadamard transform theorem], we showed that $hat(f) = 1/2^n H_(2^n) f$. Furthermore, using #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices], we showed in #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the proof that the Walsh-Hadamard matrices are Hadamard matrices] that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$. Also, the Walsh-Hadamard matrices are symmetric (by #noteref("walsh-hadamard", <prop-entries>)[the formula for their entries]), so $H_(2^n) = H_(2^n)^"T"$. Can we conclude something from these theorems?
 
 #proposition(title: "Inverse Walsh-Hadamard Transform")[
   Let $f : FF_2^n -> RR$. Then,
@@ -75,12 +76,19 @@ First, we will need a helpful lemma.
 
 #lemma(title: "Parity of a Sum")[
   For all $gamma, x, y in FF_2^n$, $chi_gamma (x xor y) = chi_gamma (x) chi_gamma (y)$.
+] <lem-parity-of-a-sum>
+
+This was #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the first chapter], and the proof is short.
+
+#proof[
+  The dot product is linear, so $gamma dot (x xor y) = gamma dot x + gamma dot y$ in $FF_2$. Therefore,
+  $
+    chi_gamma (x xor y) = (-1)^(gamma dot x + gamma dot y) = (-1)^(gamma dot x) (-1)^(gamma dot y) = chi_gamma (x) chi_gamma (y). quad square
+  $
 ]
 
-The proof of this lemma was left as #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the first chapter].
-
 #theorem(title: "XOR Convolution Theorem")[
-  For all $gamma in FF_2^n$,
+  Let $f, g : FF_2^n -> RR$. For all $gamma in FF_2^n$,
   $
     hat(f * g)(gamma) = 2^n hat(f)(gamma) hat(g)(gamma).
   $
@@ -141,7 +149,7 @@ So the simplified algorithm proceeds as follows: transform $f$, transform $g$, m
 
 = Implementation
 
-The above proof translates directly into code. We reuse the function `fwht` from #link("/walsh-hadamard/walsh-hadamard#implementation")[the implementation in the previous chapter], which replaces an array $f$ with $H_(2^n) f$.
+The simplified algorithm above translates directly into code, assuming the values of $f$ and $g$ are integers. We reuse the function `fwht` from #link("/walsh-hadamard/walsh-hadamard#implementation")[the implementation in the previous chapter], which replaces an array $f$ with $H_(2^n) f$.
 
 ```cpp
 vector<long long> xor_convolution(vector<long long> f, vector<long long> g) {
@@ -185,7 +193,7 @@ In this chapter, we defined the XOR convolution $f * g$ and found a fast way to 
 ] <exr-averaged-convolution>
 
 #exercise(title: "Counting Pairs by XOR")[
-  Suppose we are given a list of $n$ integers $a_1, ..., a_n$ with $0 <= a_i < n$ for all $1 <= i <= n$. We would like to output an array $c$ of length $n$, such that for each $0 <= k < n$, $c_(k+1)$ equals the number of pairs $(i, j)$ with $1 <= i, j <= n$ such that $a_i xor a_j = k$. Prove that this problem can be solved in $O(n log n)$ time. For simplicity, you may assume that $n$ is a power of two.
+  Suppose we are given a list of $m$ integers $a_1, ..., a_m$ with $0 <= a_i < m$ for all $1 <= i <= m$. We would like to output an array $c$ of length $m$, such that for each $0 <= k < m$, $c_(k+1)$ equals the number of pairs $(i, j)$ with $1 <= i, j <= m$ such that $a_i xor a_j = k$. Prove that this problem can be solved in $O(m log m)$ time. For simplicity, you may assume that $m$ is a power of two.
 
   (Hint: let $f(x)$ be the number of times $x$ appears in the list, and apply what we learned in this chapter.)
 ] <exr-counting-pairs>

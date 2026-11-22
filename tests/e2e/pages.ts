@@ -37,6 +37,8 @@ export const markers = {
 	proof: '<details class="proof"',
 	nextNote: 'rel="next"',
 	tiling: 'name="hadamard-tiling"',
+	unflippingCoin: 'name="unflipping-coin"',
+	hadamardAmplitudes: 'name="hadamard-amplitudes"',
 	equation: 'class="equation"',
 	code: "<pre",
 	contents: 'class="jump-button',

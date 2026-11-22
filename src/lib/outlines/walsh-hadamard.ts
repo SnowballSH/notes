@@ -5,6 +5,17 @@ export const walshHadamard: NotesOutline = {
 	description: "The transform on bitstrings and its classical and quantum applications.",
 	chapters: [
 		{
+			title: "Introduction",
+			sections: [
+				{
+					title: "Overview and prerequisites",
+					summary:
+						"What these notes cover, what you need to know first, and how the parts fit together.",
+					note: "overview",
+				},
+			],
+		},
+		{
 			title: "The Walsh-Hadamard Transform",
 			sections: [
 				{
@@ -41,21 +52,13 @@ export const walshHadamard: NotesOutline = {
 					title: "Quantum oracles and Fourier sampling",
 					summary:
 						"How a quantum computer queries a function, then applies the transform and measures.",
+					note: "oracles",
 				},
 			],
 		},
 		{
 			title: "Quantum Applications",
 			sections: [
-				{
-					title: "The Bernstein-Vazirani and Deutsch-Jozsa algorithms",
-					summary:
-						"Finding a hidden parity function, or telling constant from balanced, with a single query.",
-				},
-				{
-					title: "Hidden XOR periods",
-					summary: "Simon's problem: finding a secret string that a function repeats under.",
-				},
 				{
 					title: "Grover's algorithm",
 					summary: "Searching for a marked item with far fewer queries than a classical search.",
@@ -66,20 +69,20 @@ export const walshHadamard: NotesOutline = {
 	sources: [
 		{
 			work: "Ryan O'Donnell, Analysis of Boolean Functions, especially Chapters 1-3",
-			chapters: "1",
+			chapters: "2",
 		},
 		{
 			work: "O'Donnell and Wright, Quantum Computation lecture notes, especially Lectures 1-10",
-			chapters: "2-3",
+			chapters: "3-4",
 		},
 		{
 			work: 'John Watrous, IBM Quantum Learning, "Quantum query algorithms"',
-			chapters: "2-3",
+			chapters: "3-4",
 		},
-		{ work: 'IBM Quantum Learning, "Grover\'s algorithm"', chapters: "3" },
+		{ work: 'IBM Quantum Learning, "Grover\'s algorithm"', chapters: "4" },
 		{
 			work: "Andrew Childs, Lecture Notes on Quantum Algorithms, especially Chapters 4-6 and 19",
-			chapters: "3",
+			chapters: "4",
 		},
 	],
 };

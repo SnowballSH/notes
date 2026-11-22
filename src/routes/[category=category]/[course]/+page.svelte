@@ -4,19 +4,12 @@ import Breadcrumb from "#lib/components/Breadcrumb.svelte";
 import PageMeta from "#lib/components/PageMeta.svelte";
 import ReadingStart from "#lib/components/ReadingStart.svelte";
 import SectionRow from "#lib/components/SectionRow.svelte";
-import { allSections, readingOrder } from "#lib/outlines/contents.ts";
+import { readingOrder } from "#lib/outlines/contents.ts";
 import { pageTitle, siteName } from "#lib/site/title.ts";
 
 const { data } = $props();
 const course = $derived(data.course);
 const linked = $derived(readingOrder(course.parts));
-const status = $derived(
-	linked.length === 0
-		? "Outline only. The notes themselves are still to come."
-		: linked.length < allSections(course.parts).length
-			? "The linked notes are written. The others are planned."
-			: null,
-);
 
 const partsLabel = (parts: string): string =>
 	/^\d+$/.test(parts) ? `part ${parts}` : `parts ${parts}`;
@@ -27,9 +20,6 @@ const partsLabel = (parts: string): string =>
 <Breadcrumb trail={[{ label: siteName, href: "/" }, { label: data.category }]} />
 <h1 class="mt-1 font-display text-3xl font-semibold text-ink">{course.title}</h1>
 <p class="mt-3 text-ink-secondary">{course.description}</p>
-{#if status}
-	<p class="mt-2 text-sm text-ink-muted">{status}</p>
-{/if}
 {#if linked.length > 0}
 	<p class="mt-6"><ReadingStart course={course.slug} sections={linked} /></p>
 {/if}

@@ -153,6 +153,89 @@ test("the tiling widget loads without moving the page and names each step", asyn
 	expect(await caption.innerText()).not.toBe(atRest);
 });
 
+test("two Hadamard gates unflip the qubit but not the coin, unless it is measured in between", async ({
+	page,
+	request,
+}) => {
+	await page.goto(await pageWith(request, markers.unflippingCoin), { waitUntil: "networkidle" });
+	const widget = page.locator('notes-widget[name="unflipping-coin"]').first();
+	const qubit = widget.getByRole("group", { name: "Qubit" });
+	const coin = widget.getByRole("group", { name: "Classical coin" });
+	const applyGate = widget.getByRole("button", { name: "Apply H" });
+	const measure = widget.getByRole("button", { name: "Measure" });
+
+	await applyGate.click();
+	await expect(qubit.locator(".amplitude")).toHaveText(["+1/√2", "+1/√2"]);
+	await expect(qubit.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
+	await applyGate.click();
+	await expect(qubit.locator(".amplitude")).toHaveText(["+1", "0"]);
+	await expect(qubit.locator(".chance-value")).toHaveText(["1", "0"]);
+	await expect(coin.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
+	await expect(widget.locator("figcaption")).toContainText("cancel");
+	await measure.click();
+	await expect(widget.locator("figcaption")).toContainText("Measured 0");
+
+	await widget.getByRole("button", { name: "Start over" }).click();
+	await applyGate.click();
+	await measure.click();
+	await applyGate.click();
+	await expect(qubit.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
+	await expect(widget.locator("figcaption")).not.toContainText("cancel");
+});
+
+test("a drawn state gets a Hadamard gate on every qubit, and a second one returns it", async ({
+	page,
+	request,
+}) => {
+	await page.goto(await pageWith(request, markers.hadamardAmplitudes), {
+		waitUntil: "networkidle",
+	});
+	const widget = page.locator('notes-widget[name="hadamard-amplitudes"]').first();
+	const drawn = widget.getByRole("group", { name: /drawable/ }).locator(".amplitude");
+	const transformed = widget.getByRole("list", { name: /Hadamard gate/ }).locator(".amplitude");
+	const applyGates = widget.getByRole("button", { name: /^Apply H/ });
+	await expect(drawn).toHaveText(["+1", "0", "0", "0"]);
+	await expect(transformed).toHaveText(["+1/2", "+1/2", "+1/2", "+1/2"]);
+
+	const last = widget.getByRole("slider", { name: "Amplitude of 11" });
+	await last.focus();
+	await page.keyboard.press("End");
+	await page.keyboard.press("Space");
+	await expect(drawn).toHaveText(["+1/√2", "0", "0", "−1/√2"]);
+	await expect(transformed).toHaveText(["0", "+1/√2", "+1/√2", "0"]);
+
+	const second = widget.getByRole("slider", { name: "Amplitude of 01" });
+	await second.focus();
+	await page.keyboard.press("ArrowUp");
+	await expect(drawn).not.toHaveText(["+1/√2", "0", "0", "−1/√2"]);
+	await page.keyboard.press("ArrowDown");
+	await expect(drawn).toHaveText(["+1/√2", "0", "0", "−1/√2"]);
+	await expect(widget.locator("figcaption .spoken")).toHaveText(
+		"State: 00 +1/√2, 11 −1/√2. After H: 01 +1/√2, 10 +1/√2.",
+	);
+
+	const plot = widget.getByRole("slider", { name: "Amplitude of 00" }).locator(".plot");
+	await plot.scrollIntoViewIfNeeded();
+	const box = await plot.boundingBox();
+	if (!box) throw new Error("the first bar has no box");
+	await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.9, { button: "right" });
+	await page.keyboard.press("Escape");
+	await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.7);
+	await expect(drawn).toHaveText(["+1/√2", "0", "0", "−1/√2"]);
+	await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.2);
+	await page.mouse.down();
+	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+	await page.mouse.up();
+	await expect(drawn).toHaveText(["0", "0", "0", "−1"]);
+	await expect(transformed).toHaveText(["−1/2", "+1/2", "+1/2", "−1/2"]);
+
+	await applyGates.click();
+	await expect(drawn).toHaveText(["−1/2", "+1/2", "+1/2", "−1/2"]);
+	await expect(transformed).toHaveText(["0", "0", "0", "−1"]);
+	await applyGates.click();
+	await expect(drawn).toHaveText(["0", "0", "0", "−1"]);
+});
+
 test("a figure enlarges by click or from the keyboard, and Escape closes it", async ({
 	page,
 	request,
