@@ -22,7 +22,14 @@ describe("widget names", () => {
 
 describe("the registry", () => {
 	it("finds every widget directory", () => {
-		expect(widgetNames).toEqual(expect.arrayContaining(["hadamard-tiling", "parity-explorer"]));
+		expect(widgetNames).toEqual(
+			expect.arrayContaining([
+				"hadamard-amplitudes",
+				"hadamard-tiling",
+				"parity-explorer",
+				"unflipping-coin",
+			]),
+		);
 	});
 
 	it.each(widgetNames)("has a valid name and a component for %s", (name) => {

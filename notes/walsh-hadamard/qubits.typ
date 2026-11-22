@@ -118,6 +118,12 @@ Reading off the columns, $H ket(0) = ket(+)$ and $H ket(1) = ket(-)$, the two st
   The two contributions to the amplitude of $ket(1)$ have opposite signs and cancel. This cancellation is called _interference_, something that ordinary probabilities (which are never negative) cannot do.
 ] <ex-unflipping>
 
+Here is a small interactive widget that applies $H$ to a qubit and measures it, next to an ordinary coin that is tossed instead.
+
+#widget("unflipping-coin")[
+  The interactive qubit and coin need JavaScript.
+]
+
 To apply the Hadamard gate to every one of $n$ qubits at once, we need to know how to combine gates on separate qubits into one large matrix.
 
 #definition(title: "Tensor Product")[
@@ -187,6 +193,12 @@ $
   Hn ket(psi) = 1/sqrt(2^n) H_(2^n) alpha = sqrt(2^n) hat(alpha).
 $
 In words, applying a Hadamard gate to every qubit replaces the amplitudes of a state by its Fourier coefficients, scaled by $sqrt(2^n)$. This is quite an amazing result.
+
+Here is a small interactive widget where you can draw the amplitudes of a state and apply $Hn$ to it.
+
+#widget("hadamard-amplitudes")[
+  The interactive amplitudes need JavaScript.
+]
 
 Recall that classically, the fast Walsh-Hadamard transform needed $O(n 2^n)$ operations to do this. Here, it only takes $n$ gates. Unfortunately, we do not yet get to directly read the Fourier coefficients, but can only sample one bitstring $gamma$ with probability $2^n hat(alpha)(gamma)^2$.
 

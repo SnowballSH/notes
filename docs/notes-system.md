@@ -264,6 +264,55 @@ the step being played. The left and right arrow keys move like the buttons
 while either button has focus. Each caption is short enough to stay on one
 line at a window width of 320px, which the reserved height relies on.
 
+### The quantum widgets
+
+Two widgets illustrate the chapter on qubits. Both say little and draw the
+state instead. Their arithmetic is in `src/lib/quantum/`, away from the
+components: `state.ts` (a state as its list of amplitudes, and the Hadamard
+gate on every qubit), `sampling.ts` (a measurement outcome, drawn from a
+random source the caller passes, so the tests are deterministic), `drawing.ts`
+(what a pointer position or a key makes of an amplitude, and normalising a
+drawing) and `format.ts` (an amplitude as `+1/√2` rather than 0.71).
+
+`AmplitudeChart.svelte` is the picture they share. Each basis state is a
+column: a bar that rises from the axis in the accent colour for a positive
+amplitude and hangs below it in the warm colour for a negative one, the
+amplitude written under it with its sign, and a cell that darkens with the
+probability, which is why two amplitudes of opposite sign get the same cell.
+Given an `ondraw` handler the bars become sliders.
+
+- `#widget("unflipping-coin")` takes one qubit and one classical coin through
+  the same steps: "Apply H" also tosses the coin, and "Measure" also looks at
+  it. The coin has only probabilities, so it has cells and no bars. After a
+  gate applied to a superposition the two terms of each amplitude are written
+  out under the two panels, the cancelling pair in bold. `experiment.ts` holds
+  the steps.
+- `#widget("hadamard-amplitudes", qubits: 2)` has a drawable state of one to
+  three qubits beside the same state with a Hadamard gate on every qubit,
+  which follows the drawing as it is made. "Apply H" makes the transformed
+  state the drawing, so pressing it twice returns the original. Three qubits
+  is the most whose eight bars and numbers fit a note 288px wide.
+
+Drawing: press on a bar's plot and drag, up for positive and down for
+negative; dragging sideways draws on the bars passed over. The plot has
+`touch-action: none`, so a finger draws rather than scrolls. While the
+pointer is down the bars are exactly as drawn; on release the state is
+normalised, and a stroke that erased every amplitude is dropped. Only the
+primary button draws, and a stroke also ends when the pointer comes back with
+no button down or loses its capture.
+
+A focused bar takes the arrow keys (0.1), Page Up and Page Down (0.5), Home
+and End (-1 and +1), Space or Enter (flip the sign) and Delete, Backspace or 0
+(zero). Keys edit the drawing as it was last set and the chart shows its
+normalisation, so a step up and a step down return exactly to the start; the
+drawing is replaced by the normalised state whenever a stroke ends, a preset
+is chosen or the gate is applied. A key that would not change the state, such
+as an arrow on the only bar, is left to the browser. After each of these
+actions a visually hidden line in the caption states the nonzero amplitudes
+before and after the gate.
+
+Neither reserves a height, because their panels stack in a narrow window.
+
 ## Tests
 
 `pnpm run test` runs the unit tests: each rule of the HTML repair pass, the
@@ -276,7 +325,8 @@ reference to a card), so editing a note does not break them: every page loads
 without errors, never scrolls
 sideways and passes the axe accessibility checks in both themes; opened
 proofs survive a reload; a reference previews its target; search reaches a
-named theorem; the widget loads without moving the page; on a phone the note
+named theorem; the tiling widget loads without moving the page; the qubit
+widgets show the amplitudes the notes derive; on a phone the note
 starts on the first screen and every equation and code block fits or scrolls
 on its own.
 It needs the browsers once: `pnpm exec playwright install chromium firefox`.
