@@ -1,11 +1,11 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Boolean functions and Fourier expansions",
-  summary: "Boolean functions as multilinear polynomials: parity functions, the Fourier expansion, and the formula for its coefficients.",
+  summary: "Boolean functions as multilinear polynomials, parity functions, and the Fourier expansion.",
   order: 1,
 )
 
-Every Boolean function can be written as a polynomial, and the coefficients of that polynomial tell us a lot about the function. This chapter sets up that polynomial, the _Fourier expansion_, and the tools for working with its coefficients. The next chapter shows how to compute all of the coefficients at once.
+Every Boolean function can be written as a polynomial, and the coefficients of that polynomial tell us a lot about the function. This chapter sets up that polynomial, the _Fourier expansion_, and the tools for working with its coefficients.
 
 = Boolean Functions
 
@@ -18,14 +18,14 @@ We will write the two bits in whichever way is most convenient:
 - As elements of the field $FF_2$, so that the inputs form the vector space $FF_2^n$ and adding two inputs is taking their bitwise XOR.
 - As the signs $1$ and $-1$, where the bit $b in FF_2$ becomes $(-1)^b$. So $0$ (false) becomes $1$, and $1$ (true) becomes $-1$.
 
-The sign encoding turns addition in $FF_2$ into multiplication of real numbers, since $(-1)^(a + b) = (-1)^a (-1)^b$. This is what lets us write Boolean functions as polynomials. For that reason we will mostly work with functions
+The sign encoding turns addition in $FF_2$ into multiplication of real numbers, since $(-1)^(a + b) = (-1)^a (-1)^b$. This is what lets us write Boolean functions as polynomials. For that reason, we will mostly work with functions
 $
   f : {-1, 1}^n -> {-1, 1},
 $
-and more generally with real-valued functions $f : {-1, 1}^n -> RR$, which we can add and scale.
+and more generally with real-valued functions $f : {-1, 1}^n -> RR$.
 
 #example(title: "AND of Two Bits")[
-  In the sign encoding, the AND of two bits outputs $-1$ (true) only when both inputs are $-1$. We can check on all four inputs that
+  In the sign encoding, the AND of two bits outputs $-1$ (true) if and only if both inputs are $-1$. We can check on all four inputs that
   $
     "AND"_2 (x_1, x_2) = 1/2 + 1/2 x_1 + 1/2 x_2 - 1/2 x_1 x_2.
   $
@@ -38,7 +38,7 @@ and more generally with real-valued functions $f : {-1, 1}^n -> RR$, which we ca
   $
 ]
 
-Both polynomials are _multilinear_: no variable appears squared or to a higher power. This is no loss, because $x_i^2 = 1$ for $x_i in {-1, 1}$.
+Both polynomials are _multilinear_, which means no variable appears with a power larger than one. Note that this is no loss, because $x_i^2 = 1$ for $x_i in {-1, 1}$, so having higher powers doesn't really help.
 
 = The Fourier Expansion
 
@@ -52,16 +52,16 @@ The monomials that appear in a multilinear polynomial are products of distinct v
   In particular, $chi_emptyset (x) = 1$.
 ] <def-parity>
 
-The name comes from the other encoding. Let $x in FF_2^n$, and let $gamma in FF_2^n$ be the indicator vector of $S$, so that $gamma_i = 1$ exactly when $i in S$. Applying $chi_S$ to the signs $((-1)^(x_1), ..., (-1)^(x_n))$ gives
+The name of such functions comes from the other encoding. Let $x in FF_2^n$, and let $gamma in FF_2^n$ be the indicator vector of $S$, so that $gamma_i = 1$ if and only if $i in S$. Applying $chi_S$ to the signs $((-1)^(x_1), ..., (-1)^(x_n))$ gives
 $
   product_(i in S) (-1)^(x_i) = (-1)^(sum_(i in S) x_i) = (-1)^(gamma dot x),
 $
-where $gamma dot x = sum_(i=1)^n gamma_i x_i$ is the dot product in $FF_2^n$. So $chi_S$ computes the parity of the bits of $x$ selected by $S$. When the inputs are in $FF_2^n$, we index the parity functions by vectors and write
+where $gamma dot x = sum_(i=1)^n gamma_i x_i$ is the dot product in $FF_2^n$. This means $chi_S$ computes the parity of the bits of $x$ selected by $S$. When the inputs are in $FF_2^n$, we index the parity functions by vectors and write
 $
   chi_gamma (x) = (-1)^(gamma dot x).
 $
 
-There are $2^n$ parity functions, one for each subset of $[n]$. Our first theorem says that they are enough to build every function.
+There are $2^n$ parity functions, one for each subset of $[n]$. It makes sense, from our previous argument, that they are enough to build every function.
 
 #theorem(title: "Fourier Expansion")[
   Every function $f : {-1, 1}^n -> RR$ can be written uniquely as a multilinear polynomial
@@ -121,7 +121,7 @@ Under this inner product, the parity functions are as nice as a basis can be.
     chi_S (x) chi_T (x) = product_(i in S) x_i product_(i in T) x_i = product_(i in S Delta T) x_i = chi_(S Delta T) (x).
   $
 
-  For the second claim, $chi_emptyset = 1$ has average $1$. If $S != emptyset$, the coordinates of a uniformly random $x$ are independent and each has average $0$, so
+  For the second claim, $chi_emptyset = 1$ has expected value $1$. If $S != emptyset$, the coordinates of a uniformly random $x$ are independent and each has expected value $0$, so
   $
     EE_x [chi_S (x)] = product_(i in S) EE_x [x_i] = 0. quad square
   $
@@ -139,7 +139,7 @@ Under this inner product, the parity functions are as nice as a basis can be.
   $
     chevron.l chi_S, chi_T chevron.r = EE_x [chi_S (x) chi_T (x)] = EE_x [chi_(S Delta T) (x)],
   $
-  which is $1$ if $S Delta T = emptyset$ and $0$ otherwise. Finally, $S Delta T = emptyset$ exactly when $S = T$. $square$
+  which is $1$ if $S Delta T = emptyset$ and $0$ otherwise. $S Delta T = emptyset$ if and only if $S = T$. $square$
 ]
 
 Orthonormality gives a direct formula for each Fourier coefficient.
@@ -156,14 +156,14 @@ Orthonormality gives a direct formula for each Fourier coefficient.
   $
     chevron.l f, chi_S chevron.r = sum_(T subset.eq [n]) c_T chevron.l chi_T, chi_S chevron.r = c_S.
   $
-  So the coefficients of any such expression are determined by $f$, which proves both the formula and the uniqueness claimed in @thm-fourier-expansion. $square$
+  This means that the coefficients of any such expression are determined by $f$, which proves both the formula and the uniqueness claimed in @thm-fourier-expansion. $square$
 ]
 
-In the $FF_2^n$ notation, the same formula reads
+In the $FF_2^n$ notation, the same formula becomes
 $
   hat(f)(gamma) = chevron.l f, chi_gamma chevron.r = 1/2^n sum_(x in FF_2^n) f(x) (-1)^(gamma dot x)
 $
-for $f : FF_2^n -> RR$ and $gamma in FF_2^n$. This is the form we will use in the next chapter.
+for $f : FF_2^n -> RR$ and $gamma in FF_2^n$.
 
 The inner product of two functions can also be computed from their coefficients.
 
@@ -185,12 +185,12 @@ The inner product of two functions can also be computed from their coefficients.
     & = sum_(S subset.eq [n]) sum_(T subset.eq [n]) hat(f)(S) hat(g)(T) chevron.l chi_S, chi_T chevron.r \
     & = sum_(S subset.eq [n]) hat(f)(S) hat(g)(S).
   $
-  For the second claim, take $g = f$. If $f$ only takes the values $1$ and $-1$, then $chevron.l f, f chevron.r = EE_x [f(x)^2] = 1$. $square$
+  For the second claim, take $g = f$. Since $f$ only takes the values $1$ and $-1$, we have $chevron.l f, f chevron.r = EE_x [f(x)^2] = 1$. $square$
 ]
 
 = Conclusion
 
-In this chapter, we wrote Boolean functions as functions on ${-1, 1}^n$ and showed that each one is a unique linear combination of the $2^n$ parity functions. The parity functions are orthonormal, so the coefficient on $chi_S$ is the inner product $chevron.l f, chi_S chevron.r$, an average over all $2^n$ inputs. Computing all $2^n$ coefficients this way takes about $2^n dot 2^n$ operations, and the next chapter shows how to do better.
+In this chapter, we wrote Boolean functions as functions on ${-1, 1}^n$ and showed that each one is a unique linear combination of the $2^n$ parity functions. The parity functions are orthonormal, so the coefficient on $chi_S$ is the inner product $chevron.l f, chi_S chevron.r$, an average over all $2^n$ inputs.
 
 #remark[
   The material from this chapter follows Sections 1.2 to 1.4 of O'Donnell's _Analysis of Boolean Functions_.
@@ -199,7 +199,7 @@ In this chapter, we wrote Boolean functions as functions on ${-1, 1}^n$ and show
 = Exercises
 
 #exercise(title: "Parity of a Sum")[
-  Let $gamma, x, y in FF_2^n$. Show that $chi_gamma (x + y) = chi_gamma (x) chi_gamma (y)$, where $x + y$ is the bitwise XOR of $x$ and $y$.
+  Let $gamma, x, y in FF_2^n$. Show that $chi_gamma (x xor y) = chi_gamma (x) chi_gamma (y)$.
 ] <exr-parity-of-a-sum>
 
 #exercise(title: "The Empty Coefficient is the Average")[

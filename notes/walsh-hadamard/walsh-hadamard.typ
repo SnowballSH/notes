@@ -43,24 +43,24 @@ This definition seems a bit difficult to work with, so let us prove an alternati
 ] <hadamard-criterion>
 
 #proof[
-  Let $H$ be an $N times N$ Hadamard matrix. Then,
+  Write $H[i]$ for the $i$-th row of $H$, viewed as a vector. Let $H$ be an $N times N$ Hadamard matrix. Then,
   $
-    H H^"T" [i, j] = H[i]^"T" dot H[j]^"T".
+    (H H^"T") [i, j] = H[i] dot H[j].
   $
   We know that for all $i != j$, the $i$-th and $j$-th rows of $H$ are orthogonal. Therefore, the dot product is zero whenever $i != j$. Also, for any entry $x$ in $H$, we have $x in {-1,1}$, so $x^2 = 1$, which yields
   $
-    H[i]^"T" dot H[i]^"T" = N dot 1 = N.
+    H[i] dot H[i] = N dot 1 = N.
   $
 
   Therefore,
   $
-    H H^"T" [i, j] = cases(N & quad "if" i = j, 0 & quad "otherwise"),
+    (H H^"T") [i, j] = cases(N & quad "if" i = j, 0 & quad "otherwise"),
   $
   so $H H^"T" = N I_N$.
 
   Conversely, if $H H^"T" = N I_N$, then for any $i != j$, we have
   $
-    H[i]^"T" dot H[j]^"T" = H H^"T" [i, j] = N I_N [i, j] = 0,
+    H[i] dot H[j] = (H H^"T") [i, j] = (N I_N) [i, j] = 0,
   $
   so the rows of $H$ are mutually orthogonal, and hence $H$ is a Hadamard matrix. $square$
 ]
@@ -98,16 +98,20 @@ Intuitively, this is true by induction: every row is just two copies of a row in
 #proof[
   By @hadamard-criterion, it suffices to show that $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$ for all $n >= 0$.
 
-  We proceed by induction on $n$. Note that $H_(2^n)$ is symmetric for all $n$ (see @exr-symmetric).
+  We proceed by induction on $n$.
 
   For the base case $n=0$, $H_1 = [1]$ has $H_1 H_1^"T" = [1] = 1 dot I_1$.
 
-  For the inductive case, let $n >= 0$. By blocking and symmetry, we have
+  For the inductive case, let $n >= 0$. Taking the transpose block by block, we have
+  $
+    H_(2^(n+1))^"T" = mat(delim: "[", H_(2^n)^"T", H_(2^n)^"T"; H_(2^n)^"T", -H_(2^n)^"T").
+  $
+  Therefore, by blocking, we have
   $
     H_(2^(n+1)) H_(2^(n+1))^"T" & = mat(
                                     delim: "[",
-                                    H_(2^n) H_(2^n) + H_(2^n) H_(2^n), H_(2^n) H_(2^n) - H_(2^n) H_(2^n);
-                                    H_(2^n) H_(2^n) - H_(2^n) H_(2^n), H_(2^n) H_(2^n) + H_(2^n) H_(2^n)
+                                    H_(2^n) H_(2^n)^"T" + H_(2^n) H_(2^n)^"T", H_(2^n) H_(2^n)^"T" - H_(2^n) H_(2^n)^"T";
+                                    H_(2^n) H_(2^n)^"T" - H_(2^n) H_(2^n)^"T", H_(2^n) H_(2^n)^"T" + H_(2^n) H_(2^n)^"T"
                                   ) \
                                 & = 2 dot mat(delim: "[", H_(2^n) H_(2^n)^"T", 0; 0, H_(2^n) H_(2^n)^"T") \
                                 & = 2 dot mat(delim: "[", 2^n I_(2^n), 0; 0, 2^n I_(2^n)) \
@@ -119,7 +123,7 @@ Intuitively, this is true by induction: every row is just two copies of a row in
 
 Let us analyze the entries of the Walsh-Hadamard matrices. Before doing so, we notice that the indices are very large, from $1$ to $2^n$.
 
-Furthermore, when analyzing row $i$ of $H_(2^n)$, we would like to case on whether $i$ is in the first or second half of the indices, because the definition of the row differs in the recursive definition based on which half $i$ is in. Casing on whether $i < 2^(n-1)$ and constructing the sub-index $i' = i mod 2^(n-1)$ seems quite annoying and unintuitive.
+Furthermore, when analyzing row $i$ of $H_(2^n)$, we would like to case on whether $i$ is in the first or second half of the indices, because the definition of the row differs in the recursive definition based on which half $i$ is in. Casing on whether $i <= 2^(n-1)$ and constructing the sub-index $i' = i$ in the first case and $i' = i - 2^(n-1)$ in the second seems quite annoying and unintuitive.
 
 But not all hope is lost, and a natural but interesting idea surfaces. First, we will use $0$-based indexing, so the indices for the rows and columns of $H_(2^n)$ are from $0$ to $2^n - 1$. For an index $i in [0, 2^n - 1]$, let us write $i$ as a sequence of bits: $arrow(i) = (i_0, i_1, ..., i_(n-1))$, where $i_0$ is the least significant bit and $i_(n-1)$ is the most significant bit. For example, if $i=6$ and $n=3$, we can write $arrow(i) = (0, 1, 1)$, since $6_(10) = 110_2$.
 
@@ -128,7 +132,7 @@ $
   arrow(i)' = (i_0, i_1, ..., i_(n-2)).
 $
 
-Furthermore, this notation allows us to view indices as vectors in $FF_2^n$ as well, which seems to match closely with the topic of Boolean functions.
+Furthermore, this notation allows us to view indices as vectors in $FF_2^n$ as well, which seems to match closely with the topic of Boolean functions. The coordinates were numbered from $1$ in the previous chapter and are numbered from $0$ here, so the bit $i_k$ is coordinate $k + 1$.
 
 With this idea, let us prove a crucial property about the entries of the Walsh-Hadamard matrices.
 
@@ -178,6 +182,8 @@ With this idea, let us prove a crucial property about the entries of the Walsh-H
   $
 ]
 
+Since $arrow(gamma) dot arrow(x) = arrow(x) dot arrow(gamma)$, this formula shows in particular that $H_(2^n)$ is symmetric.
+
 This is an amazing result, because it reminds us of the idea of parity functions. The entry $H_(2^n) [gamma, x] = (-1)^(arrow(gamma) dot arrow(x))$ is precisely $chi_(arrow(gamma)) (arrow(x))$ from the previous chapter, the parity of the bits of $x$ selected by $gamma$! This observation yields the following theorem, the Walsh-Hadamard transform.
 
 #theorem(title: "Walsh-Hadamard Transform (WHT)")[
@@ -222,6 +228,8 @@ Let's analyze the time complexity of this naive method. We will assume that we a
   Therefore, the total time cost of the algorithm is $O(2^n dot 2^n + 2^n dot 2^n) = O(2^(2n)) = O(N^2)$. $square$
 ]
 
+The formula for the Fourier coefficients from the previous chapter is no faster, since each of the $2^n$ coefficients is an average over $2^n$ inputs.
+
 For real-world scenarios where $n >= 20$, this algorithm is hopelessly slow.
 
 Fortunately, it seems like our Walsh-Hadamard transform is very sophisticated, and perhaps it can compute the Fourier expansion with less time cost?
@@ -261,7 +269,7 @@ Again, not all hope is lost. The matrices $H_(2^n)$ are defined recursively usin
               & = vec(v_0 + v_1, v_0 - v_1).
   $
 
-  Hence the merge step only involves adding two pairs of vectors in $RR^(2^(n-1))$ and concatenating them to form a vector in $RR^(2^n)$, which can be done in $O(2^n)$ time.
+  Hence the merge step only involves adding and subtracting the vectors $v_0$ and $v_1$ in $RR^(2^(n-1))$ and concatenating the results to form a vector in $RR^(2^n)$, which can be done in $O(2^n)$ time.
 
   After computing $H_(2^n) f$, we can multiply every entry of this vector by $1/(2^n)$ in $O(2^n)$ time to obtain the full set of Fourier coefficients of $f$.
 
@@ -307,7 +315,7 @@ In this chapter, we defined the Walsh-Hadamard matrices $H_(2^n)$ recursively an
 
 #remark[
   Much of the material from this chapter is taken from
-  #link("https://mathworld.wolfram.com/HadamardMatrix.html")[MathWorld's article on Hadamard matrices].
+  #link("https://mathworld.wolfram.com/HadamardMatrix.html")[MathWorld's article on Hadamard matrices], and the history of the Walsh functions is from #link("https://mathworld.wolfram.com/WalshFunction.html")[MathWorld's article on Walsh functions].
 
   The propositions are from Exercise 1.12 of O'Donnell's _Analysis of Boolean Functions_.
 ]
@@ -315,7 +323,7 @@ In this chapter, we defined the Walsh-Hadamard matrices $H_(2^n)$ recursively an
 = Exercises
 
 #exercise(title: "The Walsh-Hadamard Matrices are Symmetric")[
-  Show that $H_(2^n)^"T" = H_(2^n)$ for all $n >= 0$.
+  Show that $H_(2^n)^"T" = H_(2^n)$ for all $n >= 0$ by induction, using only the recursive definition.
 ] <exr-symmetric>
 
 #exercise(title: "Balanced Rows")[

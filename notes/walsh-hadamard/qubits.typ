@@ -30,7 +30,7 @@ In other words, the state of a qubit is a unit vector in $CC^2$. The notation $k
 
 With $n$ qubits, there are $2^n$ classical bitstrings, and the state is a combination of all of them.
 
-Recall one of the great ideas we used in the classical applications in earlier chapters: when dealing with structures indexed by $2^n$ indices, it is often convenient to view the index as a vector in $FF_2^n$, and simply use the $n$-bit bitstrings as indices rather than numbers in $[0, 2^n)$. We will continue to employ this idea throughout the quantum sections.
+Recall one of the great ideas we used in the earlier chapters: when dealing with structures indexed by $2^n$ indices, it is often convenient to view the index as a vector in $FF_2^n$, and simply use the $n$-bit bitstrings as indices rather than numbers in $[0, 2^n)$. We will continue to employ this idea throughout the quantum sections.
 
 #definition(title: "State of Several Qubits")[
   For $x in FF_2^n$, let $ket(x)$ be the standard basis vector of $CC^(2^n)$ with a $1$ at index $x$ and $0$ everywhere else. The state of $n$ qubits is a vector
@@ -93,6 +93,8 @@ Fortunately, the magical property of unitary matrices allows us to show that the
   $
 ]
 
+The converse is also true: a matrix that sends every state to a state must be unitary, which is why no other matrices are allowed. We will not need this fact, so we omit its proof.
+
 A gate is a matrix, so it is also linear. Therefore, to understand what a gate does to every state, it is enough to know what it does to the basis states. For a gate $U$, we can discuss $U ket(x)$, which is column $x$ of $U$.
 
 = The Hadamard Gate
@@ -115,10 +117,10 @@ Reading off the columns, $H ket(0) = ket(+)$ and $H ket(1) = ket(-)$, the two st
   $
   Therefore, measuring $H ket(+)$ outputs $0$ with certainty.
 
-  The two contributions to the amplitude of $ket(1)$ have opposite signs and cancel. This cancellation is called _interference_, something that ordinary probabilities (which are never negative) cannot do.
+  The two contributions to the amplitude of $ket(1)$ have opposite signs and cancel. This cancellation is called _interference_, something that classical probabilities (which are never negative) cannot do.
 ] <ex-unflipping>
 
-Here is a small interactive widget that applies $H$ to a qubit and measures it, next to an ordinary coin that is tossed instead.
+Here is a small interactive widget that applies $H$ to a qubit and measures it, next to a classical coin that is tossed instead.
 
 #widget("unflipping-coin")[
   The interactive qubit and coin need JavaScript.
@@ -131,7 +133,7 @@ To apply the Hadamard gate to every one of $n$ qubits at once, we need to know h
   $
     A times.o B = mat(delim: "[", a B, b B; c B, d B).
   $
-  It is the gate on $n + 1$ qubits that applies $A$ to one qubit and $B$ to the other $n$ qubits.
+  It is the gate on $n + 1$ qubits that applies $A$ to the qubit holding the most significant bit of the index and $B$ to the other $n$ qubits.
 ] <def-tensor-product>
 
 We write $Hn$ for the gate that applies $H$ to each of $n$ qubits. That is, $H^(times.o 1) = H$ and $H^(times.o (n+1)) = H times.o Hn$. Expanding the definition of the tensor product,
@@ -171,7 +173,7 @@ This motivates us to make lots of connections between what we learned about Wals
 ] <prop-hadamard-gates>
 
 #proof[
-  Recall that $H_(2^n)$ is symmetric (#noteref("walsh-hadamard", <exr-symmetric>)[an exercise in the second chapter]) and that $H_(2^n) H_(2^n)^"T" = 2^n I$, since #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the Walsh-Hadamard matrices are Hadamard matrices] and by #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices]. By @thm-hadamard-gates, $Hn$ is real and symmetric, and
+  Recall that $H_(2^n)$ is symmetric (by #noteref("walsh-hadamard", <prop-entries>)[the formula for its entries]) and that $H_(2^n) H_(2^n)^"T" = 2^n I$, since #noteref("walsh-hadamard", <prop-walsh-hadamard-is-hadamard>)[the Walsh-Hadamard matrices are Hadamard matrices] and by #noteref("walsh-hadamard", <hadamard-criterion>)[the criterion for Hadamard matrices]. By @thm-hadamard-gates, $Hn$ is real and symmetric, and
   $
     Hn Hn = 1/2^n H_(2^n) H_(2^n) = 1/2^n H_(2^n) H_(2^n)^"T" = I.
   $
