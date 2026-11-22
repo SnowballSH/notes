@@ -155,6 +155,7 @@ p {
 	justify-self: stretch;
 	padding-inline: 0.375rem;
 	font-weight: 600;
+	line-height: 1.75rem;
 	color: var(--fui-ink);
 }
 .spoken {
