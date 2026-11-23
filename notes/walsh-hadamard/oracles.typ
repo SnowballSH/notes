@@ -67,7 +67,7 @@ Here is a second idea. We keep $ket(x)$ exactly where it is, and we record the a
 
 In other words, the sign oracle leaves $ket(x)$ alone when $f(x) = 0$, and negates it when $f(x) = 1$. As a matrix, $Opm$ is a diagonal matrix, and the diagonal entry at index $x$ is $(-1)^(f(x))$.
 
-The sign $(-1)^(f(x))$ should look familiar. Recall that in #link("/walsh-hadamard/boolean-functions")[the first chapter], we wrote a bit $b$ as the sign $(-1)^b$, so that $0$ becomes $1$ and $1$ becomes $-1$. The sign oracle uses exactly this encoding. To avoid confusion between the two encodings, we will use two different letters throughout this chapter: $f$ is the function with values in ${0, 1}$, and $g(x) = (-1)^(f(x))$ is the same function with values in ${-1, 1}$.
+The sign $(-1)^(f(x))$ should look familiar. Recall that in #link("/walsh-hadamard/boolean-functions")[the chapter on Boolean functions], we wrote a bit $b$ as the sign $(-1)^b$, so that $0$ becomes $1$ and $1$ becomes $-1$. The sign oracle uses exactly this encoding. To avoid confusion between the two encodings, we will use two different letters throughout this chapter: $f$ is the function with values in ${0, 1}$, and $g(x) = (-1)^(f(x))$ is the same function with values in ${-1, 1}$.
 
 #example(title: "The Sign Oracle of AND")[
   Let $f(x) = x_1 x_2$ again. Then $g(00) = g(01) = g(10) = 1$ and $g(11) = -1$. We list the basis states in the order $00, 01, 10, 11$, which are the indices $0, 1, 2, 3$ written in binary. Writing the sign oracle of $f$ in matrix form, we have
@@ -176,6 +176,12 @@ Putting everything together, we arrive at the main procedure of this chapter.
   + Measure.
 ] <def-fourier-sampling>
 
+Here is the procedure drawn as a circuit.
+
+#widget("circuit", kind: "fourier-sampling")[
+  The circuit applies $Hn$, then the sign oracle $Opm$, then $Hn$ again, and measures every qubit.
+]
+
 #theorem(title: "Fourier Sampling")[
   Let $f : FF_2^n -> FF_2$ and $g(x) = (-1)^(f(x))$. Fourier sampling makes one query, and it outputs the bitstring $gamma in FF_2^n$ with probability $hat(g)(gamma)^2$.
 ] <thm-fourier-sampling>
@@ -187,7 +193,7 @@ Putting everything together, we arrive at the main procedure of this chapter.
 ]
 
 #remark(title: "Parseval's Theorem Appears Again")[
-  The probabilities of all the outcomes must sum to $1$, so @thm-fourier-sampling tells us that $sum_(gamma in FF_2^n) hat(g)(gamma)^2 = 1$. This is precisely #noteref("boolean-functions", <thm-plancherel>)[Parseval's theorem] from the first chapter.
+  The probabilities of all the outcomes must sum to $1$, so @thm-fourier-sampling tells us that $sum_(gamma in FF_2^n) hat(g)(gamma)^2 = 1$. This is precisely #noteref("boolean-functions", <thm-plancherel>)[Parseval's theorem] from the chapter on Boolean functions.
 ]
 
 Before we get too excited, note that we still do not get to read the Fourier coefficients. Each run outputs a single bitstring $gamma$, and a $gamma$ whose coefficient is larger in magnitude is more likely to appear. If we want a second sample, we have to run the entire procedure again, which costs a second query. It seems like, in general, we need many more queries to be confident about all the coefficients...
@@ -199,7 +205,7 @@ Is a single sample of any use? It depends on the function. Let's see two example
   $
     1/2 mat(delim: "[", 1, 1, 1, 1; 1, -1, 1, -1; 1, 1, -1, -1; 1, -1, -1, 1) dot 1/2 mat(delim: "[", 1; 1; 1; -1) = 1/4 mat(delim: "[", 2; 2; 2; -2) = mat(delim: "[", 1\/2; 1\/2; 1\/2; -1\/2).
   $
-  These are precisely the Fourier coefficients of $g$, which we can read off from #noteref("boolean-functions", <ex-and>)[the Fourier expansion of AND] in the first chapter.
+  These are precisely the Fourier coefficients of $g$, which we can read off from #noteref("boolean-functions", <ex-and>)[the Fourier expansion of AND] in the chapter on Boolean functions.
 
   Measuring outputs each of the four bitstrings with probability $1/4$. Unfortunately, this is again a uniformly random bitstring. The Fourier coefficients of AND are spread out evenly, so a sample tells us nothing.
 ] <ex-sampling-and>
@@ -222,6 +228,12 @@ Is a single sample of any use? It depends on the function. Let's see two example
 
 The difference between the two examples is where the Fourier coefficients are. Fourier sampling is useful when the coefficients of $g$ are guaranteed to be concentrated on a few bitstrings, and those bitstrings answer our question.
 
+Here is a small interactive widget that runs Fourier sampling on any function of two bits.
+
+#widget("fourier-sampling")[
+  The interactive Fourier sampling needs JavaScript.
+]
+
 Sometimes we do not even need to know where all of the coefficients are. A single coefficient can be enough.
 
 #example(title: "Telling Constant from Balanced with One Query")[
@@ -241,7 +253,7 @@ Sometimes we do not even need to know where all of the coefficients are. A singl
 
   Therefore, we run Fourier sampling once and answer "constant" if the output is the all-zeros bitstring and "balanced" otherwise. A single query answers the question with certainty. This is the _Deutsch-Jozsa algorithm_.
 
-  It is important to note that unfortunately, this speedup is less dramatic than it looks. A classical algorithm that is allowed to error with a small probability only needs a few queries, because using $k >= 1$ queries will lower the error probability to $epsilon <= 2^(-k)$.
+  It is important to note that unfortunately, this speedup is less dramatic than it looks. A classical algorithm that is allowed to err with a small probability only needs a few queries, because using $k >= 1$ queries will lower the error probability to $epsilon <= 2^(1-k)$.
 ] <ex-deutsch-jozsa>
 
 = Conclusion
@@ -252,6 +264,8 @@ In the next chapter, we will use the sign oracle and the Hadamard gates again to
 
 #remark[
   The query model is from Lecture 5 of O'Donnell and Wright's _Quantum Computation_ lecture notes, and the sign oracle is from Section 2.3 of Lecture 4. The theorem that the Hadamard gates compute the Fourier coefficients is Claim 2.5 in Lecture 6, and the Fourier sampling procedure appears there in Section 2.4.1.
+
+  The problem of finding a hidden parity function and its one-query algorithm are due to Bernstein and Vazirani in _Quantum Complexity Theory_ (1997); the Fourier coefficients of a parity function used there are Example 2.4 of Lecture 6. The constant-versus-balanced problem and its algorithm are due to Deutsch and Jozsa in _Rapid Solution of Problems by Quantum Computation_ (1992), and appear in Section 4.4 of Lecture 5, together with the classical bounds, and in Section 2.4.1 of Lecture 6.
 ]
 
 = Exercises
@@ -267,5 +281,5 @@ In the next chapter, we will use the sign oracle and the Hadamard gates again to
 #exercise(title: "Always Zero")[
   Let's analyze the converse of a claim in the proof of the Deutsch-Jozsa algorithm.
 
-  Suppose Fourier sampling $f$ outputs the all-zeros bitstring with probability $1$. Determine, with proof, all possible functions $f : F_2^n -> RR$.
+  Suppose Fourier sampling $f$ outputs the all-zeros bitstring with probability $1$. Determine, with proof, all possible functions $f : FF_2^n -> FF_2$.
 ] <exr-always-zero>

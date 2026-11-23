@@ -340,7 +340,7 @@ describe("headings", () => {
 
 describe("anchors", () => {
 	const anchor = (id: string, name: string): string =>
-		` <a href="#${id}" aria-label="Link to ${name}" class="anchor">#</a>`;
+		`&nbsp;<a href="#${id}" aria-label="Link to ${name}" class="anchor">#</a>`;
 
 	it("names an unlabelled card after its kind and number, and links to it", () => {
 		expect(

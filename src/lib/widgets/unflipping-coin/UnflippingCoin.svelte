@@ -6,10 +6,13 @@ import WidgetFrame from "../WidgetFrame.svelte";
 import {
 	applyHadamard,
 	cancels,
+	coinName,
 	describeStep,
 	type Experiment,
+	faces,
 	formatTerms,
 	measure,
+	result,
 	start,
 	stateName,
 	summarise,
@@ -26,6 +29,7 @@ const history = $derived([
 	...(experiment.steps.length > shownSteps ? ["…"] : []),
 	...experiment.steps.slice(-shownSteps).map(describeStep),
 ]);
+const outcome = $derived(result(experiment));
 const interfering = $derived(
 	(experiment.terms ?? []).some((terms) => terms.every((term) => term !== 0)),
 );
@@ -33,7 +37,9 @@ const interfering = $derived(
 
 <WidgetFrame>
 	<div class="controls">
-		<button type="button" onclick={() => (experiment = applyHadamard(experiment))}>Apply H</button>
+		<button type="button" class="apply" onclick={() => (experiment = applyHadamard(experiment))}>
+			Apply H
+		</button>
 		<button type="button" onclick={() => (experiment = measure(experiment, Math.random))}>
 			Measure
 		</button>
@@ -58,26 +64,36 @@ const interfering = $derived(
 			/>
 		</div>
 		<div class="side" role="group" aria-label="Classical coin">
-			<p class="name">Coin <span class="hint">H tosses it</span></p>
+			<p class="name">Coin {coinName(experiment.coin)}</p>
+			<div class="tally" aria-hidden="true">
+				{#each experiment.coin as probability, face (face)}
+					<span style:--probability={probability}></span>
+				{/each}
+			</div>
 			<AmplitudeChart
 				name="Probabilities of the coin"
-				labels={[...bits]}
+				labels={[...faces]}
 				probabilities={experiment.coin}
 				showProbabilityValues
 			/>
 		</div>
 	</div>
-	<p class="terms">
-		{#if interfering}
-			{#each experiment.terms ?? [] as terms, bit (bit)}
-				<span class:cancelled={cancels(terms)}>
-					{kets[bit]}: {formatTerms(terms)} = {formatAmplitude(experiment.qubit[bit] ?? 0)}
-				</span>
-			{/each}
-		{/if}
-	</p>
+	{#if outcome === ""}
+		<p class="terms">
+			{#if interfering}
+				{#each experiment.terms ?? [] as terms, bit (bit)}
+					<span class:cancelled={cancels(terms)}>
+						{kets[bit]}: {formatTerms(terms)} = {formatAmplitude(experiment.qubit[bit] ?? 0)}
+					</span>
+				{/each}
+			{/if}
+		</p>
+	{/if}
 	{#snippet caption()}
-		<p>{summarise(experiment)}</p>
+		<p class="spoken">{summarise(experiment)}</p>
+		{#if outcome !== ""}
+			<p class="result" aria-hidden="true">{outcome}</p>
+		{/if}
 	{/snippet}
 </WidgetFrame>
 
@@ -87,29 +103,21 @@ const interfering = $derived(
 	flex-wrap: wrap;
 	gap: 0.5rem;
 }
+/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
 button {
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
+	border-color: var(--fui-line);
 	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
-button:not([aria-disabled="true"]):hover {
+button.apply {
 	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
+	font-weight: 600;
 }
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
+@media (hover: hover) {
+	button:not([aria-disabled="true"]):hover {
+		border-color: var(--fui-accent);
+		background: var(--fui-surface-raised);
+	}
 }
 p {
 	margin: 0;
@@ -131,56 +139,80 @@ p {
 	width: 100%;
 }
 .side {
-	display: grid;
 	--chart-unit: 2.5rem;
-	grid-template-rows: auto 1fr;
+	--chart-text: 0.75rem;
+	--chart-width: 6.5rem;
+	--chart-gutter: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	gap: 0.5rem;
-	justify-items: center;
 	padding: 0.75rem 0.5rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-md);
 }
-.side > :global(.chart) {
-	align-self: end;
+.side :global(.chart) {
+	font-size: var(--chart-text);
+}
+.side :global(.label) {
+	color: var(--fui-ink);
+}
+.name + :global(*) {
+	margin-top: auto;
+}
+.tally {
+	display: grid;
+	grid-template: 100% / repeat(2, minmax(0, 1fr));
+	width: min(100% - var(--chart-gutter), var(--chart-width));
+	height: calc(2 * var(--chart-unit));
+	margin-inline-start: var(--chart-gutter);
+	/* Leaves the room the qubit's row of amplitudes takes, so both sets of bars rise from one line. */
+	margin-bottom: calc(1.5 * var(--chart-text) - 0.25rem);
+	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
+		no-repeat;
+}
+.tally > span {
+	height: 50%;
+	margin-inline: 18%;
+	transform: scaleY(var(--probability));
+	transform-origin: bottom;
+	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
+	background: var(--fui-ink-muted);
+	transition: transform 250ms ease-out;
 }
 .name {
-	justify-self: start;
+	align-self: flex-start;
 	padding-left: 0.375rem;
 	font-weight: 600;
 	color: var(--fui-ink);
-}
-.hint {
-	margin-left: 0.375rem;
-	font-size: 0.75rem;
-	font-weight: 400;
-	color: var(--fui-ink-muted);
 }
 .terms {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0 1.5rem;
-	min-height: 3em;
+	/* One line is kept for the terms; a measurement's result takes its place in the caption. */
+	min-height: 1.5em;
 	align-content: start;
 	color: var(--fui-ink-secondary);
 }
 .terms > span {
 	white-space: nowrap;
 }
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-}
 .cancelled {
 	color: var(--fui-ink);
 	font-weight: 700;
 }
+@media (prefers-reduced-motion: reduce) {
+	.tally > span {
+		transition: none;
+	}
+}
 @media print {
 	button {
 		display: none;
+	}
+	.tally > span {
+		print-color-adjust: exact;
 	}
 }
 </style>

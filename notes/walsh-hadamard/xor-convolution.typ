@@ -30,6 +30,12 @@ The same definition seems intuitive for functions $FF_2^n -> RR$, where two inpu
 
 In other words, $(f * g)(z)$ is the sum of all possible values of $f(x) g(y)$ such that $x xor y = z$.
 
+Here is a small interactive widget that shows every product $f(x) g(y)$ for two-bit inputs, grouped by $x xor y$.
+
+#widget("convolution-grid")[
+  The interactive grid of products needs JavaScript.
+]
+
 A careful reader might observe that this form is not exactly the same as the examples enumerated above. In one of the above examples, we could have also defined $(A * B)_k = sum_(i + j = k) a_i b_j$, but always writing the convolution in this way seems a bit cumbersome to work with.
 
 Interestingly, $xor$ is self-inverse (i.e. $x xor x = 0$) and commutative, so $x xor y = z <==> y = z xor x$. Therefore, we can rewrite the XOR convolution of @def-xor-convolution as follows.
@@ -68,7 +74,7 @@ Let's recall the important theorems we proved last time. In #noteref("walsh-hada
   Since $H_(2^n)$ is symmetric, $H_(2^n) = H_(2^n)^"T"$, and since $H_(2^n) H_(2^n)^"T" = 2^n I_(2^n)$, the right-hand side simplifies to $1/2^n dot (2^n I_(2^n)) dot f = f$. Therefore, $f = H_(2^n) hat(f)$, as desired. $square$
 ]
 
-This is quite a remarkable result. Intuitively, this means that the Walsh-Hadamard transform itself is (up to a constant factor) its own inverse! We know that we can compute $H_(2^n) g$ for any $g$ in $O(N log N)$ time, so setting $g = hat(f)$ means we can compute $H_(2^n) hat(f) = f$ in $O(N log N)$ time using the fast Walsh-Hadamard transform.
+This is quite a remarkable result. Intuitively, this means that the Walsh-Hadamard transform itself is (up to a constant factor) its own inverse! We know that we can compute $H_(2^n) v$ for any vector $v$ in $O(N log N)$ time, so setting $v = hat(f)$ means we can compute $H_(2^n) hat(f) = f$ in $O(N log N)$ time using the fast Walsh-Hadamard transform.
 
 Cool. Now, it suffices to compute $hat(f * g)$ efficiently. But what is $hat(f * g)$? Let's chase the definition and find out.
 
@@ -78,7 +84,7 @@ First, we will need a helpful lemma.
   For all $gamma, x, y in FF_2^n$, $chi_gamma (x xor y) = chi_gamma (x) chi_gamma (y)$.
 ] <lem-parity-of-a-sum>
 
-This was #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the first chapter], and the proof is short.
+This was #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the chapter on Boolean functions], and the proof is short.
 
 #proof[
   The dot product is linear, so $gamma dot (x xor y) = gamma dot x + gamma dot y$ in $FF_2$. Therefore,
@@ -102,7 +108,7 @@ This was #noteref("boolean-functions", <exr-parity-of-a-sum>)[an exercise in the
     &= 1/2^n sum_(x in FF_2^n) sum_(z in FF_2^n) f(x) g(z xor x) chi_gamma (z) & ("Swapping finite sums")\
     &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) g(y) chi_gamma (x xor y) & ("Let" y := x xor z, "a bijection")\
     &= 1/2^n sum_(x in FF_2^n) sum_(y in FF_2^n) f(x) chi_gamma (x) g(y) chi_gamma (y) & ("Lemma")\
-    &= 1/2^n (sum_(x in FF_2^n) f(x) chi_gamma (x))(sum_(y in FF_2^n) g(y) chi_gamma (y)) & ("Independence")\
+    &= 1/2^n (sum_(x in FF_2^n) f(x) chi_gamma (x))(sum_(y in FF_2^n) g(y) chi_gamma (y)) & ("Factoring")\
     &= 1/2^n (2^n hat(f)(gamma))(2^n hat(g)(gamma)) & ("Coefficient formula")\
     &= 2^n hat(f)(gamma) hat(g)(gamma).
   $
@@ -168,9 +174,9 @@ vector<long long> xor_convolution(vector<long long> f, vector<long long> g) {
 In this chapter, we defined the XOR convolution $f * g$ and found a fast way to compute it. The Walsh-Hadamard transform is its own inverse up to a factor of $2^n$, so we can move between a function and its Fourier coefficients in $O(N log N)$ time in both directions. In Fourier coefficient space, the XOR convolution is just a product of coefficients. Together, these give an $O(N log N)$ algorithm in place of the $O(N^2)$ brute-force one, where $N = 2^n$.
 
 #remark[
-  The XOR convolution theorem follows Section 1.5 of O'Donnell's _Analysis of Boolean Functions_. O'Donnell defines the convolution as an average instead of a sum, which is why the factor $2^n$ does not appear there. See @exr-averaged-convolution for the relationship between the two definitions.
+  The XOR convolution theorem follows Section 1.5 of O'Donnell's _Analysis of Boolean Functions_. O'Donnell defines the convolution as an average instead of a sum, which is why the factor $2^n$ does not appear there. See @exr-averaged-convolution for the relationship between the two definitions. The inverse Walsh-Hadamard transform is part (d) of Exercise 1.12 there.
 
-  The algorithm is a standard tool in competitive programming. See, for example, #link("https://codeforces.com/blog/entry/127823")[a Codeforces blog on XOR Convolutions] and
+  The algorithm is a standard tool in competitive programming. See, for example, #link("https://codeforces.com/blog/entry/127823")[a Codeforces tutorial on XOR convolution] and
   #link("https://oi-wiki.org/math/poly/fwt/")[OI Wiki's article on the fast Walsh-Hadamard transform].
 ]
 

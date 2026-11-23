@@ -1,11 +1,18 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import AmplitudeChart from "../../quantum/AmplitudeChart.svelte";
-import { keyEdit, normalise, type Preset, presets, withAmplitude } from "../../quantum/drawing.ts";
+import {
+	keyEdit,
+	normalise,
+	type Preset,
+	plotPosition,
+	presets,
+	withAmplitude,
+} from "../../quantum/drawing.ts";
 import { ket, listAmplitudes } from "../../quantum/format.ts";
 import {
 	type Amplitudes,
-	bitstring,
+	bitstrings,
 	hadamardOnEveryQubit,
 	probabilities,
 	qubitCount,
@@ -28,7 +35,7 @@ let announcement = $state("");
 const transform = (state: Amplitudes): Amplitudes => settled(hadamardOnEveryQubit(state));
 
 const count = $derived(qubitCount(drawn));
-const labels = $derived(drawn.map((_, index) => bitstring(index, count)));
+const labels = $derived(bitstrings(count));
 const input = $derived(stroke ?? drawn);
 const output = $derived(transform((stroke && normalise(stroke)) ?? drawn));
 
@@ -38,7 +45,7 @@ function commit(next: readonly number[]): boolean {
 	stroke = undefined;
 	sketch = next;
 	drawn = state;
-	const names = state.map((_, index) => bitstring(index, qubitCount(state)));
+	const names = bitstrings(qubitCount(state));
 	announcement = `State: ${listAmplitudes(names, state)}. After H: ${listAmplitudes(names, transform(state))}.`;
 	return true;
 }
@@ -97,39 +104,46 @@ function applyGates(): void {
 			<button type="button" onclick={() => choose("alternating")}>+ &minus; + &minus;</button>
 		</div>
 		<button type="button" class="apply" onclick={applyGates}>
-			Apply H<sup>&otimes;{count}</sup>
+			Apply H<sup class="power">&otimes;{count}</sup>
 		</button>
 	</div>
 	<div class="states">
 		<div class="state">
-			<p class="title">{ket("ψ")} <span class="hint">draw</span></p>
-			<AmplitudeChart
-				name="Amplitudes of the state, drawable"
-				{labels}
-				amplitudes={input}
-				probabilities={probabilities(normalise(input) ?? drawn)}
-				ondraw={draw}
-				ondrawend={finishStroke}
-				onkey={pressKey}
-			/>
+			<p class="title">{ket("ψ")}</p>
+			<div class="sketch" class:dragging={stroke !== undefined} style:--columns={input.length}>
+				<AmplitudeChart
+					name="Amplitudes of the state, drawable"
+					{labels}
+					amplitudes={input}
+					probabilities={probabilities(normalise(input) ?? drawn)}
+					showProbabilityValues
+					ondraw={draw}
+					ondrawend={finishStroke}
+					onkey={pressKey}
+				/>
+				{#each input as amplitude, index (index)}
+					<span
+						class="grip"
+						style:--across={(index + 0.5) / input.length}
+						style:--down={plotPosition(amplitude)}
+						aria-hidden="true"
+					></span>
+				{/each}
+			</div>
 		</div>
 		<div class="state">
-			<p class="title">H<sup>&otimes;{count}</sup>{ket("ψ")}</p>
+			<p class="title">H<sup class="power">&otimes;{count}</sup>{ket("ψ")}</p>
 			<AmplitudeChart
 				name="Amplitudes after a Hadamard gate on every qubit"
 				{labels}
 				amplitudes={output}
 				probabilities={probabilities(output)}
+				showProbabilityValues
 			/>
 		</div>
 	</div>
 	{#snippet caption()}
 		<p class="spoken">{announcement}</p>
-		<p class="legend">
-			<span><span class="swatch plus" aria-hidden="true"></span>positive</span>
-			<span><span class="swatch minus" aria-hidden="true"></span>negative</span>
-			<span><span class="swatch chance" aria-hidden="true"></span>probability</span>
-		</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -150,15 +164,11 @@ function applyGates(): void {
 	text-align: center;
 	font-family: var(--fui-font-mono);
 }
+/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
 button {
-	min-height: 2.75rem;
 	padding: 0 0.875rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
+	border-color: var(--fui-line);
 	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 button.square {
 	width: 2.75rem;
@@ -168,22 +178,17 @@ button.apply {
 	border-color: var(--fui-accent);
 	font-weight: 600;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
+@media (hover: hover) {
+	button:not([aria-disabled="true"]):hover {
+		border-color: var(--fui-accent);
+		background: var(--fui-surface-raised);
+	}
 }
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
-}
-sup {
-	font-size: 0.75em;
+.power {
+	font-family: "STIX Two Math", math;
+	font-size: 0.85em;
+	font-weight: 400;
+	line-height: 0;
 }
 .states {
 	width: 100%;
@@ -196,6 +201,8 @@ sup {
 	gap: 0.5rem;
 	justify-items: center;
 	align-content: start;
+	/* Narrower than the label it holds, which runs into the padding: eight columns need the width. */
+	--chart-gutter: 0.75rem;
 	padding: 0.75rem 0.5rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-md);
@@ -207,53 +214,39 @@ sup {
 	font-family: var(--fui-font-mono);
 	color: var(--fui-ink);
 }
-.hint {
-	margin-left: 0.5rem;
-	font-size: 0.75rem;
-	color: var(--fui-ink-muted);
+.sketch {
+	--chart-unit: 4.5rem;
+	position: relative;
+	width: min(100%, var(--columns) * 3.25rem + var(--chart-gutter));
 }
-.spoken {
+.sketch :global(.chart.drawable .column:hover) {
+	background: transparent;
+}
+.grip {
 	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-}
-.legend {
-	margin: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 1rem;
-}
-.legend > span {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-}
-.swatch {
+	left: calc(var(--chart-gutter) + var(--across) * (100% - var(--chart-gutter)));
+	top: calc(var(--down) * 2 * var(--chart-unit));
 	width: 0.75rem;
-	height: 0.75rem;
+	height: 0.25rem;
+	border: 1px solid var(--fui-ink);
 	border-radius: var(--fui-radius-xs);
+	background: var(--fui-surface-base);
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	transition: top 250ms ease-out;
 }
-.swatch.plus {
-	background: var(--fui-accent);
+.dragging .grip {
+	transition: none;
 }
-.swatch.minus {
-	background: var(--fui-code-warm);
-}
-.swatch.chance {
-	border: 1px solid var(--fui-line);
-	background: linear-gradient(to right, transparent, var(--fui-ink));
+@media (prefers-reduced-motion: reduce) {
+	.grip {
+		transition: none;
+	}
 }
 @media print {
 	button,
-	.hint {
+	.grip {
 		display: none;
-	}
-	.swatch {
-		print-color-adjust: exact;
 	}
 }
 </style>

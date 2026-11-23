@@ -127,8 +127,8 @@ width, use `100vw - 2rem`, which is the width of a note in a narrow window
 + 0.75rem                               gap
 + min(100vw - 2rem, 20rem + 2px)        the square board with its border
 + 0.75rem                               gap
-+ 1.3125rem + 0.25rem + 1.3125rem       two caption lines of 0.875rem × 1.5
-= calc(7.125rem + min(100vw - 2rem, 20rem + 2px))
++ 0                                     the caption, which is only spoken
+= calc(4.25rem + min(100vw - 2rem, 20rem + 2px))
 ```
 
 The playground prints the height the widget takes beside the height it
@@ -163,6 +163,23 @@ optional `caption` snippet rendered as a `<figcaption aria-live="polite">`:
 
 Use the caption for the sentence that says what the widget shows right now.
 
+The frame also styles two things for everything inside it, so a widget does
+not repeat them:
+
+- **`.spoken`** hides an element from sight and leaves it to screen readers.
+  Use it for the words a picture needs, such as the sentence of a caption
+  whose visible line is only numbers. The browser tests find these elements
+  by this class.
+- **Buttons.** Every `<button>` is 2.75rem tall at least, with a border, the
+  hover style, the dashed look of `aria-disabled="true"` (which has no hover
+  style) and the focus ring. A widget's style block declares only what
+  differs, such as `padding` or a width. The frame's button rules weigh less
+  than any rule in a widget's style block, so declaring a property is enough
+  to override it: a widget whose buttons must not take the hover style, such
+  as toggles or buttons on a touch screen, restates `border-color` and
+  `background` on `button`. A pressed look (`aria-pressed`) and an accented
+  primary button differ between widgets and stay in each one.
+
 ## Checklist
 
 - **Keyboard.** Every control is a `<button>` or a form element, reachable
@@ -171,7 +188,8 @@ Use the caption for the sentence that says what the widget shows right now.
   keeps its place in the tab order with `aria-disabled="true"`, looks
   disabled, and has no hover state.
 - **Focus ring.** `outline: 2px solid var(--fui-accent); outline-offset: 2px`
-  on `:focus-visible`.
+  on `:focus-visible`. Buttons have it from the frame; give it to any other
+  control.
 - **Announcements.** State that changes is in the frame's caption, or in
   another `aria-live="polite"` element. A picture has `role="img"` and an
   `aria-label` that says what it shows.

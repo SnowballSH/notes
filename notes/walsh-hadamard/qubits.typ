@@ -30,7 +30,7 @@ In other words, the state of a qubit is a unit vector in $CC^2$. The notation $k
 
 With $n$ qubits, there are $2^n$ classical bitstrings, and the state is a combination of all of them.
 
-Recall one of the great ideas we used in the earlier chapters: when dealing with structures indexed by $2^n$ indices, it is often convenient to view the index as a vector in $FF_2^n$, and simply use the $n$-bit bitstrings as indices rather than numbers in $[0, 2^n)$. We will continue to employ this idea throughout the quantum sections.
+Recall one of the great ideas we used in the earlier chapters: when dealing with structures indexed by $2^n$ indices, it is often convenient to view the index as a vector in $FF_2^n$, and simply use the $n$-bit bitstrings as indices rather than numbers in ${0, 1, ..., 2^n - 1}$. We will continue to employ this idea throughout the quantum sections.
 
 #definition(title: "State of Several Qubits")[
   For $x in FF_2^n$, let $ket(x)$ be the standard basis vector of $CC^(2^n)$ with a $1$ at index $x$ and $0$ everywhere else. The state of $n$ qubits is a vector
@@ -126,6 +126,12 @@ Here is a small interactive widget that applies $H$ to a qubit and measures it, 
   The interactive qubit and coin need JavaScript.
 ]
 
+Here is another small interactive widget that draws a qubit with real amplitudes as a point on the unit circle, where $H$ acts as a reflection.
+
+#widget("qubit-circle")[
+  The interactive unit circle needs JavaScript.
+]
+
 To apply the Hadamard gate to every one of $n$ qubits at once, we need to know how to combine gates on separate qubits into one large matrix.
 
 #definition(title: "Tensor Product")[
@@ -211,7 +217,7 @@ In this chapter, we introduced the three ingredients of a quantum computation. A
 In the next chapter, we will see how to load a function into the amplitudes of a state, so that this transform tells us something about the function.
 
 #remark[
-  This chapter follows Lectures 1 and 2 of O'Donnell and Wright's _Quantum Computation_ lecture notes, which cover states, measurement and gates in much more depth. The relationship between the Hadamard gates and the Fourier coefficients is from Section 2.3 of Lecture 6.
+  This chapter follows Lectures 1 and 2 of O'Donnell and Wright's _Quantum Computation_ lecture notes, which cover states, measurement and gates in much more depth. That a matrix sending every state to a state must be unitary is shown in Section 3 of Lecture 2. The relationship between the Hadamard gates and the Fourier coefficients is from Section 2.3 of Lecture 6.
 ]
 
 = Exercises

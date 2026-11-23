@@ -95,6 +95,12 @@ There are $2^n$ parity functions, one for each subset of $[n]$. It makes sense, 
   which matches @ex-and. Writing $f = "AND"_2$, its Fourier coefficients are $hat(f)(emptyset) = hat(f)({1}) = hat(f)({2}) = 1/2$ and $hat(f)({1, 2}) = -1/2$.
 ]
 
+Here is a small interactive widget where you can choose a function on three bits and see its Fourier expansion.
+
+#widget("fourier-spectrum")[
+  The interactive Fourier expansion needs JavaScript.
+]
+
 = Orthonormality of the Parity Functions
 
 The functions $f : {-1, 1}^n -> RR$ form a real vector space of dimension $2^n$, since a function is determined by its $2^n$ values. We can give this space an inner product.

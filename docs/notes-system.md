@@ -294,39 +294,89 @@ and repositions the canvases with transitions switched off, inside the click,
 so the swap is never visible. `max` is capped at 6 so every entry covers a
 whole number of pixels on the 320px board.
 
-The caption under the board names the matrix shown and, during an animation,
-the step being played. The left and right arrow keys move like the buttons
-while either button has focus. Each caption is short enough to stay on one
-line at a window width of 320px, which the reserved height relies on.
+Nothing is written under the board. A visually hidden line names the matrix
+shown and, during an animation, the step being played, for a screen reader.
+Thin lines separate the cells up to n = 3, and up to n = 2 each cell also
+shows its entry as a number; both appear only while the tiles are at rest. The left and right arrow keys move like the buttons while either
+button has focus.
 
 ### The quantum widgets
 
-Two widgets illustrate the chapter on qubits. Both say little and draw the
-state instead. Their arithmetic is in `src/lib/quantum/`, away from the
-components: `state.ts` (a state as its list of amplitudes, and the Hadamard
-gate on every qubit), `sampling.ts` (a measurement outcome, drawn from a
-random source the caller passes, so the tests are deterministic), `drawing.ts`
-(what a pointer position or a key makes of an amplitude, and normalising a
-drawing) and `format.ts` (an amplitude as `+1/√2` rather than 0.71).
+The widgets of the Walsh-Hadamard notes say little and draw instead: a
+caption is at most one short line of numbers, and what a screen reader needs
+in words sits in a visually hidden paragraph of the caption. Their arithmetic
+is in `src/lib/quantum/`, away from the components: `state.ts` (a state as
+its list of amplitudes, and the Hadamard gate on every qubit), `fourier.ts`
+(the Walsh-Hadamard matrix times a vector, and Fourier coefficients),
+`grover.ts` (the sign oracle, inversion about the mean, and the angle and
+success probability of Grover's algorithm), `sampling.ts` (a measurement
+outcome, drawn from a random source the caller passes, so the tests are
+deterministic), `drawing.ts` (what a pointer position or a key makes of an
+amplitude, and normalising a drawing), `format.ts` (an amplitude as `+1/√2`
+rather than 0.71, and `formatSigned` for a number with a minus sign and no
+plus) and `numbers.ts` (`clamp`). `bitstrings` in `state.ts` lists the labels
+of the basis states.
+
+`SignedBar.svelte` is the bar every bar chart of amplitudes draws: it rises
+in the accent colour for a positive amplitude and hangs in the warm colour
+for a negative one, and animates through zero when the sign flips. Its `tone`
+is `"neutral"` or `"accent"` where the colour marks something other than the
+sign. The bar has no place of its own: the component that uses it puts it in
+a positioned box and sets its `inset`, with a rule on `:global(.bar)`.
 
 `AmplitudeChart.svelte` is the picture they share. Each basis state is a
-column: a bar that rises from the axis in the accent colour for a positive
-amplitude and hangs below it in the warm colour for a negative one, the
-amplitude written under it with its sign, and a cell that darkens with the
-probability, which is why two amplitudes of opposite sign get the same cell.
-Given an `ondraw` handler the bars become sliders.
+column: a `SignedBar` on an axis, the amplitude written under it with its
+sign, and a cell that darkens with the probability, which is why two
+amplitudes of opposite sign get the same cell; `showProbabilityCells={false}`
+leaves the cells out. `showProbabilityValues` writes each probability in its
+cell, tinted lightly enough to read, and labels the row "Pr" as
+fourier-sampling does. The label hangs in a gutter left of the columns, as
+wide as `--chart-gutter` (1rem unless the widget sets it), so a widget that
+lines something up with the columns leaves the same gutter. Given an `ondraw` handler the bars become sliders.
+`highlighted` underlines the named columns and sets their labels in bold, and
+`level` draws a dashed line at an amplitude with a label such as μ. Its
+hidden descriptions use the frame's `.spoken` class, so it is only used
+inside a `WidgetFrame`.
 
 - `#widget("unflipping-coin")` takes one qubit and one classical coin through
   the same steps: "Apply H" also tosses the coin, and "Measure" also looks at
-  it. The coin has only probabilities, so it has cells and no bars. After a
-  gate applied to a superposition the two terms of each amplitude are written
-  out under the two panels, the cancelling pair in bold. `experiment.ts` holds
-  the steps.
+  it. The coin has only probabilities, drawn as grey bars for heads and tails.
+  After a gate applied to a superposition the two terms of each amplitude are
+  written out under the two panels, the cancelling pair in bold. The caption
+  shows only a measurement's result. `experiment.ts` holds the steps.
 - `#widget("hadamard-amplitudes", qubits: 2)` has a drawable state of one to
   three qubits beside the same state with a Hadamard gate on every qubit,
   which follows the drawing as it is made. "Apply H" makes the transformed
-  state the drawing, so pressing it twice returns the original. Three qubits
-  is the most whose eight bars and numbers fit a note 288px wide.
+  state the drawing, so pressing it twice returns the original. The drawable
+  chart sits in a box with a grip on each bar. Three qubits is the most whose
+  eight bars and numbers fit a note 288px wide.
+- `#widget("fourier-spectrum")` has the truth table of a function on three
+  bits as eight tiles, the bars of its eight Fourier coefficients, and its
+  polynomial.
+- `#widget("fwht-butterfly")` is the butterfly diagram of the fast transform
+  on eight values, one round of the loop at a time; focusing an entry shows
+  the two entries it came from.
+- `#widget("convolution-grid")` is the 4 by 4 grid of products f(x) g(y) for
+  two-bit inputs, tinted by x xor y, with the four sums under it.
+- `#widget("qubit-circle")` draws a qubit with real amplitudes on the unit
+  circle, where the Hadamard gate is a reflection.
+- `#widget("fourier-sampling", qubits: 2, preset: "and")` shows the state
+  after each step of Fourier sampling for a truth table the reader sets, and
+  measures the last one.
+- `#widget("circuit", kind: "fourier-sampling")` draws the circuit of
+  Fourier sampling or, with `kind: "grover"`, of Grover's algorithm.
+- `#widget("grover-mean")` runs Grover's algorithm one query and one
+  diffusion gate at a time on bars with their average drawn in.
+- `#widget("diffusion-fourier")` shows a drawable state above its Fourier
+  coefficients, and the diffusion gate acting on both.
+- `#widget("grover-rotation")` shows the state of Grover's algorithm turning
+  by the same angle each iteration.
+- `#widget("grover-success")` plots the success probability of Grover's
+  algorithm against the number of queries, with the classical bound.
+- `#widget("roadmap")` draws the sections of the course as boxes with arrows
+  from each section to those that need it. A box links to its note once
+  `/search.json` lists that note, so drafts and planned sections stay plain.
+  The dependencies are in `roadmap/dependencies.ts`, keyed by section number.
 
 Drawing: press on a bar's plot and drag, up for positive and down for
 negative; dragging sideways draws on the bars passed over. The plot has

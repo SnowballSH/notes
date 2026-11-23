@@ -34,4 +34,37 @@ const { children, caption }: Props = $props();
 	line-height: 1.5;
 	color: var(--fui-ink-secondary);
 }
+.widget-frame :global(.spoken) {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+/* The button rules weigh one class each, less than any rule in a widget's own style block, so a widget overrides them by declaring the property. */
+:global(.widget-frame :where(button)) {
+	min-height: 2.75rem;
+	border: 1px solid var(--fui-line);
+	border-radius: var(--fui-radius-sm);
+	background: transparent;
+	color: var(--fui-ink);
+	font: inherit;
+	cursor: pointer;
+}
+:global(.widget-frame :where(button:not([aria-disabled="true"]):hover)) {
+	border-color: var(--fui-accent);
+	background: var(--fui-surface-raised);
+}
+:global(.widget-frame :where(button[aria-disabled="true"])) {
+	border-style: dashed;
+	color: var(--fui-ink-muted);
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+:global(.widget-frame :where(button:focus-visible)) {
+	outline: 2px solid var(--fui-accent);
+	outline-offset: 2px;
+}
 </style>

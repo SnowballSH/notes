@@ -3,6 +3,7 @@ import { flushSync, onDestroy, untrack } from "svelte";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
+import { entryLabels, gridPath } from "./grid.ts";
 import { hadamardTile } from "./matrix.ts";
 
 const Stage = { Whole: 0, Shrunk: 1, Spread: 2, Flipped: 3 } as const;
@@ -45,6 +46,10 @@ onDestroy(() => {
 });
 
 const order = $derived(2 ** exponent);
+/** The height of an entry as a fraction of the board, which is its size in units of the matrix of order 1. */
+const entrySize = 0.055;
+const resting = $derived(stage === Stage.Whole || stage === Stage.Flipped);
+const gridLevel = $derived(stage === Stage.Flipped ? level + 1 : level);
 
 let queued: 1 | -1 | undefined;
 let endPause: (() => void) | undefined;
@@ -157,13 +162,25 @@ function moveByArrowKey(event: KeyboardEvent): void {
 		{#each quarters as quarter (quarter)}
 			<canvas class={quarter} {@attach hadamardTile(level)}></canvas>
 		{/each}
+		<svg
+			class:resting
+			viewBox="0 0 {2 ** gridLevel} {2 ** gridLevel}"
+			preserveAspectRatio="none"
+			aria-hidden="true"
+		>
+			<path d={gridPath(gridLevel)} />
+			{#each entryLabels(gridLevel) as entry (`${entry.x} ${entry.y}`)}
+				<text
+					x={entry.x}
+					y={entry.y}
+					font-size={entrySize * 2 ** gridLevel}
+					class:negative={entry.negative}>{entry.text}</text
+				>
+			{/each}
+		</svg>
 	</div>
 	{#snippet caption()}
-		<p>{narration ?? `The ${order} by ${order} matrix.`}</p>
-		<p class="legend">
-			<span><span class="swatch plus" aria-hidden="true"></span>white is +1</span>
-			<span><span class="swatch minus" aria-hidden="true"></span>black is &minus;1</span>
-		</p>
+		<p class="spoken">{narration ?? `The ${order} by ${order} matrix.`}</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -181,26 +198,6 @@ function moveByArrowKey(event: KeyboardEvent): void {
 button {
 	width: 2.75rem;
 	height: 2.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 .board {
 	position: relative;
@@ -212,27 +209,33 @@ button:focus-visible {
 	background: white;
 	filter: var(--note-figure-filter, none);
 }
-.legend {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 1rem;
+svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
 }
-.legend > span {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
+svg.resting {
+	opacity: 1;
+	/* The delay is the time the tiles take to enlarge, so the lines never cross moving tiles. */
+	transition: opacity 200ms ease-out 1000ms;
 }
-.swatch {
-	width: 0.75rem;
-	height: 0.75rem;
-	border: 1px solid var(--fui-ink-muted);
-	filter: var(--note-figure-filter, none);
+text {
+	fill: black;
+	font-family: var(--fui-font-mono);
+	text-anchor: middle;
+	dominant-baseline: central;
 }
-.swatch.plus {
-	background: white;
+text.negative {
+	fill: white;
 }
-.swatch.minus {
-	background: black;
+path {
+	fill: none;
+	stroke: var(--fui-ink-muted);
+	stroke-width: 1;
+	vector-effect: non-scaling-stroke;
+	shape-rendering: crispEdges;
 }
 canvas {
 	position: absolute;
@@ -264,7 +267,8 @@ canvas {
 	filter: invert(1);
 }
 @media (prefers-reduced-motion: reduce) {
-	canvas {
+	canvas,
+	svg.resting {
 		transition: none;
 	}
 }

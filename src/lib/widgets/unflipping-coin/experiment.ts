@@ -15,7 +15,7 @@ export type Terms = readonly [number, number];
 /** A qubit and a classical coin taken through the same steps, side by side. */
 export interface Experiment {
 	qubit: Amplitudes;
-	/** The probabilities that the classical coin shows 0 and 1. */
+	/** The probabilities that the classical coin shows heads (a measured 0) and tails. */
 	coin: readonly number[];
 	steps: readonly Step[];
 	/** For each basis state, what the last step contributed, when that step was a Hadamard gate. */
@@ -80,12 +80,13 @@ export const cancels = ([first, second]: Terms): boolean =>
 
 export const formatTerms = (terms: Terms): string => terms.map(formatAmplitude).join(" ");
 
-const describeCoin = (coin: readonly number[]): string => {
-	const face = coin.findIndex(isCertain);
-	return face === -1 ? "coin fair" : `coin ${face}`;
-};
+export const faces = ["heads", "tails"] as const;
 
-/** The state of both sides in a few words, for the caption. */
+/** The face a coin shows, or "tossed" while nobody has looked at it. */
+export const coinName = (coin: readonly number[]): string =>
+	faces[coin.findIndex(isCertain)] ?? "tossed";
+
+/** The state of both sides in a few words, for screen readers. */
 export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 	const last = steps.at(-1);
 	const cancelled = terms?.findIndex(cancels) ?? -1;
@@ -95,7 +96,13 @@ export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 			: cancelled === -1
 				? `Qubit ${stateName(qubit)}`
 				: `Qubit ${stateName(qubit)}, the ${ket(String(cancelled))} terms cancel`;
-	return `${qubitNow}; ${describeCoin(coin)}.`;
+	return `${qubitNow}; coin ${coinName(coin)}.`;
+}
+
+/** What the caption shows: the outcome when the last step was a measurement, and nothing otherwise. */
+export function result({ steps }: Experiment): string {
+	const last = steps.at(-1);
+	return last?.kind === "measurement" ? `Measured ${last.qubit}` : "";
 }
 
 export function describeStep(step: Step): string {
