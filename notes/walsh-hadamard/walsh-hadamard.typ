@@ -28,9 +28,11 @@
   )
 }
 
-To compute Fourier coefficients efficiently, we can discuss a specific family of matrices that are closely related to Boolean functions.
+We are now ready to enter the world of Walsh-Hadamard transform. We will discuss a simple family of matrices that are closely related to Boolean functions. We will see that, surprisingly, this matrix exposes the Fourier coefficients of any Boolean function.
 
 = Hadamard Matrix
+
+To motivate the definition, recall that in the previous chapter, we repeated applied the idea of orthogonalality of parity functions. In our proofs, often times we can show that most terms in a summation vanish because of interactions between orthogonal parity functions. Let's continue exploiting the idea of orthogonality.
 
 #definition(title: "Hadamard Matrix")[
   A _Hadamard matrix_ is a square matrix with entries in ${-1,1}$ whose rows are mutually orthogonal.
@@ -66,6 +68,8 @@ This definition seems a bit difficult to work with, so let us prove an alternati
 ]
 
 = The Walsh-Hadamard Matrices
+
+Now, it's still not very clear how to construct a family of such matrices. Fortunately, there is a simple recursively defined family of matrices that might fit the above definition.
 
 #definition(title: "The Walsh-Hadamard Matrices")[
   The _Walsh-Hadamard matrices_ $(H_(2^n))_(n >= 0)$ are a sequence of matrices defined recursively, with $H_1 = [1]$ and
@@ -303,7 +307,7 @@ void fwht(vector<long long>& f) {
 }
 ```
 
-The proof works from the top down: it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
+The proof works from the top down, i.e., it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
 
 Here is a small interactive widget that runs the code on eight values, one round of the outer loop at a time.
 
@@ -311,9 +315,9 @@ Here is a small interactive widget that runs the code on eight values, one round
   The interactive diagram of the fast transform needs JavaScript.
 ]
 
-A block of size $1$ is already its own transform, since $H_1 = [1]$. So whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
+A block of size $1$ is already its own transform, since $H_1 = [1]$. Whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
 
-The outer loop runs $n$ times, once for each level of the recursion, and each round touches every entry of the array once. So the running time is $O(n 2^n) = O(N log N)$, which agrees with @thm-fwht. The code assumes that the values of $f$ are integers, so every entry stays an integer. To obtain the Fourier coefficients of $f$, we divide every entry of the result by $N$, which may no longer give integers.
+The outer loop runs $n$ times, once for each level of the recursion, and each round touches every entry of the array once. The running time is therefore $O(n 2^n) = O(N log N)$, which agrees with @thm-fwht. The code assumes that the values of $f$ are integers, so every entry stays an integer. To obtain the Fourier coefficients of $f$, we divide every entry of the result by $N$, which may no longer give integers.
 
 = Conclusion
 

@@ -155,7 +155,7 @@ Note that this only works because amplitudes can be negative. Classical probabil
 
 = Grover's Algorithm
 
-With one marked input and $N$ large, one query followed by one diffusion gate made the marked amplitude about three times as large. If we apply this process repeatedly (a kind of "boosting" idea), we arrive at Grover's algorithm.
+With one marked input and $N$ large, one query followed by one diffusion gate made the marked amplitude about three times as large. If we apply this process repeatedly (this might remind you of the "boosting" idea in randomized algorithms, but we will see that we cannot naively increase the number of iterations to get arbitrarily better results), we arrive at Grover's algorithm.
 
 #definition(title: "Grover's Algorithm")[
   Let $f : FF_2^n -> FF_2$ and let $T >= 0$ be an integer. _Grover's algorithm_ with $T$ iterations is the following procedure on $n$ qubits.
