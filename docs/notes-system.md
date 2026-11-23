@@ -296,8 +296,8 @@ whole number of pixels on the 320px board.
 
 Nothing is written under the board. A visually hidden line names the matrix
 shown and, during an animation, the step being played, for a screen reader.
-Thin lines separate the cells up to n = 3 and appear only while the tiles are
-at rest. The left and right arrow keys move like the buttons while either
+Thin lines separate the cells up to n = 3, and up to n = 2 each cell also
+shows its entry as a number; both appear only while the tiles are at rest. The left and right arrow keys move like the buttons while either
 button has focus.
 
 ### The quantum widgets
