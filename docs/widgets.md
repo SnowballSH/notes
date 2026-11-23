@@ -75,13 +75,13 @@ export default defineWidget({
 });
 ```
 
-| Type | In Typst | In the component | Options |
-|---|---|---|---|
-| `integer` | `start: 2` | `number` | `min`, `max` (both optional, inclusive) |
-| `number` | `speed: 0.5` | `number` | `min`, `max` |
-| `boolean` | `looping: true` | `boolean` | |
-| `text` | `label: "Parity"` | `string` | |
-| `choice` | `shape: "circle"` | a union of the options | `options`, at least one |
+| Type      | In Typst          | In the component       | Options                                 |
+| --------- | ----------------- | ---------------------- | --------------------------------------- |
+| `integer` | `start: 2`        | `number`               | `min`, `max` (both optional, inclusive) |
+| `number`  | `speed: 0.5`      | `number`               | `min`, `max`                            |
+| `boolean` | `looping: true`   | `boolean`              |                                         |
+| `text`    | `label: "Parity"` | `string`               |                                         |
+| `choice`  | `shape: "circle"` | a union of the options | `options`, at least one                 |
 
 Every prop has a `default`, so every prop is optional in a note. Three things
 follow from the definition:
