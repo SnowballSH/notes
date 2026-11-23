@@ -1,7 +1,8 @@
 import { expect, it, describe as suite } from "vitest";
+import { successProbability } from "../../quantum/grover";
 import {
 	annotate,
-	areaPath,
+	chanceSymbol,
 	chanceTicks,
 	clampMarked,
 	classicalBound,
@@ -18,7 +19,9 @@ import {
 	mostMarked,
 	queryAt,
 	queryTicks,
+	textSize,
 	tickStep,
+	troughQuery,
 	xOf,
 	yOf,
 } from "./plot";
@@ -59,9 +62,9 @@ suite("the scales", () => {
 	});
 
 	it("put certainty at the top and impossibility on the axis", () => {
-		expect(yOf(1)).toBe(18);
-		expect(yOf(0.5)).toBe(87);
-		expect(yOf(0)).toBe(156);
+		expect(yOf(1)).toBe(24);
+		expect(yOf(0.5)).toBe(93);
+		expect(yOf(0)).toBe(162);
 	});
 
 	it("find the nearest whole number of queries under a pointer", () => {
@@ -86,7 +89,20 @@ suite("the scales", () => {
 
 	it("label the chances 0, 1/2 and 1", () => {
 		expect(chanceTicks.map((tick) => tick.label)).toEqual(["0", "1/2", "1"]);
-		expect(chanceTicks.map((tick) => tick.at)).toEqual([156, 87, 18]);
+		expect(chanceTicks.map((tick) => tick.at)).toEqual([162, 93, 24]);
+	});
+
+	it("name the vertical axis P above its top tick", () => {
+		expect(chanceSymbol).toEqual({ x: 23, y: 11 });
+	});
+
+	it("keep the text at 12px on a narrow screen and at its drawn size on a wide one", () => {
+		expect(textSize(288)).toBe(12);
+		expect(textSize(300)).toBe(11.52);
+		expect(textSize(345.6)).toBe(10);
+		expect(textSize(448)).toBe(10);
+		expect(textSize(200)).toBe(12);
+		expect(textSize(0)).toBe(10);
 	});
 
 	it("shrink the dots when there are many", () => {
@@ -107,8 +123,8 @@ suite("the curves", () => {
 			"0.330",
 			"0.012",
 		]);
-		expect(points[0]).toMatchObject({ queries: 0, x: 28, y: 138.75 });
-		expect(points[2]).toMatchObject({ queries: 2, x: 110.67, y: 25.55 });
+		expect(points[0]).toMatchObject({ queries: 0, x: 28, y: 144.75 });
+		expect(points[2]).toMatchObject({ queries: 2, x: 110.67, y: 31.55 });
 	});
 
 	it("reach the marked input exactly when N = 4", () => {
@@ -128,7 +144,7 @@ suite("the curves", () => {
 
 	it("draw the smooth curve through every dot", () => {
 		const curve = curvePath(8, 1, 6);
-		expect(curve.startsWith("M28,138.75L28.98,")).toBe(true);
+		expect(curve.startsWith("M28,144.75L28.98,143.15L")).toBe(true);
 		const end = groverPoints(8, 1, 6)[6];
 		expect(end?.chance.toFixed(3)).toBe("1.000");
 		expect(curve.endsWith(`L276,${end?.y}`)).toBe(true);
@@ -137,20 +153,38 @@ suite("the curves", () => {
 		expect(curvePath(1024, 1, 75).split("L")).toHaveLength(301);
 	});
 
-	it("close the area under the curve along the axis", () => {
-		expect(areaPath("M28,100L276,50", 6)).toBe("M28,100L276,50L276,156L28,156Z");
-	});
-
 	it("draw the classical bound as a line that flattens at certainty", () => {
-		expect(classicalPath(8, 6)).toBe("M28,138.75L276,35.25");
-		expect(classicalPath(4, 6)).toBe("M28,121.5L152,18L276,18");
-		expect(classicalPath(1024, 75)).toBe("M28,155.87L276,145.76");
+		expect(classicalPath(8, 6)).toBe("M28,144.75L276,41.25");
+		expect(classicalPath(4, 6)).toBe("M28,127.5L152,24L276,24");
+		expect(classicalPath(1024, 75)).toBe("M28,161.87L276,151.76");
 	});
 
-	it("name the classical bound above the right end of its line", () => {
-		expect(classicalLabel(8, 6)).toEqual({ x: 276, y: 30.25 });
-		expect(classicalLabel(4, 6)).toEqual({ x: 276, y: 13 });
-		expect(classicalLabel(1024, 75)).toEqual({ x: 276, y: 140.76 });
+	it("find the trough of Grover's curve", () => {
+		expect(troughQuery(8, 1)).toBeCloseTo(3.8468158083, 10);
+		expect(troughQuery(4, 1)).toBeCloseTo(2.5, 12);
+		expect(troughQuery(1024, 1)).toBeCloseTo(49.7572989617, 10);
+		expect(successProbability(8, 1, troughQuery(8, 1))).toBeCloseTo(0, 12);
+	});
+
+	it("name the classical bound over the trough, clear of the line and of the curve", () => {
+		expect(classicalLabel(8, 6)).toEqual({ x: 187, y: 63.12 });
+		expect(classicalLabel(4, 6)).toEqual({ x: 131.33, y: 20 });
+		expect(classicalLabel(16, 9)).toEqual({ x: 185.52, y: 91.62 });
+		expect(classicalLabel(64, 18)).toEqual({ x: 193.79, y: 116.6 });
+		expect(classicalLabel(1024, 75)).toEqual({ x: 192.53, y: 116.6 });
+	});
+
+	it("keep the word classical above the curve under both of its ends", () => {
+		for (const qubits of [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+			const size = 2 ** qubits;
+			const last = lastQuery(size, 1);
+			const label = classicalLabel(size, last);
+			for (const x of [label.x - 27, label.x + 27]) {
+				const queries = ((x - 28) / 248) * last;
+				expect(yOf(successProbability(size, 1, queries))).toBeGreaterThan(label.y + 4);
+				expect(yOf(classicalBound(size, queries))).toBeGreaterThanOrEqual(label.y + 4);
+			}
+		}
 	});
 });
 

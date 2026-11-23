@@ -39,7 +39,7 @@ describe("the registry", () => {
 
 	it("keeps the height a widget declares", () => {
 		expect(widgetDefinitions["hadamard-tiling"]?.height).toBe(
-			"calc(7.125rem + min(100vw - 2rem, 20rem + 2px))",
+			"calc(4.25rem + min(100vw - 2rem, 20rem + 2px))",
 		);
 	});
 });

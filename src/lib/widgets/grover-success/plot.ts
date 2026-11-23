@@ -1,8 +1,8 @@
 import { formatDyadic } from "../../quantum/format.ts";
-import { bestIterations, successProbability } from "../../quantum/grover.ts";
+import { bestIterations, groverAngle, successProbability } from "../../quantum/grover.ts";
 import { clamp } from "../../quantum/numbers.ts";
 
-export const plot = { width: 288, height: 190, left: 28, right: 12, top: 18, bottom: 34 } as const;
+export const plot = { width: 288, height: 196, left: 28, right: 12, top: 24, bottom: 34 } as const;
 
 const innerWidth = plot.width - plot.left - plot.right;
 const innerHeight = plot.height - plot.top - plot.bottom;
@@ -10,6 +10,11 @@ const fewestQueriesShown = 6;
 const bestCountsShown = 3;
 const mostTicks = 6;
 const tickSteps = [1, 2, 5, 10, 20, 50] as const;
+const smallestTextShown = 12;
+const textSizes = { least: 10, most: 12 } as const;
+const classicalHalfWidth = 27;
+const classicalGap = 4;
+const troughClearance = 0.3;
 
 export interface Point {
 	x: number;
@@ -70,9 +75,6 @@ export function curvePath(size: number, marked: number, last: number): string {
 	return linePath(samples);
 }
 
-export const areaPath = (curve: string, last: number): string =>
-	`${curve}L${xOf(last, last)},${yOf(0)}L${xOf(0, last)},${yOf(0)}Z`;
-
 /** The classical bound as a straight line that stops rising when it reaches certainty. */
 export function classicalPath(size: number, last: number): string {
 	const certain = size - 1;
@@ -84,11 +86,31 @@ export function classicalPath(size: number, last: number): string {
 	return linePath(certain < last ? [...rise, { x: xOf(last, last), y: yOf(1) }] : rise);
 }
 
-/** The word "classical" sits just above the right end of the bound's line. */
-export const classicalLabel = (size: number, last: number): Point => ({
-	x: xOf(last, last),
-	y: rounded(yOf(classicalBound(size, last)) - 5),
-});
+/** Where Grover's curve first comes back down to zero, which is rarely a whole number of queries. */
+export const troughQuery = (size: number, marked: number): number =>
+	Math.PI / (2 * groverAngle(size, marked)) - 0.5;
+
+/**
+ * The middle of the word "classical": over the trough of Grover's curve, above the bound's line
+ * along the whole word and above the sides of the trough.
+ */
+export function classicalLabel(size: number, last: number): Point {
+	const halfWidth = (classicalHalfWidth * last) / innerWidth;
+	const centre = clamp(troughQuery(size, 1), halfWidth, last - halfWidth);
+	const floor = Math.max(classicalBound(size, centre + halfWidth), troughClearance);
+	return { x: xOf(centre, last), y: rounded(yOf(floor) - classicalGap) };
+}
+
+export const chanceSymbol: Point = { x: plot.left - 5, y: plot.top - 13 };
+
+/**
+ * The font size in the picture's own units that is at least 12px on screen, for a picture shown
+ * at the given width in pixels; a picture not yet measured takes the size of a wide one.
+ */
+export const textSize = (shownWidth: number): number =>
+	shownWidth > 0
+		? rounded(clamp((smallestTextShown * plot.width) / shownWidth, textSizes.least, textSizes.most))
+		: textSizes.least;
 
 export const tickStep = (last: number): number =>
 	tickSteps.find((step) => last / step <= mostTicks) ?? (tickSteps.at(-1) as number);

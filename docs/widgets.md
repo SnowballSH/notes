@@ -127,8 +127,8 @@ width, use `100vw - 2rem`, which is the width of a note in a narrow window
 + 0.75rem                               gap
 + min(100vw - 2rem, 20rem + 2px)        the square board with its border
 + 0.75rem                               gap
-+ 1.3125rem + 0.25rem + 1.3125rem       two caption lines of 0.875rem × 1.5
-= calc(7.125rem + min(100vw - 2rem, 20rem + 2px))
++ 0                                     the caption, which is only spoken
+= calc(4.25rem + min(100vw - 2rem, 20rem + 2px))
 ```
 
 The playground prints the height the widget takes beside the height it

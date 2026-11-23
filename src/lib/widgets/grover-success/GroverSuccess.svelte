@@ -7,7 +7,7 @@ import type definition from "./definition.ts";
 import { fewestQubits, mostQubits } from "./definition.ts";
 import {
 	annotate,
-	areaPath,
+	chanceSymbol,
 	chanceTicks,
 	clampMarked,
 	classicalBound,
@@ -24,6 +24,7 @@ import {
 	plot,
 	queryAt,
 	queryTicks,
+	textSize,
 	xOf,
 	yOf,
 } from "./plot.ts";
@@ -36,6 +37,7 @@ let queries = $state(untrack(() => bestIterations(2 ** props.qubits, marked)));
 let announcement = $state(untrack(() => describe(2 ** props.qubits, marked, queries)));
 let dragging = $state(false);
 let picture = $state<SVGSVGElement>();
+let shownWidth = $state(0);
 
 const size = $derived(2 ** qubits);
 const best = $derived(bestIterations(size, marked));
@@ -120,78 +122,80 @@ function pressKey(event: KeyboardEvent): void {
 			>
 		</div>
 	</div>
-	<svg
-		bind:this={picture}
-		class="plot"
-		viewBox="0 0 {plot.width} {plot.height}"
-		role="group"
-		aria-label="Success probability of the search"
-	>
-		<g role="img" aria-label={describePicture(size, marked)}>
-			{#each chanceTicks as tick (tick.value)}
-				<line class="grid" x1={plot.left} y1={tick.at} x2={plot.width - plot.right} y2={tick.at} />
-				<text class="tick" x={plot.left - 5} y={tick.at} text-anchor="end">{tick.label}</text>
-			{/each}
-			{#each queryTicks(last) as tick (tick.value)}
-				<line class="grid" x1={tick.at} y1={baseline} x2={tick.at} y2={baseline + 4} />
-				<text class="tick" x={tick.at} y={baseline + 11} text-anchor="middle">{tick.label}</text>
-			{/each}
-			<text class="axis-name" x={(plot.left + plot.width - plot.right) / 2} y={plot.height - 6}>
-				queries t
-			</text>
-			<path class="area" d={areaPath(curve, last)} />
-			<line class="best" x1={bestAt} y1={plot.top - 3} x2={bestAt} y2={baseline} />
-			<text class="best-label" x={bestAt} y={plot.top - 9}>T = {best}</text>
-			{#if marked === 1}
-				<path class="classical" d={classicalPath(size, last)} />
-			{/if}
-			<path class="curve" d={curve} />
-			{#if marked === 1}
-				<text class="classical-label" x={classicalAt.x} y={classicalAt.y}>classical</text>
-			{/if}
-			{#each points as point (point.queries)}
-				<circle class="dot" cx={point.x} cy={point.y} r={dotRadius(last)} />
-			{/each}
-		</g>
-		<g
-			class="chooser"
-			class:dragging
-			role="slider"
-			tabindex="0"
-			aria-label="Number of queries"
-			aria-valuemin={0}
-			aria-valuemax={last}
-			aria-valuenow={queries}
-			aria-valuetext={summary}
-			onpointerdown={startDrag}
-			onpointermove={(event) => dragging && pointTo(event)}
-			onpointerup={() => (dragging = false)}
-			onpointercancel={() => (dragging = false)}
-			onlostpointercapture={() => (dragging = false)}
-			onkeydown={pressKey}
+	<div class="plot" bind:clientWidth={shownWidth}>
+		<svg
+			bind:this={picture}
+			viewBox="0 0 {plot.width} {plot.height}"
+			style:font-size="{textSize(shownWidth)}px"
+			role="group"
+			aria-label="Success probability of the search"
 		>
-			<rect
-				class="reach"
-				x="0"
-				y="0"
-				width={plot.width}
-				height={plot.height}
-			/>
-			{#if queries !== best}
-				<line class="drop" x1={chosen.x} y1={chosen.y} x2={chosen.x} y2={baseline} />
-			{/if}
-			{#if marked === 1}
-				<circle
-					class="chosen-classical"
-					cx={chosen.x}
-					cy={yOf(classicalBound(size, queries))}
-					r="3.5"
+			<g role="img" aria-label={describePicture(size, marked)}>
+				{#each chanceTicks as tick (tick.value)}
+					<line class="grid" x1={plot.left} y1={tick.at} x2={plot.width - plot.right} y2={tick.at} />
+					<text class="tick" x={plot.left - 5} y={tick.at} text-anchor="end">{tick.label}</text>
+				{/each}
+				<text class="tick" x={chanceSymbol.x} y={chanceSymbol.y} text-anchor="end">P</text>
+				{#each queryTicks(last) as tick (tick.value)}
+					<line class="grid" x1={tick.at} y1={baseline} x2={tick.at} y2={baseline + 4} />
+					<text class="tick" x={tick.at} y={baseline + 11} text-anchor="middle">{tick.label}</text>
+				{/each}
+				<text class="axis-name" x={(plot.left + plot.width - plot.right) / 2} y={plot.height - 6}>
+					queries t
+				</text>
+				<line class="best" x1={bestAt} y1={plot.top - 3} x2={bestAt} y2={baseline} />
+				<text class="best-label" x={bestAt} y={plot.top - 9}>T = {best}</text>
+				{#if marked === 1}
+					<path class="classical" d={classicalPath(size, last)} />
+				{/if}
+				<path class="curve" d={curve} />
+				{#if marked === 1}
+					<text class="classical-label" x={classicalAt.x} y={classicalAt.y}>classical</text>
+				{/if}
+				{#each points as point (point.queries)}
+					<circle class="dot" cx={point.x} cy={point.y} r={dotRadius(last)} />
+				{/each}
+			</g>
+			<g
+				class="chooser"
+				class:dragging
+				role="slider"
+				tabindex="0"
+				aria-label="Number of queries"
+				aria-valuemin={0}
+				aria-valuemax={last}
+				aria-valuenow={queries}
+				aria-valuetext={summary}
+				onpointerdown={startDrag}
+				onpointermove={(event) => dragging && pointTo(event)}
+				onpointerup={() => (dragging = false)}
+				onpointercancel={() => (dragging = false)}
+				onlostpointercapture={() => (dragging = false)}
+				onkeydown={pressKey}
+			>
+				<rect
+					class="reach"
+					x="0"
+					y="0"
+					width={plot.width}
+					height={plot.height}
 				/>
-			{/if}
-			<circle class="ring" cx={chosen.x} cy={chosen.y} r="9" />
-			<circle class="chosen" cx={chosen.x} cy={chosen.y} r="5" />
-		</g>
-	</svg>
+				{#if queries !== best}
+					<line class="drop" x1={chosen.x} y1={chosen.y} x2={chosen.x} y2={baseline} />
+				{/if}
+				{#if marked === 1}
+					<circle
+						class="chosen-classical"
+						cx={chosen.x}
+						cy={yOf(classicalBound(size, queries))}
+						r="3.5"
+					/>
+				{/if}
+				<circle class="ring" cx={chosen.x} cy={chosen.y} r="9" />
+				<circle class="chosen" cx={chosen.x} cy={chosen.y} r="5" />
+			</g>
+		</svg>
+	</div>
 	{#snippet caption()}
 		<p class="spoken">{announcement}</p>
 		<p class="now" aria-hidden="true">{annotate(size, marked, queries)}</p>
@@ -243,9 +247,12 @@ p {
 	margin: 0;
 }
 .plot {
-	display: block;
 	width: 100%;
 	max-width: 28rem;
+}
+svg {
+	display: block;
+	width: 100%;
 	height: auto;
 	user-select: none;
 }
@@ -258,7 +265,6 @@ p {
 .best-label,
 .classical-label {
 	font-family: var(--fui-font-mono);
-	font-size: 10px;
 	fill: var(--fui-ink-secondary);
 }
 .tick {
@@ -268,13 +274,10 @@ p {
 	font-family: var(--fui-font-sans);
 	text-anchor: middle;
 }
-.area {
-	fill: color-mix(in oklab, var(--fui-accent) 14%, transparent);
-}
 .curve {
 	fill: none;
-	stroke: var(--fui-accent);
-	stroke-width: 2;
+	stroke: color-mix(in oklab, var(--fui-accent) 45%, transparent);
+	stroke-width: 1.25;
 	stroke-linejoin: round;
 	stroke-linecap: round;
 }
@@ -302,7 +305,7 @@ p {
 .classical-label {
 	font-family: var(--fui-font-sans);
 	fill: var(--fui-ink-muted);
-	text-anchor: end;
+	text-anchor: middle;
 	/* A halo in the page colour keeps the word readable where the curve passes behind it. */
 	stroke: var(--fui-surface-base);
 	stroke-width: 3;
@@ -352,9 +355,6 @@ p {
 	.controls,
 	.ring {
 		display: none;
-	}
-	.area {
-		print-color-adjust: exact;
 	}
 }
 </style>

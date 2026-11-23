@@ -64,6 +64,10 @@ export const allWires = (size: number): Wire[] =>
 		Array.from({ length: size }, (_, index) => wiresInto({ level: pass + 1, index })),
 	).flat(2);
 
+/** Plus wires first, so that no solid wire is drawn over the dashes of a minus wire. */
+export const minusOnTop = (wires: readonly Wire[]): Wire[] =>
+	wires.toSorted((first, second) => second.sign - first.sign);
+
 const formatOperand = (value: number): string =>
 	value < 0 ? `(${formatSigned(value)})` : formatSigned(value);
 

@@ -3,6 +3,7 @@ import { flushSync, onDestroy, untrack } from "svelte";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
+import { gridPath } from "./grid.ts";
 import { hadamardTile } from "./matrix.ts";
 
 const Stage = { Whole: 0, Shrunk: 1, Spread: 2, Flipped: 3 } as const;
@@ -45,6 +46,7 @@ onDestroy(() => {
 });
 
 const order = $derived(2 ** exponent);
+const drawnLevel = $derived(stage === Stage.Whole ? level : level + 1);
 
 let queued: 1 | -1 | undefined;
 let endPause: (() => void) | undefined;
@@ -157,13 +159,12 @@ function moveByArrowKey(event: KeyboardEvent): void {
 		{#each quarters as quarter (quarter)}
 			<canvas class={quarter} {@attach hadamardTile(level)}></canvas>
 		{/each}
+		<svg viewBox="0 0 {2 ** drawnLevel} {2 ** drawnLevel}" preserveAspectRatio="none" aria-hidden="true">
+			<path d={gridPath(drawnLevel)} />
+		</svg>
 	</div>
 	{#snippet caption()}
-		<p>{narration ?? `The ${order} by ${order} matrix.`}</p>
-		<p class="legend">
-			<span><span class="swatch plus" aria-hidden="true"></span>white is +1</span>
-			<span><span class="swatch minus" aria-hidden="true"></span>black is &minus;1</span>
-		</p>
+		<p class="spoken">{narration ?? `The ${order} by ${order} matrix.`}</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -192,27 +193,18 @@ button {
 	background: white;
 	filter: var(--note-figure-filter, none);
 }
-.legend {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 1rem;
+svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
 }
-.legend > span {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-}
-.swatch {
-	width: 0.75rem;
-	height: 0.75rem;
-	border: 1px solid var(--fui-ink-muted);
-	filter: var(--note-figure-filter, none);
-}
-.swatch.plus {
-	background: white;
-}
-.swatch.minus {
-	background: black;
+path {
+	fill: none;
+	stroke: var(--fui-ink-muted);
+	stroke-width: 1;
+	vector-effect: non-scaling-stroke;
+	shape-rendering: crispEdges;
 }
 canvas {
 	position: absolute;

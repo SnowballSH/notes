@@ -1,7 +1,9 @@
-export const width = 288;
-export const height = 186;
-export const centre = { x: 144, y: 148 } as const;
+import { clamp } from "../../quantum/numbers.ts";
+
+export const width = 328;
+export const centre = { x: 132, y: 148 } as const;
 export const radius = 120;
+export const axisOverhang = 6;
 
 export interface Point {
 	x: number;
@@ -17,6 +19,29 @@ export interface Label extends Point {
 }
 
 const rounded = (value: number): number => Math.round(value * 100) / 100;
+
+const labelGap = 14;
+const labelBand = 26;
+/** Half the width of "P = 0.125" in a monospace font, as a multiple of the size of its text. */
+const chanceHalfWidth = 2.7;
+
+/** The size in the picture's units of text that is the given number of CSS pixels tall on the screen. */
+export const textSize = (shownWidth: number, pixels = 12): number =>
+	shownWidth > 0 ? rounded((pixels * width) / shownWidth) : pixels;
+
+/** How far under the unmarked axis the tip of a state at the given angle is. */
+export const dipBelowAxis = (angle: number): number => Math.max(0, -radius * Math.sin(angle));
+
+/** The picture ends one line of label under its deepest state. */
+export const pictureHeight = (deepest: number): number =>
+	Math.ceil(centre.y + dipBelowAxis(deepest) + labelBand);
+
+/** The label of the unmarked axis, beside its positive end. */
+export const unmarkedLabel: Label = {
+	x: centre.x + radius + axisOverhang + 4,
+	y: centre.y,
+	anchor: "start",
+};
 
 /** The picture's point at an angle anticlockwise from the unmarked axis; the page's y runs down. */
 export const pointAt = (angle: number, distance = radius): Point => ({
@@ -51,11 +76,24 @@ export function arrowHead(angle: number, length = 10, halfWidth = 4.5): string {
 		.join(" ");
 }
 
-/** The square on the height of the arrow tip, drawn on the side of the tip that faces the marked axis. */
+/** The square on the height of the arrow tip, between that height and the marked axis, above or below the unmarked axis as the tip is. */
 export function heightSquare(angle: number): Square {
 	const tip = pointAt(angle);
-	const side = Math.max(radius * Math.sin(angle), 0);
-	return { x: isRightOfMarkedAxis(angle) ? tip.x - side : tip.x, y: tip.y, side };
+	const side = radius * Math.abs(Math.sin(angle));
+	return {
+		x: isRightOfMarkedAxis(angle) ? tip.x - side : tip.x,
+		y: Math.min(tip.y, centre.y),
+		side,
+	};
+}
+
+/** The middle of the probability written under the square, kept within the width of the circle. */
+export function chanceLabelPoint(square: Square, size: number): Point {
+	const reach = radius - chanceHalfWidth * size;
+	return {
+		x: clamp(square.x + square.side / 2, centre.x - reach, centre.x + reach),
+		y: square.y + square.side + labelGap,
+	};
 }
 
 /** A label just outside the circle, on the side of the marked axis that the angle is on. */
@@ -78,13 +116,14 @@ const farthestTurnLabel = 96;
 
 /**
  * Where the label of the turn between two states goes: between them, far enough out that both arrows
- * clear it, or, when the turn is too narrow for that, beside it on the side away from the marked axis,
- * which the height of the tip never crosses.
+ * clear it, or, when the turn is too narrow for that or its middle is on or under the unmarked axis,
+ * beside it on the side away from the marked axis, which the height of the tip never crosses.
  */
 export function turnLabelPoint(from: number, to: number): Point {
 	const between = turnLabelClearance / Math.sin((to - from) / 2);
-	if (between <= farthestTurnLabel) {
-		return pointAt((from + to) / 2, Math.max(between, nearestTurnLabel));
+	const middle = pointAt((from + to) / 2, Math.max(between, nearestTurnLabel));
+	if (between <= farthestTurnLabel && centre.y - middle.y >= turnLabelClearance - 1e-9) {
+		return middle;
 	}
 	const aside = Math.asin(turnLabelClearance / nearestTurnLabel);
 	return pointAt(to < Math.PI / 2 ? to + aside : from - aside, nearestTurnLabel);

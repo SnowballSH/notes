@@ -8,5 +8,5 @@ export default defineWidget({
 		start: { type: "integer", default: 1, min: 0, max: largestLevel },
 		max: { type: "integer", default: largestLevel, min: 1, max: largestLevel },
 	},
-	height: "calc(7.125rem + min(100vw - 2rem, 20rem + 2px))",
+	height: "calc(4.25rem + min(100vw - 2rem, 20rem + 2px))",
 });

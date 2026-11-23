@@ -144,13 +144,17 @@ test("the tiling widget loads without moving the page and names each step", asyn
 	});
 	expect(Math.abs(mounted - reserved)).toBeLessThan(1);
 
-	const caption = widget.locator("figcaption");
-	await expect(caption).toContainText(/The \d+ by \d+ matrix\./);
-	const atRest = await caption.innerText();
+	await expect(widget.locator("figcaption")).toHaveText(/^The \d+ by \d+ matrix\.$/);
+	const narration = widget.locator("figcaption .spoken");
+	const lines = widget.locator(".board path");
+	const atRest = await narration.textContent();
+	const linesAtRest = await lines.getAttribute("d");
+	expect(linesAtRest).toMatch(/^M1 0V\d+M/);
 	await widget.getByRole("button", { name: "Next matrix" }).click();
-	await expect(caption).toContainText("Shrink it into the top-left quarter.");
-	await expect(caption).toContainText(/The \d+ by \d+ matrix\./, { timeout: 10_000 });
-	expect(await caption.innerText()).not.toBe(atRest);
+	await expect(narration).toHaveText("Shrink it into the top-left quarter.");
+	await expect(narration).toHaveText(/^The \d+ by \d+ matrix\.$/, { timeout: 10_000 });
+	expect(await narration.textContent()).not.toBe(atRest);
+	expect(await lines.getAttribute("d")).not.toBe(linesAtRest);
 });
 
 test("two Hadamard gates unflip the qubit but not the coin, unless it is measured in between", async ({

@@ -27,6 +27,8 @@ test("Grover's success probability peaks at the best count and falls with more q
 	await expect(widget.locator(".best-label")).toHaveText("T = 2");
 	await expect(widget.locator(".dot")).toHaveCount(7);
 	await expect(widget.locator(".drop")).toHaveCount(0);
+	await expect(widget.locator(".area")).toHaveCount(0);
+	await expect(widget.locator("svg text").filter({ hasText: /^P$/ })).toHaveCount(1);
 
 	await queries.focus();
 	await page.keyboard.press("ArrowRight");
@@ -58,7 +60,22 @@ test("Grover's success probability peaks at the best count and falls with more q
 	);
 
 	await expect(widget.locator(".classical")).toHaveCount(1);
-	await expect(widget.locator(".classical-label")).toHaveText("classical");
+	const classicalLabel = widget.locator(".classical-label");
+	await expect(classicalLabel).toHaveText("classical");
+	const word = await classicalLabel.boundingBox();
+	const lastDot = await widget.locator(".dot").last().boundingBox();
+	if (!word || !lastDot) throw new Error("the plot is not laid out");
+	expect(word.x + word.width).toBeLessThan(lastDot.x);
+	const shownTextSize = await widget
+		.locator(".tick")
+		.first()
+		.evaluate((tick) => {
+			const picture = tick.closest("svg");
+			if (!picture) throw new Error("the tick is outside the picture");
+			const scale = picture.getBoundingClientRect().width / picture.viewBox.baseVal.width;
+			return Number.parseFloat(getComputedStyle(tick).fontSize) * scale;
+		});
+	expect(shownTextSize).toBeGreaterThanOrEqual(11.9);
 	await moreMarked.click();
 	await expect(caption).toHaveText("t = 1, P = 1.000");
 	await expect(spoken).toHaveText("N = 8, 2 marked, 1 query: Grover 1.000.");

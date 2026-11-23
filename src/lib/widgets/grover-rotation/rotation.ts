@@ -13,9 +13,13 @@ export const clampMarked = (marked: number, qubits: number): number =>
 export const stateAngle = (size: number, marked: number, iterations: number): number =>
 	(2 * iterations + 1) * groverAngle(size, marked);
 
-/** The last iteration whose state is still in the upper half of the circle, which is all the picture draws. */
+/**
+ * Iterating stops at the state nearest the negative unmarked axis, a half turn from where the arrow
+ * would start with nothing marked: the t whose angle (2t + 1)θ is within θ of π, above or below the
+ * axis, and the earlier of the two when θ = π/6 puts them equally near.
+ */
 export const lastIteration = (size: number, marked: number): number =>
-	Math.floor((Math.PI / groverAngle(size, marked) - 1) / 2);
+	Math.ceil(Math.PI / (2 * groverAngle(size, marked)) - 1 - tolerance);
 
 export const angleMultiple = (iterations: number): string =>
 	iterations === 0 ? "θ" : `${2 * iterations + 1}θ`;
@@ -27,14 +31,16 @@ export function formatProbability(probability: number): string {
 	return Math.abs(probability - whole) < tolerance ? String(whole) : probability.toFixed(3);
 }
 
-export const caption = (qubits: number, marked: number, iterations: number): string =>
-	`t = ${iterations}, P = ${formatProbability(successProbability(2 ** qubits, marked, iterations))}`;
+export const chanceLabel = (probability: number): string => `P = ${formatProbability(probability)}`;
+
+export const caption = (qubits: number, iterations: number): string =>
+	`N = ${2 ** qubits}, t = ${iterations}`;
 
 export function describe(qubits: number, marked: number, iterations: number): string {
 	const size = 2 ** qubits;
 	const angle = stateAngle(size, marked, iterations).toFixed(2);
 	const probability = formatProbability(successProbability(size, marked, iterations));
-	return `t = ${iterations} of T = ${bestIterations(size, marked)}: angle ${angleMultiple(iterations)} ≈ ${angle}, probability ${probability}.`;
+	return `N = ${size}, t = ${iterations} of T = ${bestIterations(size, marked)}: angle ${angleMultiple(iterations)} ≈ ${angle}, probability ${probability}.`;
 }
 
 export function describePicture(qubits: number, marked: number, iterations: number): string {
