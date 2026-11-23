@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Qubits, measurement, and the Hadamard gate",
-  summary: "Basics of quantum computing: states, measurement, gates as unitary matrices, and the Hadamard gate as a Walsh-Hadamard matrix.",
+  summary: "The basics of quantum computing: states, measurement, gates, and the Hadamard gate as a Walsh-Hadamard matrix.",
   order: 4,
 )
 

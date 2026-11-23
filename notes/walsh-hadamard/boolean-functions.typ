@@ -145,7 +145,7 @@ Under this inner product, the parity functions are as nice as a basis can be.
   $
     chevron.l chi_S, chi_T chevron.r = EE_x [chi_S (x) chi_T (x)] = EE_x [chi_(S Delta T) (x)],
   $
-  which is $1$ if $S Delta T = emptyset$ and $0$ otherwise. $S Delta T = emptyset$ if and only if $S = T$. $square$
+  which is $1$ if $S Delta T = emptyset$, that is, if $S = T$, and $0$ otherwise. $square$
 ]
 
 Orthonormality gives a direct formula for each Fourier coefficient.

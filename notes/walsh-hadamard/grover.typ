@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Grover's algorithm",
-  summary: "Working towards Grover's algorithm using Fourier sampling and proving its error bound using probability theory and trigonometry.",
+  summary: "Grover's quantum search algorithm through Fourier coefficients, and a proof of how likely it is to succeed.",
 )
 
 #let ket(x) = $lr(| #x chevron.r)$
@@ -29,7 +29,7 @@ Intuitively, the function $f$ is what determines if a given input $x$ has the de
 ] <prop-classical-search>
 
 #proof[
-  Let $cal(A)$ be a deterministic algorithm using $q$ queries. We will first run $cal(A)$ while answering $0$ to all $q$ queries. Since $cal(A)$ is deterministic, this tells us that while seeing $0$s as query results, the algorithm $cal(A)$ will query inputs $x_1, ..., x_q$, and outputs $y$ in the end. Note that $x_1, ..., x_q$ and $y$ do not depend on $x^*$.
+  Let $cal(A)$ be a deterministic algorithm using $q$ queries. We will first run $cal(A)$ while answering $0$ to all $q$ queries. Since $cal(A)$ is deterministic, this tells us that while seeing $0$s as query results, the algorithm $cal(A)$ will query inputs $x_1, ..., x_q$, and output $y$ in the end. Note that $x_1, ..., x_q$ and $y$ do not depend on $x^*$.
 
   If $x^* in.not {x_1, ..., x_q}$, then every answer is in fact $0$ (our artificial query responses are correct), so $cal(A)$ actually outputs $y$. If $x^* in {x_1, ..., x_q}$, $cal(A)$ can and should output the correct answer. Therefore, $cal(A)$ outputs the correct answer only if $x^* in {x_1, ..., x_q, y}$, which means the probability that $cal(A)$ is correct is at most $(q+1)/N$, since $x^*$ is uniformly random and this set has at most $q + 1$ elements.
 
@@ -38,9 +38,9 @@ Intuitively, the function $f$ is what determines if a given input $x$ has the de
 
 A direct corollary is that to find $x^*$ with probability at least $1/2$, any classical algorithm, deterministic or randomized, needs at least $N/2 - 1$ queries. On the other hand, $N$ queries are always enough. Our hope is to be able to do better using quantum algorithms.
 
-= Fourier Sampling Is Not Enough
+= Fourier Sampling is Not Enough
 
-We would hope that we can apply the same trick, Fourier sampling, as from the last chapter to solve the problem using a few queries. Unfortunately, Fourier sampling fails here. Surprisingly, the reason is not that the Fourier coefficients are spread out. When few inputs are marked, they are concentrated, but on a bitstring that gives us no information.
+We would hope that we can apply the same trick, Fourier sampling, as in the last chapter to solve the problem using a few queries. Unfortunately, Fourier sampling fails here. Surprisingly, the reason is not that the Fourier coefficients are spread out. When few inputs are marked, they are concentrated, but on a bitstring that gives us no information.
 
 #proposition(title: "Fourier Coefficients of a Search Function")[
   Let $f : FF_2^n -> FF_2$ have the marked set $M$ with $abs(M) = k$, and let $g(x) = (-1)^(f(x))$. Then,
@@ -69,7 +69,7 @@ Here is the Fourier sampling widget from the previous chapter, set to a function
   The interactive Fourier sampling needs JavaScript.
 ]
 
-Why does Fourier sampling fail in this example? Recall from the previous chapter that Fourier sampling is useful when the coefficients are concentrated on bitstrings that answer our question. Here, with one marked input and $N$ large, almost all of the probability is on the all-zeros bitstring, because $g$ is almost the constant function $1$. Unfortunately, $hat(g)(0) = 1 - 2\/N$ does not depend on which input is marked and grows closer to $1$ as $N$ becomes large. Relying solely on the magnitudes of the probabilities is therefore hopeless.
+Why does Fourier sampling fail in this example? Recall from the previous chapter that Fourier sampling is useful when the coefficients are concentrated on bitstrings that answer our question. Here, with one marked input and $N$ large, almost all of the probability is on the all-zeros bitstring, because $g$ is almost the constant function $1$. Unfortunately, $hat(g)(0) = 1 - 2\/N$ does not depend on which input is marked and grows closer to $1$ as $N$ becomes large. Relying solely on the magnitudes of the coefficients is therefore hopeless.
 
 However, it seems like the marked input only shows up in the signs of the other coefficients, but their magnitudes are tiny.
 
@@ -140,8 +140,8 @@ Here is a small interactive widget that shows the amplitudes of a state above th
 #proof[
   Since $chi_0 (x) = 1$ for every $x$, #noteref("boolean-functions", <prop-coefficient-formula>)[the formula for the Fourier coefficients] gives $hat(alpha)(0) = mu$. By #noteref("boolean-functions", <thm-fourier-expansion>)[the Fourier expansion] of $beta$, then @thm-diffusion-fourier, then the Fourier expansion of $alpha$,
   $
-    beta(x) & = sum_(gamma in FF_2^n) hat(beta)(gamma) chi_gamma (x)                    &           "(Fourier expansion)" \
-            & = hat(alpha)(0) - sum_(gamma != 0) hat(alpha)(gamma) chi_gamma (x)        &         "(the theorem above)" \
+    beta(x) & = sum_(gamma in FF_2^n) hat(beta)(gamma) chi_gamma (x)                    & "(Fourier expansion)" \
+            & = hat(alpha)(0) - sum_(gamma != 0) hat(alpha)(gamma) chi_gamma (x)        & "(the theorem above)" \
             & = 2 hat(alpha)(0) - sum_(gamma in FF_2^n) hat(alpha)(gamma) chi_gamma (x) \
             & = 2 mu - alpha(x). #h(1em) square
   $
@@ -169,7 +169,7 @@ With one marked input and $N$ large, one query followed by one diffusion gate ma
 Here is the algorithm drawn as a circuit.
 
 #widget("circuit", kind: "grover")[
-  The circuit applies $Hn$, then repeats the sign oracle $Opm$ and the diffusion gate $D$ for $T$ times, and measures every qubit.
+  The circuit applies $Hn$, then applies the sign oracle $Opm$ and the diffusion gate $D$ a total of $T$ times each, and measures every qubit.
 ]
 
 #example(title: "Finding the Marked Input of AND with One Query")[
@@ -179,7 +179,7 @@ Here is the algorithm drawn as a circuit.
   $
     1/2 (1, 1, 1, -1) arrow.r.long (0, 0, 0, 1) = ket(11).
   $
-  Measuring outputs the marked input $11$ with probability $1$, using only one query. Classically, by @prop-classical-search, one query finds an unknown marked input among four with probability only at most $1/2$.
+  Measuring outputs the marked input $11$ with probability $1$, using only one query. Classically, by @prop-classical-search, one query finds an unknown marked input among four with probability at most $1/2$.
 ] <ex-grover-and>
 
 Here is a small interactive widget that runs the algorithm one query and one diffusion gate at a time.
@@ -301,6 +301,14 @@ Note that this quantity is close to $1$ when the angle $(2 t + 1) theta$ is clos
 
 Recall that from @prop-classical-search we know a classical algorithm making $pi/4 sqrt(N)$ queries finds the marked input with probability at most about $1\/sqrt(N)$.
 
+#remark(title: "The Cost of the Other Gates")[
+  In the query model, we only count the uses of the sign oracle, so the Hadamard gates and $Z_0$ are free. They are also cheap in reality, if we count each gate that acts on at most three qubits as one step, as is standard for quantum circuits.
+
+  Note that a quantum computer never multiplies the $N times N$ matrix $Hn$ by a vector, which is what costs a classical computer $O(N log N)$ operations with the fast Walsh-Hadamard transform. Instead, it applies $H$ to each of the $n$ qubits, one gate each, and all $N$ amplitudes change at once. As we saw in #link("/walsh-hadamard/qubits")[the chapter on qubits], $Hn$ takes only $n$ gates. Similarly, $Z_0$ flips the sign exactly when at least one of the $n$ bits is $1$, which takes a circuit of $O(n)$ gates.
+
+  Therefore, each iteration costs $O(n) = O(log N)$ gates, and Grover's algorithm uses $O(sqrt(N) log N)$ gates in total, so the quadratic speedup over a classical search also holds for the running time, up to a logarithmic factor. See Section 2.6 of Lecture 4 of O'Donnell and Wright's _Quantum Computation_ lecture notes.
+]
+
 It is important to note that, unlike in classical search, more queries do not always help. If we keep iterating, the point rotates past the top of the circle, and the probability of success goes down again.
 
 #example(title: "Too Many Iterations")[
@@ -326,7 +334,7 @@ Everything in the algorithm other than the queries is built from the Hadamard ga
 #remark[
   This chapter follows Lecture 4 of O'Donnell and Wright's _Quantum Computation_ lecture notes. The search problem is Definition 2.1 there, the algorithm and inversion about the mean are from Section 2.4, and the construction $D = Hn Z_0 Hn$ is from Section 2.6. The lecture defines the diffusion gate as inversion about the mean and only proves a constant probability of success in Section 2.5. The view of the diffusion gate through Fourier coefficients, keeping the coefficient at $0$ and negating the others, is from Section 2.4.2 of Lecture 6. The algorithm itself is due to Grover in _A Fast Quantum Mechanical Algorithm for Database Search_ (1996), and the exact formula $sin^2 ((2 t + 1) theta)$ is due to Boyer, Brassard, Høyer and Tapp in _Tight Bounds on Quantum Searching_ (1998).
 
-  We omitted two things. First, choosing $T$ requires knowing the number $k$ of marked inputs. The same paper shows how to search efficiently without knowing $k$. Second, Grover's algorithm is optimal: every quantum algorithm for unstructured search needs $Omega(sqrt(N))$ queries. This is due to Bennett, Bernstein, Brassard and Vazirani in _Strengths and Weaknesses of Quantum Computing_ (1997), and Beals, Buhrman, Cleve, Mosca and de Wolf later proved it using polynomials in _Quantum Lower Bounds by Polynomials_ (2001).
+  We omitted two things. First, choosing $T$ requires knowing the number $k$ of marked inputs. Boyer, Brassard, Høyer and Tapp also show how to search efficiently without knowing $k$. Second, Grover's algorithm is optimal: every quantum algorithm for unstructured search needs $Omega(sqrt(N))$ queries. This is due to Bennett, Bernstein, Brassard and Vazirani in _Strengths and Weaknesses of Quantum Computing_ (1997), and Beals, Buhrman, Cleve, Mosca and de Wolf later proved it using polynomials in _Quantum Lower Bounds by Polynomials_ (2001).
 ]
 
 = Exercises
@@ -338,9 +346,5 @@ Everything in the algorithm other than the queries is built from the Hadamard ga
 ] <exr-search-with-certainty>
 
 #exercise(title: "Arbitrarily Low Constant Error")[
-  Let $epsilon$ be a constant such that $0 < epsilon < 1/2$. Show that there exists a quantum algorithm with query complexity $O(sqrt(N))$ that solves the unstructured search problem with error probability at most $epsilon$.
+  Let $epsilon$ be a constant such that $0 < epsilon < 1/2$. Show that there exists a quantum algorithm with query complexity $O(sqrt(N))$ that solves the unstructured search problem (given $k$) with error probability at most $epsilon$.
 ] <exr-low-constant-error>
-
-#exercise(title: "Bonus: Can We Reduce the Error?")[
-  Does there exist a quantum algorithm with query complexity $o(N)$ that solves the unstructured search problem with error probability at most $2^(-N)$?
-] <exr-reduce-the-error>

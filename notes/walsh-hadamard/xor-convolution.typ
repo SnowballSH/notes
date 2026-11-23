@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "XOR convolution",
-  summary: "Application of the fast Walsh-Hadamard transform: recovering the function from Fourier coefficients and efficiently computing the XOR convolution.",
+  summary: "An application of the fast Walsh-Hadamard transform: computing the XOR convolution of two functions quickly.",
   order: 3,
 )
 
@@ -17,7 +17,7 @@ or the discrete Fourier transform, where we defined
 $
   (A * B)_k = sum_(i=0)^k a_i b_(k-i)
 $
-for polynomials $A(x) = sum_(i=0)^(m-1) a_i x^i$ and $B(x) = sum_(i=0)^(m-1) b_i x^i$, where the coefficients $a_i$ and $b_i$ with $i >= m$ are taken to be $0$. In all these cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
+for polynomials $A(x) = sum_(i=0)^(m-1) a_i x^i$ and $B(x) = sum_(i=0)^(m-1) b_i x^i$, where the coefficients $a_i$ and $b_i$ with $i >= m$ are taken to be $0$. In both cases, we are looking for the final "coefficient" or "value" at a certain position when two functions are "multiplied" together.
 
 The same definition seems intuitive for functions $FF_2^n -> RR$, where two inputs in $FF_2^n$ are added with $xor$. In this world, we can also talk about which two vectors sum to a certain desired "index", and compute the final coefficient of the convolution at that index. This motivates the following definition.
 
@@ -28,7 +28,7 @@ The same definition seems intuitive for functions $FF_2^n -> RR$, where two inpu
   $
 ] <def-xor-convolution>
 
-In other words, $(f * g)(z)$ is the sum of all possible values of $f(x) g(y)$ such that $x xor y = z$.
+In other words, $(f * g)(z)$ is the sum of $f(x) g(y)$ over all pairs $(x, y)$ such that $x xor y = z$.
 
 Here is a small interactive widget that shows every product $f(x) g(y)$ for two-bit inputs, grouped by $x xor y$.
 
