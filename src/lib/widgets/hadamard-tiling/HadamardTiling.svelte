@@ -3,7 +3,7 @@ import { flushSync, onDestroy, untrack } from "svelte";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
-import { gridPath } from "./grid.ts";
+import { entryLabels, gridPath } from "./grid.ts";
 import { hadamardTile } from "./matrix.ts";
 
 const Stage = { Whole: 0, Shrunk: 1, Spread: 2, Flipped: 3 } as const;
@@ -46,6 +46,8 @@ onDestroy(() => {
 });
 
 const order = $derived(2 ** exponent);
+/** The height of an entry as a fraction of the board, which is its size in units of the matrix of order 1. */
+const entrySize = 0.055;
 const resting = $derived(stage === Stage.Whole || stage === Stage.Flipped);
 const gridLevel = $derived(stage === Stage.Flipped ? level + 1 : level);
 
@@ -167,6 +169,14 @@ function moveByArrowKey(event: KeyboardEvent): void {
 			aria-hidden="true"
 		>
 			<path d={gridPath(gridLevel)} />
+			{#each entryLabels(gridLevel) as entry (`${entry.x} ${entry.y}`)}
+				<text
+					x={entry.x}
+					y={entry.y}
+					font-size={entrySize * 2 ** gridLevel}
+					class:negative={entry.negative}>{entry.text}</text
+				>
+			{/each}
 		</svg>
 	</div>
 	{#snippet caption()}
@@ -210,6 +220,15 @@ svg.resting {
 	opacity: 1;
 	/* The delay is the time the tiles take to enlarge, so the lines never cross moving tiles. */
 	transition: opacity 200ms ease-out 1000ms;
+}
+text {
+	fill: black;
+	font-family: var(--fui-font-mono);
+	text-anchor: middle;
+	dominant-baseline: central;
+}
+text.negative {
+	fill: white;
 }
 path {
 	fill: none;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { finestGridLevel, gridPath } from "./grid.ts";
+import { entryLabels, finestGridLevel, gridPath } from "./grid.ts";
 
 describe("gridPath", () => {
 	it("has nothing to separate in the 1 by 1 matrix", () => {
@@ -19,5 +19,32 @@ describe("gridPath", () => {
 		expect(gridPath(3).match(/M/g)).toHaveLength(14);
 		expect(gridPath(4)).toBe("");
 		expect(gridPath(6)).toBe("");
+	});
+});
+
+describe("entryLabels", () => {
+	it("writes the 2 by 2 matrix with its one negative entry bottom right", () => {
+		expect(entryLabels(1)).toEqual([
+			{ x: 0.5, y: 0.5, text: "1", negative: false },
+			{ x: 1.5, y: 0.5, text: "1", negative: false },
+			{ x: 0.5, y: 1.5, text: "1", negative: false },
+			{ x: 1.5, y: 1.5, text: "−1", negative: true },
+		]);
+	});
+
+	it("writes the rows of the 4 by 4 matrix", () => {
+		const rows = [0, 1, 2, 3].map((row) =>
+			entryLabels(2)
+				.filter((entry) => entry.y === row + 0.5)
+				.map((entry) => entry.text)
+				.join(" "),
+		);
+		expect(rows).toEqual(["1 1 1 1", "1 −1 1 −1", "1 1 −1 −1", "1 −1 −1 1"]);
+	});
+
+	it("leaves the 8 by 8 matrix and larger ones unlabelled", () => {
+		expect(entryLabels(0)).toHaveLength(1);
+		expect(entryLabels(3)).toEqual([]);
+		expect(entryLabels(6)).toEqual([]);
 	});
 });
