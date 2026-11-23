@@ -142,25 +142,10 @@ const diffusionId = $props.id();
 }
 button {
 	justify-self: center;
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
 }
 button[aria-expanded="true"] {
 	border-color: var(--fui-accent);
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 @media print {
 	button {

@@ -1,10 +1,42 @@
-import type { APIRequestContext, Page } from "@playwright/test";
+import { type APIRequestContext, type Locator, type Page, test } from "@playwright/test";
 
 export const phone = { width: 390, height: 800 } as const;
 
 const internalLink = /href="(\/(?!\/)[^"#?]*)["#?]/g;
 const sitemapAddress = /<loc>https?:\/\/[^/]+(\/[^<]*)<\/loc>/g;
 const isPage = (path: string): boolean => !path.startsWith("/_app/") && !/\.[a-z0-9]+$/.test(path);
+
+/** No page of the built site has what a test looks for; any other failure is a broken site. */
+export class NoSuchPageError extends Error {
+	override readonly name = "NoSuchPageError";
+}
+
+export type PlacedProps = Readonly<Record<string, unknown>>;
+
+const widgetTag = /<notes-widget\b[^>]*>/g;
+const entities: Readonly<Record<string, string>> = {
+	"&quot;": '"',
+	"&#34;": '"',
+	"&#39;": "'",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&amp;": "&",
+};
+
+const attribute = (tag: string, name: string): string | undefined =>
+	tag
+		.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1]
+		?.replace(/&(?:quot|#34|#39|lt|gt|amp);/g, (entity) => entities[entity] ?? entity);
+
+/** The props each placement of a widget was written with, in the order of the page. */
+export function placedProps(html: string, name: string): PlacedProps[] {
+	return (html.match(widgetTag) ?? [])
+		.filter((tag) => attribute(tag, "name") === name)
+		.map((tag): PlacedProps => {
+			const props: unknown = JSON.parse(attribute(tag, "props") ?? "{}");
+			return typeof props === "object" && props !== null ? { ...props } : {};
+		});
+}
 
 /** Every page of the built site: those the sitemap lists, and those its own links lead to. */
 export async function sitePages(request: APIRequestContext): Promise<string[]> {
@@ -29,7 +61,49 @@ export async function pageWith(request: APIRequestContext, ...markers: string[])
 		const html = await (await request.get(path)).text();
 		if (markers.every((marker) => html.includes(marker))) return path;
 	}
-	throw new Error(`no page of the site contains ${markers.join(" and ")}`);
+	throw new NoSuchPageError(`no page of the site contains ${markers.join(" and ")}`);
+}
+
+interface Placement {
+	path: string;
+	/** The position of the placement among the widgets of the same name on its page. */
+	index: number;
+}
+
+async function placementOf(
+	request: APIRequestContext,
+	name: string,
+	placed: (props: PlacedProps) => boolean,
+): Promise<Placement> {
+	for (const path of await sitePages(request)) {
+		const html = await (await request.get(path)).text();
+		const index = placedProps(html, name).findIndex(placed);
+		if (index >= 0) return { path, index };
+	}
+	throw new NoSuchPageError(`no page of the site has the ${name} widget looked for`);
+}
+
+/**
+ * Opens the first page that places a widget, optionally only a placement with certain props, and
+ * returns that widget. The test is skipped when no page places one, and fails on any other error.
+ */
+export async function openWidget(
+	page: Page,
+	request: APIRequestContext,
+	name: string,
+	placed: (props: PlacedProps) => boolean = () => true,
+): Promise<Locator> {
+	try {
+		const { path, index } = await placementOf(request, name, placed);
+		await page.goto(path, { waitUntil: "networkidle" });
+		return page.locator(`notes-widget[name="${name}"]`).nth(index);
+	} catch (error) {
+		test.skip(
+			error instanceof NoSuchPageError,
+			`no published note has the ${name} widget this test needs`,
+		);
+		throw error;
+	}
 }
 
 export const markers = {

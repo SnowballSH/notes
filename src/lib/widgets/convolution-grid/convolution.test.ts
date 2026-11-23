@@ -3,7 +3,6 @@ import { walshHadamard } from "../../quantum/fourier";
 import {
 	canStep,
 	defaults,
-	formatInteger,
 	inputLabel,
 	inputs,
 	pairsWithXor,
@@ -102,12 +101,6 @@ describe("text", () => {
 	it("labels inputs as two bits", () => {
 		expect(inputs.map(inputLabel)).toEqual(["00", "01", "10", "11"]);
 		expect(resultName(2)).toBe("(f ∗ g)(10)");
-	});
-
-	it("writes negative integers with a minus sign", () => {
-		expect(formatInteger(-9)).toBe("−9");
-		expect(formatInteger(0)).toBe("0");
-		expect(formatInteger(36)).toBe("36");
 	});
 
 	it("writes out the sum for one z", () => {

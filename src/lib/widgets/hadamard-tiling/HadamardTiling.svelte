@@ -181,26 +181,6 @@ function moveByArrowKey(event: KeyboardEvent): void {
 button {
 	width: 2.75rem;
 	height: 2.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 .board {
 	position: relative;

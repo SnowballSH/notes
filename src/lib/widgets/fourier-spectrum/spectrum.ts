@@ -104,9 +104,6 @@ export function polynomialTerms(coefficients: readonly Coefficient[]): string[] 
 	});
 }
 
-export const formatPolynomial = (coefficients: readonly Coefficient[]): string =>
-	`f = ${polynomialTerms(coefficients).join(" ")}`;
-
 /** Every coefficient after the name of its subset, for a reader who cannot see the bars. */
 export const describeSpectrum = (coefficients: readonly Coefficient[]): string =>
 	coefficients

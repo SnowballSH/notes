@@ -4,6 +4,7 @@ import { formatAmplitude } from "./format";
 import {
 	basisState,
 	bitstring,
+	bitstrings,
 	hadamardOnEveryQubit,
 	probabilities,
 	qubitCount,
@@ -121,5 +122,14 @@ describe("bitstring", () => {
 		expect(bitstring(0, 3)).toBe("000");
 		expect(bitstring(5, 3)).toBe("101");
 		expect(bitstring(1, 1)).toBe("1");
+	});
+});
+
+describe("bitstrings", () => {
+	it("lists every bitstring of a length in counting order", () => {
+		expect(bitstrings(1)).toEqual(["0", "1"]);
+		expect(bitstrings(2)).toEqual(["00", "01", "10", "11"]);
+		expect(bitstrings(3)).toHaveLength(8);
+		expect(bitstrings(3)[5]).toBe("101");
 	});
 });

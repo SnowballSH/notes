@@ -1,7 +1,8 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { mean } from "../../quantum/grover.ts";
-import { bitstring } from "../../quantum/state.ts";
+import SignedBar from "../../quantum/SignedBar.svelte";
+import { bitstrings } from "../../quantum/state.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
@@ -23,7 +24,7 @@ let marked = $state(untrack(() => defaultMarked(qubits)));
 let steps = $state(0);
 
 const size = $derived(2 ** qubits);
-const labels = $derived(Array.from({ length: size }, (_, index) => bitstring(index, qubits)));
+const labels = $derived(bitstrings(qubits));
 const current = $derived(stateAfter(qubits, marked, steps));
 const next = $derived(nextStep(steps));
 
@@ -61,7 +62,7 @@ function take(step: Step): void {
 				<div class="column" class:marked={marked === index} role="listitem">
 					<span class="spoken">{describeColumn(label, amplitude, marked === index)}</span>
 					<span class="plot" aria-hidden="true">
-						<span class="bar" style:--amplitude={amplitude}></span>
+						<SignedBar {amplitude} tone={marked === index ? "accent" : "neutral"} />
 					</span>
 					<span class="amplitude" class:negative={amplitude < 0} aria-hidden="true">
 						{shownAmplitude(amplitude)}
@@ -94,30 +95,12 @@ function take(step: Step): void {
 	gap: 0.5rem;
 }
 button {
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 button.due {
 	border-color: var(--fui-accent);
 	font-weight: 600;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible,
 label:has(:focus-visible) {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
@@ -157,20 +140,8 @@ label:has(:focus-visible) {
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
 		no-repeat;
 }
-.bar {
-	position: absolute;
+.plot :global(.bar) {
 	inset: 0 18% 50%;
-	/* A negative scale mirrors the bar below the axis, so a sign flip animates through zero. */
-	transform: scaleY(var(--amplitude));
-	transform-origin: bottom;
-	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
-	background: var(--fui-ink-muted);
-	transition:
-		transform 250ms ease-out,
-		background-color 250ms ease-out;
-}
-.marked .bar {
-	background: var(--fui-accent);
 }
 .amplitude {
 	color: var(--fui-accent-strong);
@@ -229,17 +200,7 @@ input {
 	margin: 0;
 	font-family: var(--fui-font-mono);
 }
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-}
 @media (prefers-reduced-motion: reduce) {
-	.bar,
 	.level {
 		transition: none;
 	}
@@ -247,9 +208,6 @@ input {
 @media print {
 	.controls {
 		display: none;
-	}
-	.bar {
-		print-color-adjust: exact;
 	}
 }
 </style>

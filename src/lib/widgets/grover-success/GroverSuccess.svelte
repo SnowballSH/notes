@@ -33,6 +33,7 @@ const props: WidgetProps<typeof definition> = $props();
 let qubits = $state(untrack(() => props.qubits));
 let marked = $state(untrack(() => clampMarked(props.marked, 2 ** props.qubits)));
 let queries = $state(untrack(() => bestIterations(2 ** props.qubits, marked)));
+let announcement = $state(untrack(() => describe(2 ** props.qubits, marked, queries)));
 let dragging = $state(false);
 let picture = $state<SVGSVGElement>();
 
@@ -53,6 +54,14 @@ function search(nextQubits: number, nextMarked: number): void {
 	qubits = nextQubits;
 	marked = clampMarked(nextMarked, nextSize);
 	queries = bestIterations(nextSize, marked);
+	announcement = describe(nextSize, marked, queries);
+}
+
+/** The slider speaks its own value, so the caption falls silent instead of repeating it. */
+function choose(next: number): void {
+	if (next === queries) return;
+	queries = next;
+	announcement = "";
 }
 
 function mark(by: 1 | -1): void {
@@ -62,7 +71,7 @@ function mark(by: 1 | -1): void {
 function pointTo(event: PointerEvent): void {
 	const box = picture?.getBoundingClientRect();
 	if (!box || box.width === 0) return;
-	queries = queryAt(((event.clientX - box.left) / box.width) * plot.width, last);
+	choose(queryAt(((event.clientX - box.left) / box.width) * plot.width, last));
 }
 
 function startDrag(event: PointerEvent & { currentTarget: SVGGElement }): void {
@@ -77,7 +86,7 @@ function pressKey(event: KeyboardEvent): void {
 	const next = keyedQuery(queries, event.key, last);
 	if (next === undefined) return;
 	event.preventDefault();
-	queries = next;
+	choose(next);
 }
 </script>
 
@@ -184,7 +193,7 @@ function pressKey(event: KeyboardEvent): void {
 		</g>
 	</svg>
 	{#snippet caption()}
-		<p class="spoken">{summary}</p>
+		<p class="spoken">{announcement}</p>
 		<p class="now" aria-hidden="true">{annotate(size, marked, queries)}</p>
 	{/snippet}
 </WidgetFrame>
@@ -224,26 +233,8 @@ input[type="range"] {
 }
 button {
 	width: 2.75rem;
-	min-height: 2.75rem;
 	padding: 0;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible,
 input:focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
@@ -352,15 +343,6 @@ p {
 }
 .chooser:focus-visible .ring {
 	opacity: 1;
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 .now {
 	font-family: var(--fui-font-mono);

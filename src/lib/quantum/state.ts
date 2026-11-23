@@ -37,3 +37,7 @@ export const probabilities = (state: Amplitudes): number[] =>
 
 export const bitstring = (index: number, qubits: number): string =>
 	index.toString(2).padStart(qubits, "0");
+
+/** Every bitstring of the given length, in the order of the amplitudes. */
+export const bitstrings = (qubits: number): string[] =>
+	Array.from({ length: 2 ** qubits }, (_, index) => bitstring(index, qubits));

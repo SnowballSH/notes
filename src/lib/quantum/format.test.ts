@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAmplitude, formatDyadic, ket, listAmplitudes } from "./format";
+import { formatAmplitude, formatDyadic, formatSigned, ket, listAmplitudes } from "./format";
 
 describe("formatDyadic", () => {
 	it("writes a fraction over a power of two in lowest terms", () => {
@@ -73,5 +73,24 @@ describe("listAmplitudes", () => {
 describe("ket", () => {
 	it("wraps a label", () => {
 		expect(ket("01")).toBe("|01⟩");
+	});
+});
+
+describe("formatSigned", () => {
+	it("puts a minus sign on a negative number and no plus on a positive one", () => {
+		expect(formatSigned(-9)).toBe("−9");
+		expect(formatSigned(-24)).toBe("−24");
+		expect(formatSigned(4)).toBe("4");
+		expect(formatSigned(36)).toBe("36");
+		expect(formatSigned(-0.25)).toBe("−1/4");
+		expect(formatSigned(0.5)).toBe("1/2");
+		expect(formatSigned(-1 / 3)).toBe("−0.33");
+	});
+
+	it("gives zero no sign, whether it is negative zero or a trace of rounding", () => {
+		expect(formatSigned(0)).toBe("0");
+		expect(formatSigned(-0)).toBe("0");
+		expect(formatSigned(-1e-13)).toBe("0");
+		expect(formatSigned(-0.001)).toBe("0");
 	});
 });

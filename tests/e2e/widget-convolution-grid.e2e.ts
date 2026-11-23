@@ -1,16 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { openWidget } from "./pages";
 
 test("the convolution grid sums the cells that share an XOR", async ({ page, request }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="convolution-grid"');
-	} catch {
-		test.skip(true, "no published note uses convolution-grid yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="convolution-grid"]').first();
+	const widget = await openWidget(page, request, "convolution-grid");
 	const sum = widget.locator("figcaption");
 	const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	const chip = (name: string) =>

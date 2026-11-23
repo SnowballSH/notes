@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { openWidget } from "./pages";
 
 /** What the widget shows for the all-ones marked input, by the number of qubits it was placed with. */
 const expected: Record<
@@ -24,15 +24,7 @@ test("one Grover iteration negates the marked amplitude and reflects every bar a
 	page,
 	request,
 }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="grover-mean"');
-	} catch {
-		test.skip(true, "no published note uses grover-mean yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="grover-mean"]').first();
+	const widget = await openWidget(page, request, "grover-mean");
 	const caption = widget.locator("figcaption .shown");
 	const spoken = widget.locator("figcaption .spoken");
 	const query = widget.getByRole("button", { name: "Query", exact: true });

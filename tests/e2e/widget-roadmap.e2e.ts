@@ -1,32 +1,39 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { walshHadamard } from "../../src/lib/outlines/walsh-hadamard.ts";
+import type { SearchEntry } from "../../src/lib/search/types.ts";
+import { dependencies } from "../../src/lib/widgets/roadmap/dependencies.ts";
+import { needsText, roadmapSections } from "../../src/lib/widgets/roadmap/sections.ts";
+import { openWidget } from "./pages";
 
-test("the roadmap links its published sections and ends at Grover's algorithm", async ({
+test("the roadmap links a section exactly when its note is published", async ({
 	page,
 	request,
 }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="roadmap"');
-	} catch (error) {
-		if (!(error instanceof Error && error.message.includes("no page of the site contains"))) {
-			throw error;
+	const widget = await openWidget(page, request, "roadmap");
+	const items = widget.getByRole("list", { name: "Course roadmap" }).getByRole("listitem");
+
+	const index = await request.get("/search.json");
+	expect(index.ok()).toBe(true);
+	const entries: SearchEntry[] = await index.json();
+	const published = new Set(entries.flatMap(({ kind, href }) => (kind === "note" ? [href] : [])));
+	const sections = roadmapSections(walshHadamard, dependencies);
+	const linked = sections.filter(({ href }) => href !== null && published.has(href));
+
+	await expect(items).toHaveCount(sections.length);
+	await expect(items.getByRole("link")).toHaveCount(linked.length);
+
+	for (const [position, { number, title, href, needs }] of sections.entries()) {
+		const item = items.nth(position);
+		const link = item.getByRole("link");
+		await expect(item.locator(".number")).toHaveText(number);
+		await expect(item.locator(".title")).toHaveText(title);
+		if (href !== null && published.has(href)) {
+			await expect(link).toHaveAttribute("href", href);
+			await expect(link).toHaveAccessibleName(`${number} ${title}`);
+		} else {
+			await expect(link).toHaveCount(0);
 		}
-		test.skip(true, "no published note uses roadmap yet");
-		return;
+		if (needs.length > 0) await expect(item.locator(".spoken")).toHaveText(needsText(needs));
+		else await expect(item.locator(".spoken")).toHaveCount(0);
 	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="roadmap"]').first();
-	const sections = widget.getByRole("list", { name: "Course roadmap" }).getByRole("listitem");
-
-	await expect(sections).toHaveCount(7);
-	await expect(
-		sections.nth(0).getByRole("link", { name: "2.1 Boolean functions and Fourier expansions" }),
-	).toHaveAttribute("href", "/walsh-hadamard/boolean-functions");
-
-	const planned = sections.filter({ hasText: "Classical applications" });
-	await expect(planned).toHaveText(/^2\.4\s+Classical applications\s*, needs 2\.1 and 2\.3$/);
-	await expect(planned.getByRole("link")).toHaveCount(0);
-
-	await expect(sections.last()).toContainText("4.1 Grover's algorithm");
 });

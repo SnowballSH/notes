@@ -3,9 +3,10 @@ import { formatAmplitude } from "../../quantum/format";
 import { fourierCoefficients } from "../../quantum/fourier";
 import {
 	depthBelowZero,
+	describeMeasurement,
 	describeOutcomes,
 	emptyTally,
-	formatProbability,
+	formatExactProbability,
 	fourierSampling,
 	measure,
 	presetNames,
@@ -141,30 +142,40 @@ describe("the room a row needs below its axis", () => {
 	});
 });
 
-describe("formatProbability", () => {
+describe("formatExactProbability", () => {
 	it("writes the square of an amplitude as an exact fraction", () => {
-		expect(formatProbability(0.75 ** 2, 3)).toBe("9/16");
-		expect(formatProbability(0.25 ** 2, 3)).toBe("1/16");
-		expect(formatProbability(0.875 ** 2, 4)).toBe("49/64");
-		expect(formatProbability(1 / 8, 3)).toBe("1/8");
-		expect(formatProbability(0.25, 2)).toBe("1/4");
+		expect(formatExactProbability(0.75 ** 2, 3)).toBe("9/16");
+		expect(formatExactProbability(0.25 ** 2, 3)).toBe("1/16");
+		expect(formatExactProbability(0.875 ** 2, 4)).toBe("49/64");
+		expect(formatExactProbability(1 / 8, 3)).toBe("1/8");
+		expect(formatExactProbability(0.25, 2)).toBe("1/4");
 	});
 
 	it("writes certainty and impossibility as whole numbers", () => {
-		expect(formatProbability(1, 4)).toBe("1");
-		expect(formatProbability(0, 2)).toBe("0");
+		expect(formatExactProbability(1, 4)).toBe("1");
+		expect(formatExactProbability(0, 2)).toBe("0");
 	});
 
 	it("gives fractions that sum to one for every preset", () => {
 		for (const preset of presetNames) {
 			const shown = sampled(presetTable(preset, 3)).map((amplitude) =>
-				formatProbability(amplitude ** 2, 3),
+				formatExactProbability(amplitude ** 2, 3),
 			);
 			const total = shown
 				.map((fraction) => fraction.split("/").map(Number))
 				.reduce((sum, [top = 0, bottom = 1]) => sum + top / bottom, 0);
 			expect(total).toBeCloseTo(1, 12);
 		}
+	});
+});
+
+describe("describeMeasurement", () => {
+	it("changes when the same outcome is measured again", () => {
+		const once = recorded(emptyTally(4), 3);
+		const twice = recorded(once, 3);
+		expect(describeMeasurement("11", once, 3)).toBe("Measured 11: 1 of 1 so far.");
+		expect(describeMeasurement("11", twice, 3)).toBe("Measured 11: 2 of 2 so far.");
+		expect(describeMeasurement("01", recorded(twice, 1), 1)).toBe("Measured 01: 1 of 3 so far.");
 	});
 });
 

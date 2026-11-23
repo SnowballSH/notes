@@ -42,6 +42,12 @@ export function formatAmplitude(amplitude: number): string {
 	return `${amplitude < 0 ? minusSign : "+"}${magnitude}`;
 }
 
+/** A number with a minus sign when negative and no plus; one that is shown as zero has no sign. */
+export function formatSigned(value: number): string {
+	const magnitude = formatDyadic(Math.abs(value));
+	return value < 0 && magnitude !== "0" ? `${minusSign}${magnitude}` : magnitude;
+}
+
 /** The amplitudes that are not shown as zero, each after its label, for reading aloud. */
 export const listAmplitudes = (labels: readonly string[], amplitudes: readonly number[]): string =>
 	amplitudes

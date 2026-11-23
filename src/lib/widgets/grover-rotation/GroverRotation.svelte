@@ -65,6 +65,7 @@ const tip = $derived(pointAt(shown.current));
 const shaftEnd = $derived(arrowBase(shown.current));
 const square = $derived(heightSquare(shown.current));
 const turnLabelAt = $derived(turnLabelPoint(turnedFrom, angle));
+const turnedTo = $derived(Math.min(shown.current, angle));
 
 function goTo(next: number): void {
 	if (next < 0 || next > last || next === iterations) return;
@@ -170,8 +171,8 @@ function changeMarked(by: 1 | -1): void {
 		<text class="best-label" x={bestLabel.x} y={bestLabel.y} text-anchor={bestLabel.anchor}>
 			T = {best}
 		</text>
-		{#if shown.current > turnedFrom}
-			<path class="turn" d={arcPath(turnedFrom, shown.current, arcDistance)} />
+		{#if turnedTo > turnedFrom}
+			<path class="turn" d={arcPath(turnedFrom, turnedTo, arcDistance)} />
 		{/if}
 		<line class="rise" x1={tip.x} y1={centre.y} x2={tip.x} y2={tip.y} />
 		<line class="arrow" x1={centre.x} y1={centre.y} x2={shaftEnd.x} y2={shaftEnd.y} />
@@ -204,30 +205,12 @@ function changeMarked(by: 1 | -1): void {
 }
 button {
 	min-width: 2.75rem;
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 button.iterate {
 	border-color: var(--fui-accent);
 	font-weight: 600;
 }
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible,
 input:focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
@@ -342,14 +325,6 @@ p {
 	margin: 0;
 	font-family: var(--fui-font-mono);
 	font-variant-numeric: tabular-nums;
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 @media print {
 	.controls {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeCircuit, diffusionDescription, kinds, signOracle } from "./circuit";
+import { describeCircuit, diffusionDescription } from "./circuit";
 
 describe("the circuits read out", () => {
 	it("reads Fourier sampling from left to right, with its one query in the middle", () => {
@@ -18,10 +18,5 @@ describe("the circuits read out", () => {
 		expect(diffusionDescription).toBe(
 			"The diffusion gate D on n qubits: a Hadamard gate on every qubit, then Z0, which flips the sign of every basis state except |0…0⟩, then a Hadamard gate on every qubit.",
 		);
-	});
-
-	it("names the oracle with a superscript sign and a subscript function", () => {
-		expect(signOracle).toEqual({ base: "O", sup: "±", sub: "f" });
-		expect(kinds).toEqual(["fourier-sampling", "grover"]);
 	});
 });

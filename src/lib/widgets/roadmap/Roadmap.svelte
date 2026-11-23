@@ -17,8 +17,12 @@ const gaps = layerCount(placements) - 1;
 
 let published = $state<ReadonlySet<string>>(new Set());
 
-onMount(async () => {
-	published = await loadPublishedNotes((address) => fetch(address));
+onMount(() => {
+	const controller = new AbortController();
+	loadPublishedNotes((address) => fetch(address, { signal: controller.signal })).then((notes) => {
+		if (!controller.signal.aborted) published = notes;
+	});
+	return () => controller.abort();
 });
 </script>
 
@@ -149,15 +153,6 @@ onMount(async () => {
 .box a:focus-visible {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
-}
-.box .spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 .connector {
 	position: relative;

@@ -1,4 +1,4 @@
-import { formatDyadic, minusSign } from "../../quantum/format.ts";
+import { formatSigned } from "../../quantum/format.ts";
 import { bitstring } from "../../quantum/state.ts";
 
 /** A function on bitstrings as its table of values, indexed by the bitstrings read as binary numbers. */
@@ -41,11 +41,8 @@ export const stepped = (values: Values, index: number, change: number): Values =
 		: values.with(index, value + change);
 };
 
-export const formatInteger = (value: number): string =>
-	`${value < 0 ? minusSign : ""}${formatDyadic(Math.abs(value))}`;
-
 const formatFactor = (value: number): string =>
-	value < 0 ? `(${formatInteger(value)})` : formatInteger(value);
+	value < 0 ? `(${formatSigned(value)})` : formatSigned(value);
 
 export const resultName = (z: number): string => `(f ∗ g)(${inputLabel(z)})`;
 
@@ -54,5 +51,5 @@ export function sumExpression(f: Values, g: Values, z: number): string {
 	const terms = pairsWithXor(z, f.length).map(
 		({ x, y }) => `${formatFactor(f[x] ?? 0)}·${formatFactor(g[y] ?? 0)}`,
 	);
-	return `${terms.join(" + ")} = ${formatInteger(total(productsFor(f, g, z)))}`;
+	return `${terms.join(" + ")} = ${formatSigned(total(productsFor(f, g, z)))}`;
 }

@@ -1,5 +1,7 @@
 <script lang="ts">
 import { untrack } from "svelte";
+import { formatSigned } from "../../quantum/format.ts";
+import { clamp } from "../../quantum/numbers.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import {
@@ -8,9 +10,9 @@ import {
 	butterflyInto,
 	columnName,
 	defaultInput,
+	describeInput,
 	describeLevel,
 	equation,
-	formatValue,
 	levels,
 	movedNode,
 	type Node,
@@ -61,7 +63,7 @@ const isSource = (node: Node): boolean =>
 	(node.index === sources.upper || node.index === sources.lower);
 
 function step(by: 1 | -1): void {
-	level = Math.min(Math.max(level + by, 0), levels);
+	level = clamp(level + by, 0, levels);
 }
 
 function focusNode(node: Node): void {
@@ -174,7 +176,7 @@ function pressKey(event: KeyboardEvent, node: Node): void {
 							height={nodeHeight}
 							rx="4"
 						/>
-						<text class="value" {x} {y}>{formatValue(value)}</text>
+						<text class="value" {x} {y}>{formatSigned(value)}</text>
 					</g>
 				{:else}
 					<rect
@@ -205,7 +207,7 @@ function pressKey(event: KeyboardEvent, node: Node): void {
 		</span>
 	</p>
 	{#snippet caption()}
-		<p class="spoken">{describeLevel(level)}</p>
+		<p class="spoken"><span>{describeLevel(level)}</span> <span>{describeInput(input)}</span></p>
 		<p class="now">{traced ? equation(columns, traced) : ""}</p>
 	{/snippet}
 </WidgetFrame>
@@ -217,33 +219,12 @@ function pressKey(event: KeyboardEvent, node: Node): void {
 	gap: 0.375rem;
 }
 button {
-	min-height: 2.75rem;
 	padding: 0 0.625rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
 	font-size: 0.9375rem;
-	cursor: pointer;
 }
 button.primary {
 	border-color: var(--fui-accent);
 	font-weight: 600;
-}
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 p {
 	margin: 0;
@@ -355,14 +336,6 @@ p {
 }
 .swatch .wire {
 	stroke-width: 1.5;
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 .now {
 	min-height: 1.5em;

@@ -1,6 +1,6 @@
 import { formatAmplitude, formatDyadic, minusSign } from "../../quantum/format.ts";
 import {
-	invertAboutMean,
+	groverIteration,
 	mean,
 	signOracle,
 	successProbability,
@@ -23,10 +23,9 @@ export const defaultMarked = (qubits: number): number =>
 export function stateAfter(qubits: number, marked: number, steps: number): Amplitudes {
 	const markedInputs = new Set([marked]);
 	let state = uniformSuperposition(qubits);
-	for (let step = 0; step < steps; step++) {
-		state = nextStep(step) === "query" ? signOracle(state, markedInputs) : invertAboutMean(state);
-	}
-	return settled(state);
+	for (let iteration = 0; iteration < iterationsDone(steps); iteration++)
+		state = groverIteration(state, markedInputs);
+	return settled(nextStep(steps) === "diffuse" ? signOracle(state, markedInputs) : state);
 }
 
 const countIterations = (count: number): string =>

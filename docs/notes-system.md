@@ -311,18 +311,27 @@ its list of amplitudes, and the Hadamard gate on every qubit), `fourier.ts`
 success probability of Grover's algorithm), `sampling.ts` (a measurement
 outcome, drawn from a random source the caller passes, so the tests are
 deterministic), `drawing.ts` (what a pointer position or a key makes of an
-amplitude, and normalising a drawing) and `format.ts` (an amplitude as
-`+1/√2` rather than 0.71).
+amplitude, and normalising a drawing), `format.ts` (an amplitude as `+1/√2`
+rather than 0.71, and `formatSigned` for a number with a minus sign and no
+plus) and `numbers.ts` (`clamp`). `bitstrings` in `state.ts` lists the labels
+of the basis states.
+
+`SignedBar.svelte` is the bar every bar chart of amplitudes draws: it rises
+in the accent colour for a positive amplitude and hangs in the warm colour
+for a negative one, and animates through zero when the sign flips. Its `tone`
+is `"neutral"` or `"accent"` where the colour marks something other than the
+sign. The bar has no place of its own: the component that uses it puts it in
+a positioned box and sets its `inset`, with a rule on `:global(.bar)`.
 
 `AmplitudeChart.svelte` is the picture they share. Each basis state is a
-column: a bar that rises from the axis in the accent colour for a positive
-amplitude and hangs below it in the warm colour for a negative one, the
-amplitude written under it with its sign, and a cell that darkens with the
-probability, which is why two amplitudes of opposite sign get the same cell.
-Given an `ondraw` handler the bars become sliders. `highlighted` draws the
-named columns in the accent colour and the rest in a neutral one, `level`
-draws a dashed line at an amplitude with a label such as μ, and `dense` drops
-the numbers so that sixteen columns fit.
+column: a `SignedBar` on an axis, the amplitude written under it with its
+sign, and a cell that darkens with the probability, which is why two
+amplitudes of opposite sign get the same cell; `showProbabilityCells={false}`
+leaves the cells out. Given an `ondraw` handler the bars become sliders.
+`highlighted` underlines the named columns and sets their labels in bold, and
+`level` draws a dashed line at an amplitude with a label such as μ. Its
+hidden descriptions use the frame's `.spoken` class, so it is only used
+inside a `WidgetFrame`.
 
 - `#widget("unflipping-coin")` takes one qubit and one classical coin through
   the same steps: "Apply H" also tosses the coin, and "Measure" also looks at

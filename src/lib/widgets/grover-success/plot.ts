@@ -1,5 +1,6 @@
 import { formatDyadic } from "../../quantum/format.ts";
 import { bestIterations, successProbability } from "../../quantum/grover.ts";
+import { clamp } from "../../quantum/numbers.ts";
 
 export const plot = { width: 288, height: 190, left: 28, right: 12, top: 18, bottom: 34 } as const;
 
@@ -25,9 +26,6 @@ export interface Tick {
 	label: string;
 	at: number;
 }
-
-const clamp = (value: number, low: number, high: number): number =>
-	Math.min(Math.max(value, low), high);
 
 const rounded = (value: number): number => Number(value.toFixed(2));
 
