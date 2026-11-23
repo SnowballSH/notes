@@ -10,9 +10,7 @@ import { courseNoteStatuses, neighboursByOrder } from "#lib/server/typst/notes.t
 import { type Course, findCourse, outlineHref } from "#lib/site/courses.ts";
 
 export interface NoteNavigation extends NoteNeighbours {
-	/** The registered course the note belongs to, with the address of its outline. */
 	course: { title: string; href: string } | null;
-	/** The note's number in the outline; null when no linked section leads to it. */
 	number: string | null;
 }
 
@@ -20,12 +18,10 @@ export interface CourseOverview {
 	slug: string;
 	title: string;
 	description: string;
-	/** The address of the course's outline page. */
 	href: string;
 	parts: ContentsPart[];
 }
 
-/** The outline of a registered course checked against the notes on disk. */
 export async function loadCourseContents(
 	course: Course,
 	options: ContentsOptions,
@@ -46,10 +42,6 @@ export async function courseOverview(
 	};
 }
 
-/**
- * Where a note sits and what it leads to: by the outline for a registered course, and by
- * the notes' `order` metadata otherwise.
- */
 export async function noteNavigation(
 	ref: NoteRef,
 	options: ContentsOptions,

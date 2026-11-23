@@ -19,8 +19,7 @@ import {
 } from "./experiment.ts";
 
 const shownSteps = 6;
-const bits = ["0", "1"] as const;
-const kets = bits.map(ket);
+const kets = [ket("0"), ket("1")];
 
 let experiment = $state.raw<Experiment>(start);
 
@@ -103,7 +102,7 @@ const interfering = $derived(
 	flex-wrap: wrap;
 	gap: 0.5rem;
 }
-/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
+/* Restates the resting look so that the frame's hover style does not stick after a tap. */
 button {
 	padding: 0 1rem;
 	border-color: var(--fui-line);
@@ -166,7 +165,7 @@ p {
 	width: min(100% - var(--chart-gutter), var(--chart-width));
 	height: calc(2 * var(--chart-unit));
 	margin-inline-start: var(--chart-gutter);
-	/* Leaves the room the qubit's row of amplitudes takes, so both sets of bars rise from one line. */
+	/* The height of the qubit's row of amplitudes, so both sets of bars rise from one line. */
 	margin-bottom: calc(1.5 * var(--chart-text) - 0.25rem);
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
 		no-repeat;
@@ -190,7 +189,6 @@ p {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0 1.5rem;
-	/* One line is kept for the terms; a measurement's result takes its place in the caption. */
 	min-height: 1.5em;
 	align-content: start;
 	color: var(--fui-ink-secondary);

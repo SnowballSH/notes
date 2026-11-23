@@ -25,7 +25,7 @@ const initial = afterQueryingAnd(count);
 const labels = bitstrings(count);
 const zeroColumn = [0];
 
-/** The drawing as its bars were last set: keys edit it, and the state is its normalisation. */
+// The drawing as its bars were last set: keys edit it, and the state is its normalisation.
 let sketch = $state.raw<readonly number[]>(initial);
 let drawn = $state.raw<Amplitudes>(initial);
 let stroke = $state.raw<readonly number[]>();
@@ -198,7 +198,7 @@ p {
 	border: 1px dashed var(--fui-ink-muted);
 	border-radius: var(--fui-radius-xs);
 }
-/* Eight columns and the gutter do not both fit a phone, so there the label sits on the line's end. */
+/* Eight columns and the gutter do not both fit a phone. */
 @container (max-width: 22rem) {
 	.crowded {
 		--gutter: 0rem;

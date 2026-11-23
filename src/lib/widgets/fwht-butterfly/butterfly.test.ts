@@ -17,7 +17,7 @@ import {
 	wiresInto,
 } from "./butterfly";
 
-/** The loop of the note, keeping a copy of the array after each value of half. */
+// The loop in the note, keeping a copy of the array after each value of half.
 function loopSnapshots(input: readonly number[]): number[][] {
 	const f = [...input];
 	const size = f.length;

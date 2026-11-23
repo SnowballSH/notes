@@ -8,7 +8,6 @@ const fold = (text: string): string =>
 
 const words = (query: string): string[] => fold(query).split(/\s+/).filter(Boolean);
 
-/** Lower is better; undefined when some word of the query appears nowhere in the entry. */
 function score(entry: SearchEntry, query: string[]): number | undefined {
 	const label = fold(entry.label);
 	const context = fold(entry.context);
@@ -19,13 +18,10 @@ function score(entry: SearchEntry, query: string[]): number | undefined {
 }
 
 export interface SearchResults {
-	/** The best matches, at most `limit` of them. */
 	shown: SearchEntry[];
-	/** How many entries matched in all. */
 	total: number;
 }
 
-/** The entries that contain every word of the query, best first, keeping their order among equals. */
 export function search(entries: readonly SearchEntry[], query: string, limit = 12): SearchResults {
 	const wanted = words(query);
 	if (wanted.length === 0) return { shown: [], total: 0 };

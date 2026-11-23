@@ -1,6 +1,6 @@
 import type { Attachment } from "svelte/attachments";
 
-export type Sign = 1 | -1;
+type Sign = 1 | -1;
 
 export function hadamardSign(row: number, column: number): Sign {
 	let shared = row & column;

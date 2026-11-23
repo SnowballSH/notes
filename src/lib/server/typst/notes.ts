@@ -1,6 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { isName, noteHref } from "#lib/notes/names.ts";
+import { isName, noteHref, notePath } from "#lib/notes/names.ts";
 import { placeholderSummary } from "#lib/notes/template.ts";
 import type {
 	CompiledNote,
@@ -9,7 +9,7 @@ import type {
 	NoteNeighbours,
 	NoteRef,
 } from "#lib/notes/types.ts";
-import type { NoteStatus } from "#lib/outlines/contents.ts";
+import { type NoteStatus, noteLink } from "#lib/outlines/contents.ts";
 import { siteOrigin } from "#lib/site/title.ts";
 import { compileHtml, compilePdf, readMetadata, TypstError } from "./cli";
 import { refineNoteHtml } from "./refine";
@@ -24,9 +24,6 @@ import { assertValidWidgets } from "./widgets";
 
 const notesRoot = resolve("notes");
 const libraryDirectory = "lib";
-
-/** A note's source as error messages name it: relative to the repository. */
-const shownPath = ({ course, slug }: NoteRef): string => `notes/${course}/${slug}.typ`;
 
 function sourcePath({ course, slug }: NoteRef): string {
 	return join(notesRoot, course, `${slug}.typ`);
@@ -82,14 +79,13 @@ export function parseMeta(headers: readonly unknown[], file: string): NoteMeta {
 
 const metaByFile = new Map<string, { modified: number; meta: Promise<NoteMeta> }>();
 
-/** A note's metadata, read again only when its file has changed. */
 async function readMeta(ref: NoteRef): Promise<NoteMeta> {
 	const file = sourcePath(ref);
 	const modified = (await stat(file)).mtimeMs;
 	const cached = metaByFile.get(file);
 	if (cached?.modified === modified) return cached.meta;
 	const meta = readMetadata(notesRoot, file, "note-meta").then((value) =>
-		parseMeta(value, shownPath(ref)),
+		parseMeta(value, notePath(ref)),
 	);
 	metaByFile.set(file, { modified, meta });
 	meta.catch(() => metaByFile.delete(file));
@@ -100,7 +96,6 @@ async function withMeta(refs: NoteRef[]): Promise<(NoteRef & { meta: NoteMeta })
 	return Promise.all(refs.map(async (ref) => ({ ...ref, meta: await readMeta(ref) })));
 }
 
-/** Every note that is not a draft: the pages of the published site. */
 export async function publishedNotes(): Promise<NoteRef[]> {
 	const notes = await withMeta(await listNotes());
 	return notes.filter((note) => !note.meta.draft).map(({ course, slug }) => ({ course, slug }));
@@ -110,7 +105,6 @@ async function notesOfCourse(course: string): Promise<(NoteRef & { meta: NoteMet
 	return withMeta((await listNotes()).filter((note) => note.course === course));
 }
 
-/** Every note of one course and whether it is a draft, in no particular order. */
 export async function courseNoteStatuses(course: string): Promise<NoteStatus[]> {
 	return (await notesOfCourse(course)).map(({ slug, meta }) => ({
 		slug,
@@ -119,11 +113,7 @@ export async function courseNoteStatuses(course: string): Promise<NoteStatus[]> 
 	}));
 }
 
-/**
- * The published notes of a course that has no outline, in reading order, which is that of
- * their `order` metadata.
- */
-export async function notesByOrder(course: string): Promise<(NoteRef & NoteLink)[]> {
+async function notesByOrder(course: string): Promise<(NoteRef & NoteLink)[]> {
 	const notes = (await notesOfCourse(course)).filter((note) => !note.meta.draft);
 	notes.sort((a, b) => a.meta.order - b.meta.order);
 	const tied = notes.findIndex((note, index) => note.meta.order === notes[index + 1]?.meta.order);
@@ -145,9 +135,7 @@ export async function neighboursByOrder(ref: NoteRef): Promise<NoteNeighbours> {
 	const notes = await notesByOrder(ref.course);
 	const index = notes.findIndex((note) => note.slug === ref.slug);
 	if (index < 0) return { previous: null, next: null };
-	const link = (note: NoteLink | undefined): NoteLink | null =>
-		note ? { title: note.title, href: note.href, number: note.number } : null;
-	return { previous: link(notes[index - 1]), next: link(notes[index + 1]) };
+	return { previous: noteLink(notes[index - 1]), next: noteLink(notes[index + 1]) };
 }
 
 function extract(document: string, pattern: RegExp, file: string): string {
@@ -156,7 +144,6 @@ function extract(document: string, pattern: RegExp, file: string): string {
 	return captured;
 }
 
-/** Changes whenever a file the note may read does: the note's course directory and the library. */
 async function sourceStamp(ref: NoteRef): Promise<string> {
 	const directories = [join(notesRoot, ref.course), join(notesRoot, libraryDirectory)];
 	const files = (
@@ -179,12 +166,12 @@ async function compile(ref: NoteRef): Promise<CompiledNote> {
 		readMeta(ref),
 	]);
 	const { problems, ...refined } = refineNoteHtml(
-		extract(document, /<body>([\s\S]*)<\/body>/, shownPath(ref)),
+		extract(document, /<body>([\s\S]*)<\/body>/, notePath(ref)),
 	);
 	if (problems.length > 0) {
-		throw new TypstError(problems.map((problem) => `${shownPath(ref)}: ${problem}`).join("\n"));
+		throw new TypstError(problems.map((problem) => `${notePath(ref)}: ${problem}`).join("\n"));
 	}
-	assertValidWidgets(refined.html, shownPath(ref));
+	assertValidWidgets(refined.html, notePath(ref));
 	return {
 		...ref,
 		meta,
@@ -194,7 +181,6 @@ async function compile(ref: NoteRef): Promise<CompiledNote> {
 	};
 }
 
-/** A note compiled to HTML, compiled again only when one of its sources has changed. */
 async function compileSource(ref: NoteRef): Promise<CompiledNote> {
 	const file = sourcePath(ref);
 	const stamp = await sourceStamp(ref);
@@ -206,12 +192,11 @@ async function compileSource(ref: NoteRef): Promise<CompiledNote> {
 	return note;
 }
 
-/** The note a `noteref` names: one of the same course, or `course/slug` for another course. */
 function referencedNote(from: NoteRef, name: string): NoteRef {
 	const parts = name.split("/");
 	if (parts.length > 2 || !parts.every(isName)) {
 		throw new TypstError(
-			`${shownPath(from)}: noteref names "${name}"; write "<slug>" for a note of the same course or "<course>/<slug>", without a leading slash`,
+			`${notePath(from)}: noteref names "${name}"; write "<slug>" for a note of the same course or "<course>/<slug>", without a leading slash`,
 		);
 	}
 	const [first, second] = parts;
@@ -224,17 +209,17 @@ async function referenceTarget(
 	from: CompiledNote,
 	reference: NoteReference,
 ): Promise<ReferenceTarget> {
-	const file = shownPath(from);
+	const file = notePath(from);
 	const ref = referencedNote(from, reference.note);
 	if (!(await hasNote(ref))) {
 		throw new TypstError(
-			`${file}: noteref names the note "${reference.note}", but ${shownPath(ref)} does not exist`,
+			`${file}: noteref names the note "${reference.note}", but ${notePath(ref)} does not exist`,
 		);
 	}
 	const target = await compileSource(ref);
 	if (target.meta.draft && !from.meta.draft) {
 		throw new TypstError(
-			`${file}: noteref points into ${shownPath(ref)}, which is a draft; publish it first or make this note a draft`,
+			`${file}: noteref points into ${notePath(ref)}, which is a draft; publish it first or make this note a draft`,
 		);
 	}
 	const labelled = target.cards.filter((candidate) => candidate.labelled);
@@ -244,7 +229,7 @@ async function referenceTarget(
 		const has =
 			labels === "" ? "no labelled cards" : `no card with that label; its labels are ${labels}`;
 		throw new TypstError(
-			`${file}: noteref points at <${reference.target}> in ${shownPath(ref)}, which has ${has}`,
+			`${file}: noteref points at <${reference.target}> in ${notePath(ref)}, which has ${has}`,
 		);
 	}
 	return { href: `${noteHref(ref)}#${card.id}`, name: card.name };
@@ -252,7 +237,6 @@ async function referenceTarget(
 
 const referenceKey = ({ note, target }: NoteReference): string => `${note}#${target}`;
 
-/** The card each `noteref` of a note points at, by the reference's note and label. */
 async function referenceTargets(note: CompiledNote): Promise<Map<string, ReferenceTarget>> {
 	const references = noteReferences(note.html);
 	const outcomes = await Promise.allSettled(
@@ -270,34 +254,31 @@ async function referenceTargets(note: CompiledNote): Promise<Map<string, Referen
 	);
 }
 
-/** A note ready to serve: compiled, with its references to other notes resolved. */
 export async function compileNote(ref: NoteRef): Promise<CompiledNote> {
 	const note = await compileSource(ref);
 	if (noteReferences(note.html).length === 0) return note;
 	const [untitled] = wordlessReferencesInTitles(note.html);
 	if (untitled) {
 		throw new TypstError(
-			`${shownPath(ref)}: a noteref in a heading or a card's title needs its own words: #noteref("${untitled.note}", <${untitled.target}>)[...]`,
+			`${notePath(ref)}: a noteref in a heading or a card's title needs its own words: #noteref("${untitled.note}", <${untitled.target}>)[...]`,
 		);
 	}
 	const targets = await referenceTargets(note);
 	const html = linkNoteReferences(note.html, (reference) => {
 		const target = targets.get(referenceKey(reference));
 		if (!target) {
-			throw new TypstError(`${shownPath(ref)}: unresolved noteref ${referenceKey(reference)}`);
+			throw new TypstError(`${notePath(ref)}: unresolved noteref ${referenceKey(reference)}`);
 		}
 		return target;
 	});
 	return { ...note, html };
 }
 
-/** What the site knows about a note's place, for the pages of its PDF edition. */
 export interface NotePlacement {
 	courseTitle: string | null;
 	number: string | null;
 }
 
-/** The inputs print.typ reads: the note's place on the site and where its `noteref`s lead. */
 export async function printInputs(
 	ref: NoteRef,
 	{ courseTitle, number }: NotePlacement,
@@ -322,7 +303,6 @@ export interface PrintedNote {
 	warnings: string[];
 }
 
-/** A note's PDF edition: every proof shown, no widgets, and links that lead back to the site. */
 export async function printNote(ref: NoteRef, placement: NotePlacement): Promise<PrintedNote> {
 	const [meta, inputs] = await Promise.all([readMeta(ref), printInputs(ref, placement)]);
 	const { stdout: pdf, warnings } = await compilePdf(notesRoot, sourcePath(ref), inputs);

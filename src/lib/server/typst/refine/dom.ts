@@ -19,6 +19,11 @@ export function elementsNamed(root: ParentNode, ...names: string[]): Element[] {
 	return descendants(root).filter((element) => names.includes(element.tagName));
 }
 
+export function ancestors(node: ChildNode): Element[] {
+	const parent = node.parentNode ?? undefined;
+	return isElement(parent) ? [parent, ...ancestors(parent)] : [];
+}
+
 export const childElements = (parent: ParentNode): Element[] => parent.childNodes.filter(isElement);
 
 export function textOf(node: ChildNode): string {
@@ -36,8 +41,14 @@ export function setAttribute(element: Element, name: string, value: string): voi
 	else element.attrs.push({ name, value });
 }
 
+const classesOf = (element: Element): string[] =>
+	(attribute(element, "class") ?? "").split(/\s+/).filter(Boolean);
+
+export const hasClass = (element: Element, name: string): boolean =>
+	classesOf(element).includes(name);
+
 export function addClass(element: Element, name: string): void {
-	const classes = (attribute(element, "class") ?? "").split(/\s+/).filter(Boolean);
+	const classes = classesOf(element);
 	if (!classes.includes(name)) setAttribute(element, "class", [...classes, name].join(" "));
 }
 
@@ -85,7 +96,6 @@ export function insertAfter(reference: ChildNode, node: ChildNode): void {
 	else adapter.appendChild(parent, node);
 }
 
-/** Moves a run of adjacent siblings into `wrapper`, which takes their place. */
 export function wrap(nodes: ChildNode[], wrapper: Element): void {
 	const [first] = nodes;
 	const parent = first?.parentNode;
@@ -102,7 +112,6 @@ export function siblings(node: ChildNode): { previous?: ChildNode; next?: ChildN
 	return { ...(previous && { previous }), ...(next && { next }) };
 }
 
-/** Splits a text node at `offset` and returns the two halves, omitting an empty one. */
 export function splitText(node: TextNode, offset: number): { head?: TextNode; tail?: TextNode } {
 	if (offset <= 0) return { tail: node };
 	if (offset >= node.value.length) return { head: node };
@@ -110,8 +119,6 @@ export function splitText(node: TextNode, offset: number): { head?: TextNode; ta
 	if (!parent) throw new Error("cannot split a detached text node");
 	const tail: TextNode = { nodeName: "#text", value: node.value.slice(offset), parentNode: null };
 	node.value = node.value.slice(0, offset);
-	const following = siblings(node).next;
-	if (following) adapter.insertBefore(parent, tail, following);
-	else adapter.appendChild(parent, tail);
+	insertAfter(node, tail);
 	return { head: node, tail };
 }

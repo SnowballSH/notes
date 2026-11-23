@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { openWidget } from "./pages";
 
-/** What the widget shows for the all-ones marked input, by the number of qubits it was placed with. */
 const expected: Record<
 	number,
 	{ start: string; queried: string[]; iterated: string[]; shown: string[]; scales: string[] }

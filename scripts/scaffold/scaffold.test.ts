@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { notePath } from "../../src/lib/notes/names.ts";
 import {
 	nextOrder,
 	noteNextSteps,
-	notePath,
 	noteRequestProblem,
 	noteSource,
 	parseNoteArguments,

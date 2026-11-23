@@ -50,7 +50,6 @@ const classicalAt = $derived(classicalLabel(size, last));
 const bestAt = $derived(xOf(best, last));
 const baseline = yOf(0);
 
-/** A new search starts at its best count, where the curve peaks. */
 function search(nextQubits: number, nextMarked: number): void {
 	const nextSize = 2 ** nextQubits;
 	qubits = nextQubits;
@@ -59,7 +58,7 @@ function search(nextQubits: number, nextMarked: number): void {
 	announcement = spokenSummary(nextSize, marked, queries);
 }
 
-/** The slider speaks its own value, so the caption falls silent instead of repeating it. */
+// The slider speaks its own value, so the caption falls silent.
 function choose(next: number): void {
 	if (next === queries) return;
 	queries = next;
@@ -307,7 +306,7 @@ svg {
 	font-family: var(--fui-font-sans);
 	fill: var(--fui-ink-muted);
 	text-anchor: middle;
-	/* A halo in the page colour keeps the word readable where the curve passes behind it. */
+	/* A halo keeps the word readable where the curve passes behind it. */
 	stroke: var(--fui-surface-base);
 	stroke-width: 3;
 	paint-order: stroke;
@@ -316,7 +315,7 @@ svg {
 	cursor: pointer;
 	/* A sideways drag picks a number of queries; an up or down one still scrolls the page. */
 	touch-action: pan-y;
-	/* The .ring circle is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
+	/* .ring is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
 	outline: none;
 }
 .chooser.dragging {

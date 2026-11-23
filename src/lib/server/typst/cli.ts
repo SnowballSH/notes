@@ -10,13 +10,11 @@ export class TypstError extends Error {}
 
 interface TypstOutput<Stdout = string> {
 	stdout: Stdout;
-	/** Typst's diagnostics for a run that succeeded, each with the place it points at. */
 	warnings: string[];
 }
 
 const exportIsExperimental = /^warning: html export is under active development/;
 
-/** Typst's diagnostics, one string each, without the standing warning about HTML export. */
 function diagnostics(stderr: string): string[] {
 	return stderr
 		.split(/^(?=(?:warning|error): )/m)
@@ -66,10 +64,6 @@ export async function compileHtml(root: string, file: string): Promise<TypstOutp
 	return typst(["compile", "--features", "html", "--format", "html", "--root", root, file, "-"]);
 }
 
-/**
- * A note laid out on pages. `inputs` reach the note as `sys.inputs`. Only the fonts that
- * ship with Typst are used, so every machine sets the same pages.
- */
 export async function compilePdf(
 	root: string,
 	file: string,
@@ -80,6 +74,7 @@ export async function compilePdf(
 		"compile",
 		"--format",
 		"pdf",
+		// Only Typst's bundled fonts, so that every machine sets the same pages.
 		"--ignore-system-fonts",
 		"--root",
 		root,
@@ -90,7 +85,6 @@ export async function compilePdf(
 	return { stdout: new Uint8Array(stdout), warnings };
 }
 
-/** The value of every metadata element with the given label, in document order. */
 export async function readMetadata(root: string, file: string, label: string): Promise<unknown[]> {
 	await assertVersion();
 	const expression = `query(<${label}>).map(found => found.value)`;

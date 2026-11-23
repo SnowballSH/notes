@@ -13,7 +13,7 @@ import {
 	wrap,
 } from "./dom";
 
-export const unbreakableClass = "nobreak";
+const unbreakableClass = "nobreak";
 const proofEndMark = "\u25a1";
 
 const isInlineMath = (node: ChildNode | undefined): node is Element =>
@@ -34,7 +34,6 @@ function isLastContent(node: ChildNode): boolean {
 const isProofEnd = (node: ChildNode | undefined): node is Element =>
 	isInlineMath(node) && textOf(node) === proofEndMark && isLastContent(node);
 
-/** The text glued to the front of `node`: the unspaced end of the text before it. */
 function leadingText(node: ChildNode): ChildNode | undefined {
 	const { previous } = siblings(node);
 	if (!isText(previous)) return undefined;
@@ -42,7 +41,6 @@ function leadingText(node: ChildNode): ChildNode | undefined {
 	return start < 0 ? undefined : splitText(previous, start).tail;
 }
 
-/** The text glued to the back of `node`: the unspaced start of the text after it. */
 function trailingText(node: ChildNode): ChildNode | undefined {
 	const { next } = siblings(node);
 	if (!isText(next)) return undefined;
@@ -50,7 +48,6 @@ function trailingText(node: ChildNode): ChildNode | undefined {
 	return length === 0 ? undefined : splitText(next, length).head;
 }
 
-/** A proof-end mark that follows `node` after nothing but spaces, with those spaces. */
 function proofEndAfter(node: ChildNode): ChildNode[] {
 	const { next } = siblings(node);
 	if (isProofEnd(next)) return [next];
@@ -59,7 +56,6 @@ function proofEndAfter(node: ChildNode): ChildNode[] {
 	return isProofEnd(mark) ? [next, mark] : [];
 }
 
-/** What the proof-end mark should stay with: the last word before it, or the element it follows. */
 function lastWordBefore(node: ChildNode): ChildNode[] {
 	const { previous } = siblings(node);
 	if (isInlineElement(previous)) return [previous];
@@ -77,15 +73,11 @@ function keepTogether(nodes: ChildNode[]): void {
 	if (nodes.length > 1) wrap(nodes, createElement("span", { class: unbreakableClass }));
 }
 
-const isKeptTogether = (node: ChildNode): boolean =>
-	isElement(node.parentNode ?? undefined) &&
-	attribute(node.parentNode as Element, "class") === unbreakableClass;
+function isKeptTogether(node: ChildNode): boolean {
+	const parent = node.parentNode ?? undefined;
+	return isElement(parent) && attribute(parent, "class") === unbreakableClass;
+}
 
-/**
- * A browser may break a line between a formula and the text that touches it, which
- * strands a comma or the end-of-proof square at the start of a line. Each formula is
- * wrapped with the text attached to it so that they stay on one line.
- */
 export function keepMathWithAttachedText(root: ParentNode): void {
 	for (const formula of elementsNamed(root, "math").filter(isInlineMath)) {
 		if (isKeptTogether(formula)) continue;

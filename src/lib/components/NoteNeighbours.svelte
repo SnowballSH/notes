@@ -2,7 +2,6 @@
 import type { NoteLink, NoteNeighbours } from "#lib/notes/types.ts";
 
 interface Props extends NoteNeighbours {
-	/** The outline of the note's course, for a course that has one. */
 	outline: { title: string; href: string } | null;
 }
 

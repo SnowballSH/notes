@@ -18,7 +18,6 @@ function parseProps(json: string): Record<string, unknown> | undefined {
 	}
 }
 
-/** What is wrong with the widgets a compiled note uses, one sentence per problem. */
 export function widgetProblems(
 	html: string,
 	definitions: Definitions = widgetDefinitions,
@@ -37,7 +36,6 @@ export function widgetProblems(
 	});
 }
 
-/** Fails the note's build when it uses a widget that does not exist or passes it props it does not take. */
 export function assertValidWidgets(html: string, file: string, definitions?: Definitions): void {
 	const problems = widgetProblems(html, definitions);
 	if (problems.length > 0) {

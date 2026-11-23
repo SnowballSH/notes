@@ -4,7 +4,6 @@ import type { PropSchema, PropValue } from "./contract.ts";
 const typstValue = (value: PropValue): string =>
 	typeof value === "string" ? typstString(value) : String(value);
 
-/** The line that puts a widget in a note, passing only the props that differ from their defaults. */
 export function widgetUsage(
 	name: string,
 	schema: PropSchema,

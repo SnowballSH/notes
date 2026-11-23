@@ -10,6 +10,7 @@ import PdfLink from "#lib/components/PdfLink.svelte";
 import { closableBlocks, rememberBlocks } from "#lib/notes/blocks.ts";
 import { fitEquations } from "#lib/notes/equations.ts";
 import { zoomableFigures } from "#lib/notes/figures.ts";
+import { noteHref } from "#lib/notes/names.ts";
 import { prepareForPrint } from "#lib/notes/print.ts";
 import { recordLastRead } from "#lib/notes/progress.ts";
 import { referencePreviews } from "#lib/notes/references.ts";
@@ -27,7 +28,7 @@ const trail = $derived([
 ]);
 
 $effect(() => {
-	if (!note.meta.draft) recordLastRead(note.course, `/${note.course}/${note.slug}`);
+	if (!note.meta.draft) recordLastRead(note.course, noteHref(note));
 });
 </script>
 

@@ -340,12 +340,7 @@
 	text-align: center;
 }
 
-/*
- * A wide equation scrolls inside its wrapper. The shadows mark an edge that hides more of
- * it: the first two layers move with the content and cover the shadow at whichever end
- * has been reached. On a phone the wrapper reaches into the gutter beside it, so that an
- * equation a few pixels too wide is still shown whole.
- */
+/* The two local layers scroll with the content and cover the edge shadow at whichever end has been reached. */
 .note .equation {
 	--edge-shade: color-mix(in srgb, var(--fui-ink) 20%, transparent);
 	max-width: calc(100% + var(--gutter-start) + var(--gutter-end));
@@ -381,13 +376,11 @@
 	background: var(--note-surface);
 }
 
-/* A worked example or an exercise is set apart without the fill that marks a statement to remember. */
 .note :is(.card-example, .card-exercise) {
 	--note-surface: var(--fui-surface-base);
 	background: none;
 }
 
-/* A remark and a proof are asides: a rule down the side, and no box. */
 .note .card-remark,
 .note details {
 	--note-surface: var(--fui-surface-base);
@@ -418,7 +411,6 @@
 	position: relative;
 }
 
-/* The link to a card or a section stays out of the way until its heading is pointed at. */
 .note .anchor {
 	color: var(--fui-ink-muted);
 	text-decoration: none;

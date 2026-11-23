@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { openWidget } from "./pages";
 
-/** What AND leaves on 00…0 after the second layer of Hadamard gates: 1 − 2/N and its square. */
+// AND leaves 1 − 2/N on 00…0 after the second layer of Hadamard gates.
 const andAtZero: Record<number, string> = {
 	2: "amplitude +1/2, probability 1/4",
 	3: "amplitude +3/4, probability 9/16",

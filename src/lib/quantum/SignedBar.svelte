@@ -1,8 +1,6 @@
 <script lang="ts">
 interface Props {
-	/** From -1 to 1: the height of the bar as a fraction of the box its parent gives it. */
 	amplitude: number;
-	/** Whether the colour tells the sign of the amplitude or is the same for both signs. */
 	tone?: "sign" | "neutral" | "accent";
 }
 

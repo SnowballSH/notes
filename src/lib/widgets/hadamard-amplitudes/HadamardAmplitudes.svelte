@@ -26,7 +26,7 @@ import { mostQubits } from "./definition.ts";
 const { qubits }: WidgetProps<typeof definition> = $props();
 const initial = presets.basis(2 ** untrack(() => qubits));
 
-/** The drawing as its bars were last set: keys edit it, and the state is its normalisation. */
+// The drawing as its bars were last set: keys edit it, and the state is its normalisation.
 let sketch = $state.raw<readonly number[]>(initial);
 let drawn = $state.raw<Amplitudes>(initial);
 let stroke = $state.raw<readonly number[]>();
@@ -164,7 +164,7 @@ function applyGates(): void {
 	text-align: center;
 	font-family: var(--fui-font-mono);
 }
-/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
+/* Restates the resting look so that the frame's hover style does not stick after a tap. */
 button {
 	padding: 0 0.875rem;
 	border-color: var(--fui-line);
@@ -201,7 +201,7 @@ button.apply {
 	gap: 0.5rem;
 	justify-items: center;
 	align-content: start;
-	/* Narrower than the label it holds, which runs into the padding: eight columns need the width. */
+	/* Narrower than its label, which runs into the padding, so that eight columns fit. */
 	--chart-gutter: 0.75rem;
 	padding: 0.75rem 0.5rem;
 	border: 1px solid var(--fui-line);

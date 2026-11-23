@@ -4,7 +4,6 @@ const hoverDelay = 250;
 const leaveDelay = 200;
 const gap = 8;
 
-/** The block a reference points at, when it is one worth previewing: a card, a figure or an equation. */
 function referenced(link: HTMLAnchorElement, container: Element): HTMLElement | undefined {
 	const id = decodeURIComponent(link.hash.slice(1));
 	const target = id === "" ? null : document.getElementById(id);
@@ -35,12 +34,6 @@ function place(preview: HTMLElement, link: HTMLElement, container: HTMLElement):
 	preview.style.top = `${top - bounds.top}px`;
 }
 
-/**
- * A reference such as "Proposition 1" shows the block it points at beside the reader's
- * place, so they need not jump away and find their line again. A mouse shows it on hover
- * and a keyboard on focus, and following the link still jumps. On a touch screen the first
- * tap shows it, with a link to go there.
- */
 export const referencePreviews: Attachment = (container) => {
 	if (!(container instanceof HTMLElement)) return;
 	const preview = document.createElement("aside");

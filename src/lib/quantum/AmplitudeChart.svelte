@@ -4,24 +4,16 @@ import { formatAmplitude, formatDyadic, minusSign } from "./format.ts";
 import SignedBar from "./SignedBar.svelte";
 
 interface Props {
-	/** What the chart shows, for a reader who cannot see it. */
 	name: string;
 	labels: readonly string[];
 	probabilities: readonly number[];
-	/** Left out for something that has probabilities but no amplitudes, such as a coin. */
 	amplitudes?: readonly number[];
-	/** Writes each probability in its cell and labels the row of cells "Pr". */
 	showProbabilityValues?: boolean;
-	/** Makes the bars drawable: called with a column and the amplitude the pointer is at. */
 	ondraw?: (index: number, amplitude: number) => void;
 	ondrawend?: () => void;
-	/** Called with a column and a key pressed on it; returns whether the key did something. */
 	onkey?: (index: number, key: string) => boolean;
-	/** Columns to pick out, such as the zero frequency: each is underlined and its label is bold. */
 	highlighted?: readonly number[];
-	/** Whether each column has the cell that darkens with its probability. */
 	showProbabilityCells?: boolean;
-	/** An amplitude to rule across the plots, such as the mean, with a short label. */
 	level?: { value: number; label: string };
 }
 
@@ -175,7 +167,7 @@ const describe = (index: number): string =>
 	line-height: 1.5;
 	color: var(--fui-ink);
 }
-/* The row label hangs in a gutter left of the columns, so it never shifts them off the bars. */
+/* The row label hangs in this gutter so that it never shifts the columns off the bars. */
 .labelled {
 	--gutter: var(--chart-gutter, 1rem);
 	width: min(100% - var(--gutter), var(--columns) * 3.25rem);
@@ -252,7 +244,7 @@ const describe = (index: number): string =>
 	font-size: 0.625rem;
 	letter-spacing: -0.03em;
 }
-/* Level with the cells: above the padding, the line of labels and the gap that lie under them. */
+/* Above the padding, the line of labels and the gap under the cells. */
 .row-label {
 	position: absolute;
 	inset: auto 100% calc(1.5em + 0.25rem) auto;

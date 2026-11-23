@@ -3,7 +3,6 @@ import { ket } from "../../quantum/format.ts";
 export const kinds = ["fourier-sampling", "grover"] as const;
 export type Kind = (typeof kinds)[number];
 
-/** The name of a gate: a letter with an optional superscript and subscript. */
 export interface GateLabel {
 	base: string;
 	sup?: string;
@@ -28,7 +27,6 @@ const descriptions: Record<Kind, string> = {
 	grover: `${start}: ${hadamards}, then T repetitions of the sign oracle of f followed by the diffusion gate D, ${end}.`,
 };
 
-/** The circuit read out from left to right. */
 export const describeCircuit = (kind: Kind): string => descriptions[kind];
 
 export const diffusionDescription = `The diffusion gate D on n qubits: ${hadamards}, then Z0, which flips the sign of every basis state except ${ket("0…0")}, then ${hadamards}.`;

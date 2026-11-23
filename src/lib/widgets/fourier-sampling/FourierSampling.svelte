@@ -2,7 +2,6 @@
 import { untrack } from "svelte";
 import { formatAmplitude, minusSign } from "../../quantum/format.ts";
 import SignedBar from "../../quantum/SignedBar.svelte";
-import type { Random } from "../../quantum/sampling.ts";
 import { type Amplitudes, bitstrings } from "../../quantum/state.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
@@ -40,11 +39,7 @@ const presetLabels: Record<PresetName, string> = {
 	"one-marked": "One marked",
 };
 
-const {
-	qubits,
-	preset,
-	random = Math.random,
-}: WidgetProps<typeof definition> & { random?: Random } = $props();
+const { qubits, preset }: WidgetProps<typeof definition> = $props();
 
 let table = $state.raw<TruthTable>(untrack(() => presetTable(preset, qubits)));
 let tally = $state.raw(emptyTally(2 ** untrack(() => qubits)));
@@ -73,7 +68,7 @@ function setTable(next: TruthTable): void {
 }
 
 function measureOnce(): void {
-	latest = measure(stages.afterSecondHadamard, random);
+	latest = measure(stages.afterSecondHadamard, Math.random);
 	tally = recorded(tally, latest);
 }
 </script>

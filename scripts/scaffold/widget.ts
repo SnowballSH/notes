@@ -19,7 +19,6 @@ export interface ScaffoldFile {
 export interface WidgetScaffold {
 	directory: string;
 	files: ScaffoldFile[];
-	/** The line that puts the new widget in a note. */
 	usage: string;
 }
 

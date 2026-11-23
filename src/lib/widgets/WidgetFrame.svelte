@@ -3,7 +3,6 @@ import type { Snippet } from "svelte";
 
 interface Props {
 	children: Snippet;
-	/** What the widget shows right now. It is announced to screen readers when it changes. */
 	caption?: Snippet;
 }
 
@@ -43,7 +42,7 @@ const { children, caption }: Props = $props();
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
-/* The button rules weigh one class each, less than any rule in a widget's own style block, so a widget overrides them by declaring the property. */
+/* :where() keeps these below any rule in a widget's own style block. */
 :global(.widget-frame :where(button)) {
 	min-height: 2.75rem;
 	border: 1px solid var(--fui-line);

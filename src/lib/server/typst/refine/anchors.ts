@@ -10,6 +10,7 @@ import {
 	descendants,
 	type Element,
 	elementsNamed,
+	hasClass,
 	type ParentNode,
 	replace,
 	setAttribute,
@@ -17,11 +18,9 @@ import {
 	textOf,
 } from "./dom";
 
-/**
- * Typst gives a card an id only when the same note refers to it. The library wraps every
- * labelled card in a `div[data-label]`; the label becomes the card's id and the wrapper goes.
- * Returns the labels, in order, repeats included.
- */
+const labelledMark = "data-labelled";
+
+// Typst gives a card an id only when its own note refers to it, so notes.typ wraps each labelled card in div[data-label].
 export function adoptLabels(root: ParentNode): string[] {
 	return elementsNamed(root, "div").flatMap((wrapper) => {
 		const label = attribute(wrapper, "data-label");
@@ -34,12 +33,8 @@ export function adoptLabels(root: ParentNode): string[] {
 	});
 }
 
-const labelledMark = "data-labelled";
+const isCard = (element: Element): boolean => hasClass(element, "card");
 
-const isCard = (element: Element): boolean =>
-	(attribute(element, "class") ?? "").split(/\s+/).includes("card");
-
-/** The numbered name of a card, such as "Theorem 3", read from its heading. */
 function cardName(card: Element): string | undefined {
 	const heading = childElements(card).find((child) =>
 		["header", "summary"].includes(child.tagName),
@@ -57,7 +52,6 @@ function anchorTo(id: string, name: string): Element {
 	return anchor;
 }
 
-/** Keeps the link on the line of the last word of a heading, so it never wraps onto an empty line of its own. */
 const noBreakSpace = "\u00a0";
 
 function appendAnchor(target: Element, id: string, name: string): void {
@@ -65,12 +59,7 @@ function appendAnchor(target: Element, id: string, name: string): void {
 	append(target, space, anchorTo(id, name));
 }
 
-/**
- * Gives every card an address and shows a link to it, and to each section heading, so that
- * a reader can point someone at "Theorem 3". A card the author labelled keeps its label as
- * its id; the others are named after their kind and number. Returns the cards, in order.
- * Labels must have been adopted first.
- */
+// Runs after adoptLabels, so that a labelled card keeps its label as its id.
 export function addAnchors(root: ParentNode, addresses: Addresses): NoteCard[] {
 	const cards = descendants(root)
 		.filter(isCard)

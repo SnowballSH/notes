@@ -16,7 +16,6 @@ function reduced(numerator: number, exponent: number): string {
 	return power === 0 ? String(top) : `${top}/${2 ** power}`;
 }
 
-/** A non-negative number as a fraction over a small power of two when it is one, else as a decimal. */
 export function formatDyadic(value: number): string {
 	for (let exponent = 0; exponent <= largestDenominatorExponent; exponent++) {
 		const numerator = value * 2 ** exponent;
@@ -35,20 +34,17 @@ function formatMagnitude(magnitude: number): string {
 	return isRootOfPowerOfTwo ? `1/${root}${2 ** Math.round(halvings)}` : formatDyadic(magnitude);
 }
 
-/** An amplitude with its sign, such as +1/√2 or −1/2; one that is shown as zero has no sign. */
 export function formatAmplitude(amplitude: number): string {
 	const magnitude = formatMagnitude(Math.abs(amplitude));
 	if (magnitude === "0") return magnitude;
 	return `${amplitude < 0 ? minusSign : "+"}${magnitude}`;
 }
 
-/** A number with a minus sign when negative and no plus; one that is shown as zero has no sign. */
 export function formatSigned(value: number): string {
 	const magnitude = formatDyadic(Math.abs(value));
 	return value < 0 && magnitude !== "0" ? `${minusSign}${magnitude}` : magnitude;
 }
 
-/** The amplitudes that are not shown as zero, each after its label, for reading aloud. */
 export const listAmplitudes = (labels: readonly string[], amplitudes: readonly number[]): string =>
 	amplitudes
 		.map((amplitude, index) => `${labels[index]} ${formatAmplitude(amplitude)}`)

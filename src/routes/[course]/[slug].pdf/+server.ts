@@ -9,7 +9,6 @@ export const prerender = true;
 
 export const entries: EntryGenerator = () => publishedNotes();
 
-/** The PDF edition of a note, at the note's address with `.pdf` added. */
 export const GET: RequestHandler = async ({ params }) => {
 	if (!(await hasNote(params))) error(404, "Not Found");
 	const { course, number } = await noteNavigation(params, { showDrafts: dev });

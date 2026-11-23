@@ -58,7 +58,6 @@ test("one button opens every proof, and starts afresh on the next note", async (
 	await expect(page.getByRole("button", { name: "Close all proofs" })).toHaveCount(0);
 });
 
-/** The first reference in the note whose target is a card, with the card's numbered name. */
 async function firstCardReference(page: Page): Promise<{ href: string; name: string }> {
 	const found = await page.evaluate(() => {
 		for (const link of document.querySelectorAll<HTMLAnchorElement>(
@@ -123,7 +122,7 @@ test("search finds a card by its name from the home page and goes to it", async 
 
 	await page.keyboard.press("Enter");
 
-	await expect(page).toHaveURL(new RegExp(`${card.href.replace("#", "#")}$`));
+	await expect(page).toHaveURL(new RegExp(`${card.href}$`));
 	await expect(page.locator(`[id="${card.href.split("#")[1]}"]`)).toBeInViewport();
 });
 

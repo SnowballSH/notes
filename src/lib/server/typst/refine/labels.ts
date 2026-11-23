@@ -1,10 +1,5 @@
 import type { Displacement } from "./addresses";
 
-/**
- * What is wrong with the labels an author gave the cards of a note, one line each. A label
- * is a card's address, so it must be the only one, and must not take the address a section
- * heading or a numbered card would otherwise have: links to those would land on the card.
- */
 export function labelProblems(
 	labels: readonly string[],
 	displacements: readonly Displacement[],

@@ -195,7 +195,7 @@ label.chosen {
 	color: var(--fui-accent-strong);
 	font-weight: 700;
 }
-/* The radio button itself is invisible but covers its label, so that it is what a click lands on. */
+/* The invisible radio button covers its label, so that a click lands on it. */
 input {
 	position: absolute;
 	inset: 0;

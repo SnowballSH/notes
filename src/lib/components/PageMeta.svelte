@@ -5,12 +5,11 @@ import { page } from "$app/state";
 interface Props {
 	title: string;
 	description?: string | null;
-	/** "article" for a note, "website" for the pages that lead to notes. */
 	kind?: "article" | "website";
 }
 
 const { title, description = null, kind = "website" }: Props = $props();
-const address = $derived(`${siteOrigin}${page.url.pathname === "/" ? "/" : page.url.pathname}`);
+const address = $derived(`${siteOrigin}${page.url.pathname}`);
 </script>
 
 <svelte:head>

@@ -15,11 +15,9 @@ export interface RefinedNote {
 	html: string;
 	headings: NoteHeading[];
 	cards: NoteCard[];
-	/** What the author must fix in the note's labels; see `labelProblems`. */
 	problems: string[];
 }
 
-/** Repairs the parts of Typst's HTML export that browsers render badly. See docs/notes-system.md. */
 export function refineNoteHtml(html: string): RefinedNote {
 	const fragment = parseFragment(html);
 	refineMath(fragment);

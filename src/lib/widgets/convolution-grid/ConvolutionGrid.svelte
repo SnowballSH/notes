@@ -169,7 +169,7 @@ const convolution = $derived(xorConvolution(f, g));
 	font-weight: 700;
 	color: var(--fui-ink);
 }
-/* Steppers and chips are not the frame's bordered buttons, and have hover styles of their own. */
+/* Steppers and chips have their own look and hover styles. */
 button {
 	min-height: auto;
 	border: 0;

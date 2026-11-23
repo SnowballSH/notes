@@ -1,4 +1,4 @@
-/** The sections each drawn section builds on, by section number. Section 1.1, the overview, is not drawn. */
+// Section 1.1, the overview, is not drawn.
 export const dependencies: Readonly<Record<string, readonly string[]>> = {
 	"2.1": [],
 	"2.2": ["2.1"],

@@ -1,13 +1,12 @@
-import type { PropSchema, PropSpec } from "./contract.ts";
+import type { PropSchema, PropSpec, Range } from "./contract.ts";
 
-function describeRange(noun: string, { min, max }: { min?: number; max?: number }): string {
+function describeRange(noun: string, { min, max }: Range): string {
 	if (min !== undefined && max !== undefined) return `${noun} from ${min} to ${max}`;
 	if (min !== undefined) return `${noun} of at least ${min}`;
 	if (max !== undefined) return `${noun} of at most ${max}`;
 	return noun;
 }
 
-/** What a prop accepts, worded to follow "must be". */
 export function describeAllowed(spec: PropSpec): string {
 	switch (spec.type) {
 		case "integer":
@@ -23,7 +22,7 @@ export function describeAllowed(spec: PropSpec): string {
 	}
 }
 
-const inRange = (value: number, { min, max }: { min?: number; max?: number }): boolean =>
+const inRange = (value: number, { min, max }: Range): boolean =>
 	Number.isFinite(value) &&
 	(min === undefined || value >= min) &&
 	(max === undefined || value <= max);
@@ -46,7 +45,6 @@ function accepts(spec: PropSpec, value: unknown): boolean {
 const shown = (value: unknown): string =>
 	typeof value === "number" ? String(value) : (JSON.stringify(value) ?? String(value));
 
-/** What is wrong with the props given to a widget, one sentence per problem; empty when valid. */
 export function propProblems(
 	schema: PropSchema,
 	given: Readonly<Record<string, unknown>>,

@@ -9,7 +9,6 @@ export interface Point {
 	y: number;
 }
 
-/** The picture's point for amplitudes (α, β): α runs right and β runs up, the page's y runs down. */
 export const pointOf = (state: Amplitudes, scale = radius): Point => ({
 	x: centre + scale * (state[0] ?? 0),
 	y: centre - scale * (state[1] ?? 0),
@@ -20,7 +19,6 @@ export const pointAtAngle = (angle: number, distance: number): Point =>
 
 export type Anchor = "start" | "middle" | "end";
 
-/** A label outside the circle is anchored on the side that faces the circle. */
 export function anchorAt(angle: number): Anchor {
 	const across = Math.cos(angle);
 	if (across > 0.3) return "start";

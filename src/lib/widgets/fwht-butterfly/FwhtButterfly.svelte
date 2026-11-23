@@ -56,7 +56,7 @@ const width = $derived(widthFor(stage?.width ?? minWidth));
 const columns = $derived(butterflyColumns(input));
 const traced = $derived(picked && picked.level <= level ? picked : undefined);
 const sources = $derived(traced && traced.level > 0 ? butterflyInto(traced) : undefined);
-/** The one entry that Tab reaches; the arrow keys move from it to the others. */
+// The one entry that Tab reaches; the arrow keys move from it to the others.
 const tabStop = $derived(cursor.level <= level ? cursor : { level, index: cursor.index });
 
 const same = (first: Node | undefined, second: Node): boolean =>

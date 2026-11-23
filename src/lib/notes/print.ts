@@ -1,10 +1,6 @@
 import type { Attachment } from "svelte/attachments";
 import { blocksIn } from "./blocks.ts";
 
-/**
- * A printout should show every proof, on white paper. Collapsed blocks open and the light
- * theme applies while the page prints, and both go back afterwards.
- */
 export const prepareForPrint: Attachment = (container) => {
 	const page = document.documentElement;
 	let opened: HTMLDetailsElement[] = [];

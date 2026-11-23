@@ -1,14 +1,8 @@
-/** An address a label took from the heading or card that would otherwise have had it. */
 export interface Displacement {
 	label: string;
-	/** What lost the address, as an author would name it: `the section "Parity"`, `Theorem 2`. */
 	owner: string;
 }
 
-/**
- * The ids in use on a page. Headings and unlabelled cards claim theirs here, and get the
- * next free one when theirs is taken; a claim that a label had taken is recorded.
- */
 export class Addresses {
 	readonly displacements: Displacement[] = [];
 	private readonly taken: Set<string>;

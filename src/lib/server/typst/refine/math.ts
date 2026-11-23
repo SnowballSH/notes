@@ -39,12 +39,8 @@ const spacingArrows: Readonly<Record<string, string>> = {
 const isAccented = (element: Element): boolean =>
 	element.tagName === "mover" && attribute(element, "accent")?.toLowerCase() === "true";
 
-/**
- * Typst writes an accent as a combining mark alone in an `<mo>`. Chromium gives that a
- * zero-width box and paints it beside its base or not at all, so it becomes the spacing
- * form of the same mark.
- */
-export function useSpacingAccents(root: ParentNode): void {
+// Chromium paints a lone combining mark in an <mo> beside its base, or not at all.
+function useSpacingAccents(root: ParentNode): void {
 	for (const accented of descendants(root).filter(isAccented)) {
 		const [base, mark] = childElements(accented);
 		if (!base || mark?.tagName !== "mo") continue;
@@ -69,12 +65,8 @@ function isTall(element: Element): boolean {
 	return element.tagName === "mo" && largeOperators.test(textOf(element));
 }
 
-/**
- * Chromium reserves room for a stretchy bracket to grow even when it has nothing tall to
- * grow around, which sets `f(x)` as `f ( x )`. A bracket with only ordinary symbols
- * beside it is marked as not stretchy; one around a fraction or a matrix still grows.
- */
-export function fixFencesAroundShortContent(root: ParentNode): void {
+// Chromium reserves room for a stretchy bracket to grow, which sets f(x) as f ( x ).
+function fixFencesAroundShortContent(root: ParentNode): void {
 	const tallContent = new Map<ParentNode, boolean>();
 	for (const operator of elementsNamed(root, "mo")) {
 		const parent = operator.parentNode;
@@ -99,12 +91,8 @@ function primed(base: Element, prime: Element): Element {
 	return group;
 }
 
-/**
- * Typst sets a prime as a superscript. The prime glyph is already drawn raised, so the
- * superscript shrinks and lifts it a second time into a speck far from its letter. It is
- * placed beside its base at full size instead.
- */
-export function setPrimesBesideBase(root: ParentNode): void {
+// The prime glyph is already raised; as a superscript it shrinks into a speck.
+function setPrimesBesideBase(root: ParentNode): void {
 	for (const script of elementsNamed(root, "msup", "msubsup").reverse()) {
 		const parts = childElements(script);
 		const base = parts[0];
@@ -136,7 +124,6 @@ const isInline = (math: Element): boolean => attribute(math, "display") !== "blo
 const isOperatorIn = (term: Element | undefined, operators: Set<string>): boolean =>
 	term?.tagName === "mo" && attribute(term, "form") !== "prefix" && operators.has(textOf(term));
 
-/** The indices at which `terms` may be cut: after an operator that has a term on each side. */
 function cutsAfter(terms: Element[], operators: Set<string>): number[] {
 	const isBreak = (term: Element | undefined) =>
 		isOperatorIn(term, relations) || isOperatorIn(term, binaryOperators);
@@ -155,15 +142,8 @@ function keepInfix(operator: Element | undefined): void {
 	}
 }
 
-/**
- * No browser breaks a line inside a formula in a useful place: Chromium never does, and
- * Firefox does anywhere. A long inline formula is therefore cut into several formulas
- * with a break opportunity between them, so that a line can end there and nowhere else.
- * The cuts follow the relations and commas of the outermost level, or its binary
- * operators when it has none. The operator that ends a piece keeps the infix spacing it
- * had in the middle.
- */
-export function splitLongInlineMath(root: ParentNode): void {
+// Chromium never breaks a line inside a formula and Firefox breaks anywhere, so a long one is cut into pieces.
+function splitLongInlineMath(root: ParentNode): void {
 	for (const math of elementsNamed(root, "math").filter(isInline)) {
 		if ([...textOf(math)].length <= longFormulaLength) continue;
 		const [only, ...others] = childElements(math);
@@ -194,12 +174,8 @@ const lettersWithTails = new Set(
 const hasTail = (element: Element): boolean =>
 	element.tagName === "mi" && lettersWithTails.has(textOf(element).normalize("NFKD"));
 
-/**
- * A subscript is placed below the lowest point of its base, so the tail of a letter such as
- * gamma, chi or f pushes its subscript down and away from it. Such a base is treated as
- * having no depth, which sets its subscript where the subscript of an x would go.
- */
-export function tuckSubscriptsUnderTails(root: ParentNode): void {
+// A subscript sits below the lowest point of its base, so a tailed letter pushes it away.
+function tuckSubscriptsUnderTails(root: ParentNode): void {
 	for (const script of elementsNamed(root, "msub", "msubsup")) {
 		const [base] = childElements(script);
 		if (!base || !hasTail(base)) continue;
@@ -209,8 +185,8 @@ export function tuckSubscriptsUnderTails(root: ParentNode): void {
 	}
 }
 
-/** Firefox does not scroll a math element, so each display equation gets a wrapper that can. */
-export function wrapDisplayEquations(root: ParentNode): void {
+// Firefox does not scroll a math element, so the wrapper scrolls instead.
+function wrapDisplayEquations(root: ParentNode): void {
 	for (const math of elementsNamed(root, "math").filter((math) => !isInline(math))) {
 		wrap([math], createElement("div", { class: "equation" }));
 	}

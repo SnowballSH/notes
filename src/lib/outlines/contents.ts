@@ -1,17 +1,14 @@
-import { noteHref } from "#lib/notes/names.ts";
+import { noteHref, notePath } from "#lib/notes/names.ts";
 import type { NoteLink, NoteNeighbours } from "#lib/notes/types.ts";
 import type { NotesOutline, OutlineSection } from "./types.ts";
 
-/** A draft section exists only while developing: the published site shows it as planned. */
 export type SectionState = "written" | "draft" | "planned";
 
 export interface ContentsSection {
-	/** `<part>.<section>`, both counted from 1. */
 	number: string;
 	title: string;
 	summary: string;
 	state: SectionState;
-	/** The address of the section's note; null exactly when the section is planned. */
 	href: string | null;
 }
 
@@ -31,12 +28,10 @@ export interface OutlinedCourse {
 export interface NoteStatus {
 	slug: string;
 	draft: boolean;
-	/** The title in the note's header, when known, to check against its section's. */
 	title?: string;
 }
 
 export interface ContentsOptions {
-	/** Whether a section whose note is a draft links to it, as it does while developing. */
 	showDrafts: boolean;
 }
 
@@ -63,7 +58,6 @@ const numberedSections = (outline: NotesOutline): NumberedSection[] =>
 		})),
 	);
 
-/** What the author must fix before the outline and the notes of a course agree, one line each. */
 export function outlineProblems(
 	{ slug: course, outline }: OutlinedCourse,
 	notes: readonly NoteStatus[],
@@ -83,26 +77,22 @@ export function outlineProblems(
 		const found = existing.get(note);
 		const differs = (other: string) => other.trim() !== title.trim();
 		if (found?.title !== undefined && !found.draft && differs(found.title)) {
-			return `notes/${course}/${note}.typ is titled "${found.title}", but section ${number} of ${file} is titled "${title}"; give them the same title, since the note shows one and the links to it show the other`;
+			return `${notePath({ course, slug: note })} is titled "${found.title}", but section ${number} of ${file} is titled "${title}"; give them the same title, since the note shows one and the links to it show the other`;
 		}
 		if (found) return [];
-		return `${file}: section ${number} "${title}" names the note "${note}", but notes/${course}/${note}.typ does not exist; create it with pnpm run new:note ${course} ${note} <title>, or remove note: "${note}" from the section`;
+		return `${file}: section ${number} "${title}" names the note "${note}", but ${notePath({ course, slug: note })} does not exist; create it with pnpm run new:note ${course} ${note} <title>, or remove note: "${note}" from the section`;
 	});
 
 	const fromNotes = notes
 		.filter((note) => !note.draft && !namedBy.has(note.slug))
 		.map(
 			({ slug }) =>
-				`notes/${course}/${slug}.typ is published, but no section of ${file} names it; add note: "${slug}" to its section there, or add draft: true to the note's header`,
+				`${notePath({ course, slug })} is published, but no section of ${file} names it; add note: "${slug}" to its section there, or add draft: true to the note's header`,
 		);
 
 	return [...fromSections, ...fromNotes];
 }
 
-/**
- * The parts and sections of a course as the site shows them: numbered, and linked to the
- * notes that are written. Throws an OutlineError when the outline and the notes disagree.
- */
 export function courseContents(
 	course: OutlinedCourse,
 	notes: readonly NoteStatus[],
@@ -139,14 +129,12 @@ export const allSections = (parts: readonly ContentsPart[]): ContentsSection[] =
 
 const isLinked = (section: ContentsSection): section is LinkedSection => section.href !== null;
 
-/** The sections a reader can open, in the order of the outline. */
 export const readingOrder = (parts: readonly ContentsPart[]): LinkedSection[] =>
 	allSections(parts).filter(isLinked);
 
-const linkTo = (section: LinkedSection | undefined): NoteLink | null =>
-	section ? { title: section.title, href: section.href, number: section.number } : null;
+export const noteLink = (link: NoteLink | undefined): NoteLink | null =>
+	link ? { title: link.title, href: link.href, number: link.number } : null;
 
-/** Where the note at an address sits in its course, or null when no linked section leads to it. */
 export function notePlace(parts: readonly ContentsPart[], href: string): NotePlace | null {
 	const order = readingOrder(parts);
 	const index = order.findIndex((section) => section.href === href);
@@ -154,7 +142,7 @@ export function notePlace(parts: readonly ContentsPart[], href: string): NotePla
 	if (!section) return null;
 	return {
 		number: section.number,
-		previous: linkTo(order[index - 1]),
-		next: linkTo(order[index + 1]),
+		previous: noteLink(order[index - 1]),
+		next: noteLink(order[index + 1]),
 	};
 }

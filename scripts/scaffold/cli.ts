@@ -1,6 +1,5 @@
 export class UsageError extends Error {}
 
-/** Runs a command and reports a refusal as one plain line, without a stack trace. */
 export async function runCommand(command: () => Promise<void>): Promise<void> {
 	try {
 		await command();

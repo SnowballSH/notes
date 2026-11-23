@@ -1,18 +1,13 @@
-/**
- * The roadmap is a grid with a flow axis, along which sections follow one another (down a
- * narrow note, across a wide one), and a cross axis that holds the main chain, the side
- * branch and a rail for an arrow that skips layers, when there is one. Everything here is in grid lines, so
- * the stylesheet can turn the same layout either way.
- */
+// Everything is in grid lines along a flow axis (down a narrow note, across a wide one) and a cross
+// axis (the main chain, the side branch and a rail for an arrow that skips layers), so the stylesheet
+// can turn the same layout either way.
 export type Lane = "main" | "branch";
 
 export interface Placement {
-	/** Counted from 1 along the flow axis. */
 	layer: number;
 	lane: Lane;
 }
 
-/** Grid lines: the tracks from `start` up to, not including, `end`. */
 export interface Span {
 	start: number;
 	end: number;
@@ -63,7 +58,6 @@ export const boxCell = ({ layer, lane }: Placement): Cell => ({
 	cross: track(laneTrack[lane]),
 });
 
-/** A span as the value of `grid-row` or `grid-column`. */
 export const gridLines = ({ start, end }: Span): string => `${start} / ${end}`;
 
 function pieces(from: Placement, to: Placement): (Cell & { shape: ConnectorShape })[] {
@@ -110,7 +104,6 @@ export function placeOf(
 	return place;
 }
 
-/** The pieces of every arrow, each in the grid cell it is drawn in. */
 export const connectors = (
 	needs: Readonly<Record<string, readonly string[]>>,
 	places: Readonly<Record<string, Placement>> = placements,

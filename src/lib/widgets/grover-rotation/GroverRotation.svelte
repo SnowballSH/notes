@@ -62,7 +62,6 @@ const bestAngle = $derived(stateAngle(size, marked, best));
 const bestLabel = $derived(labelOutside(bestAngle));
 const markedLabel = $derived(labelAcrossAxisFrom(bestAngle));
 
-/** The arrow as drawn: it turns through 2θ to the next state. */
 const shown = new Tween(
 	untrack(() => angle),
 	{ easing: cubicInOut },
@@ -283,7 +282,7 @@ svg {
 text {
 	font-family: var(--fui-font-sans);
 	dominant-baseline: central;
-	/* A halo in the page colour, so the lines that cross a label break around it. */
+	/* A halo, so the lines that cross a label break around it. */
 	paint-order: stroke;
 	stroke: var(--fui-surface-base);
 	stroke-width: 3;
