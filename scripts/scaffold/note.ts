@@ -1,4 +1,4 @@
-import { isName } from "../../src/lib/notes/names.ts";
+import { isName, notePath } from "../../src/lib/notes/names.ts";
 import { placeholderSummary } from "../../src/lib/notes/template.ts";
 import { typstString } from "../../src/lib/notes/typst.ts";
 
@@ -15,15 +15,9 @@ export interface NoteArguments {
 	slug?: string;
 	title: string;
 	startsCourse: boolean;
-	/** An option before the title that the command does not have. */
 	unknownOption?: string;
 }
 
-/**
- * Reads `[--new-course] <course> <slug> <title...>`. `--new-course` is taken wherever it
- * stands. Any other option is refused before the title begins; after that every word
- * belongs to the title, which may therefore contain a dash or a word that starts with two.
- */
 export function parseNoteArguments(args: readonly string[]): NoteArguments {
 	const words = args.filter((argument) => argument !== "--new-course");
 	const names: string[] = [];
@@ -44,7 +38,6 @@ export function parseNoteArguments(args: readonly string[]): NoteArguments {
 	};
 }
 
-/** Why a note cannot go in a course that has neither an outline nor a directory yet. */
 export function unknownCourseProblem(course: string, known: readonly string[]): string {
 	const courses =
 		known.length > 0 ? `the courses are ${known.join(", ")}` : "there are no courses yet";
@@ -68,7 +61,6 @@ export function noteRequestProblem(
 	return undefined;
 }
 
-/** One more than the highest `order:` among the sources of a course's notes, or 1 for a new course. */
 export function nextOrder(sources: readonly string[]): number {
 	const orders = sources.flatMap((source) => {
 		const order = /#show:\s*note\.with\(.*?\border:\s*(-?\d+)/s.exec(source)?.[1];
@@ -77,13 +69,6 @@ export function nextOrder(sources: readonly string[]): number {
 	return Math.max(0, ...orders) + 1;
 }
 
-export const notePath = ({ course, slug }: Pick<NoteRequest, "course" | "slug">): string =>
-	`notes/${course}/${slug}.typ`;
-
-/**
- * How a new note finds its place in its course: through the course's outline file, or by
- * its own `order` when the course has no outline.
- */
 export type NotePlacement = { outline: string } | { order: number };
 
 export function noteSource(title: string, placement: NotePlacement): string {
@@ -111,7 +96,6 @@ Refer to it as @def-example.
 `;
 }
 
-/** What the command prints after creating the note: where to read it and what is left to do. */
 export function noteNextSteps(request: NoteRequest, placement: NotePlacement): string {
 	const path = notePath(request);
 	const address = `Read it with pnpm run dev at:\n  http://localhost:5173/${request.course}/${request.slug}`;

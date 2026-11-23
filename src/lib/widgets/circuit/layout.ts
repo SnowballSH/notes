@@ -10,9 +10,9 @@ import {
 	zeroKet,
 } from "./circuit.ts";
 
-/** The diagram in SVG units; at a note 288px wide one unit is one pixel. */
+// In SVG units; at a note 288px wide one unit is one pixel.
 export const width = 288;
-/** Three wires stand for n qubits, with a vertical ellipsis between the second and the third. */
+// Three wires stand for n qubits, with a vertical ellipsis between the second and the third.
 export const wireRows = [22, 50, 98] as const;
 export const ellipsisRow = 74;
 export const ellipsisPitch = 6;
@@ -32,13 +32,13 @@ const leadCentre = 11;
 const nameCentre = 12;
 const stubCentre = (wireStart + 46) / 2;
 
-export const meterWidth = 26;
+const meterWidth = 26;
 export const meterHeight = 20;
 
 export const baseFontSize = 18;
 export const scriptFontSize = 13;
 export const leadFontSize = 13;
-/** How wide each glyph of STIX Two Math is, as a fraction of the font size (from its hmtx table). */
+// The advance of each glyph of STIX Two Math as a fraction of the font size, from its hmtx table.
 const advances: Readonly<Record<string, number>> = {
 	H: 0.777,
 	O: 0.738,
@@ -73,19 +73,17 @@ export interface Box {
 	height: number;
 }
 
-export interface PlacedGate extends Box {
+interface PlacedGate extends Box {
 	label: GateLabel;
-	/** The one gate that queries f, drawn in the accent colour. */
 	query: boolean;
 }
 
-export interface Lead {
+interface Lead {
 	text: string;
 	y: number;
 }
 
-/** A bracket under the gates that are repeated, with the number of repetitions below it. */
-export interface Repeat {
+interface Repeat {
 	x1: number;
 	x2: number;
 	y: number;
@@ -98,7 +96,6 @@ export interface Repeat {
 export interface Diagram {
 	height: number;
 	wire: { x1: number; x2: number };
-	/** What stands at the left end of the wires, centred on leadX. */
 	leads: readonly Lead[];
 	leadX: number;
 	gates: readonly PlacedGate[];
@@ -181,7 +178,6 @@ const circuits: Record<Kind, Diagram> = {
 
 export const circuitDiagram = (kind: Kind): Diagram => circuits[kind];
 
-/** D written out as the three gates it is made of. */
 export const diffusionDiagram: Diagram = {
 	height: gateBottom + bottomMargin,
 	wire,
@@ -207,14 +203,11 @@ export const labelWidth = (label: GateLabel): number => {
 
 export const leadWidth = (lead: Lead): number => textWidth(lead.text, leadFontSize);
 
-export interface LabelAnchors {
-	/** Where the letter starts. */
+interface LabelAnchors {
 	base: number;
-	/** Where its superscript and subscript start, one above the other. */
 	script: number;
 }
 
-/** Where to set a gate's name so that the letter and its scripts together are centred. */
 export function labelAnchors(placed: PlacedGate): LabelAnchors {
 	const base = placed.x + (placed.width - labelWidth(placed.label)) / 2;
 	return { base, script: base + baseWidth(placed.label) + scriptGap };

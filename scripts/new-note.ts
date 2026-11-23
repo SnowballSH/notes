@@ -1,5 +1,6 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { notePath } from "../src/lib/notes/names.ts";
 import { outlineFile } from "../src/lib/outlines/contents.ts";
 import { isCategorySlug } from "../src/lib/site/categories.ts";
 import { findCourse } from "../src/lib/site/courses.ts";
@@ -8,7 +9,6 @@ import {
 	type NotePlacement,
 	nextOrder,
 	noteNextSteps,
-	notePath,
 	noteRequestProblem,
 	noteSource,
 	parseNoteArguments,

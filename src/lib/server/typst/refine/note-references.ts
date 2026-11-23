@@ -1,21 +1,21 @@
 import { parseFragment, serialize } from "parse5";
 import {
+	ancestors,
 	attribute,
 	type Element,
 	elementsNamed,
+	hasClass,
 	type ParentNode,
 	setAttribute,
 	setText,
 	textOf,
 } from "./dom";
 
-/** A reference a note makes to a labelled card of another note, as `noteref` wrote it. */
 export interface NoteReference {
 	note: string;
 	target: string;
 }
 
-/** Where a reference leads and what to call it, such as "Theorem 2". */
 export interface ReferenceTarget {
 	href: string;
 	name: string;
@@ -24,7 +24,7 @@ export interface ReferenceTarget {
 function referenceOf(link: Element): NoteReference | undefined {
 	const note = attribute(link, "data-note");
 	const target = attribute(link, "data-target");
-	const isReference = (attribute(link, "class") ?? "").split(/\s+/).includes("noteref");
+	const isReference = hasClass(link, "noteref");
 	return isReference && note !== undefined && target !== undefined ? { note, target } : undefined;
 }
 
@@ -39,28 +39,16 @@ export const noteReferences = (html: string): NoteReference[] =>
 
 const titles = new Set(["h2", "h3", "h4", "header", "summary"]);
 
-function isInTitle(link: Element): boolean {
-	for (let node = link.parentNode; node && "tagName" in node; node = node.parentNode) {
-		if (titles.has(node.tagName)) return true;
-	}
-	return false;
-}
+const isInTitle = (link: Element): boolean =>
+	ancestors(link).some((node) => titles.has(node.tagName));
 
-/**
- * References that have no words of their own and sit in a section heading or a card's
- * title. Their text is only known after the page's list of sections and the search index
- * have been made, so they would be missing there.
- */
+// The text of these is filled in only after the page's contents and the search index have been made.
 export function wordlessReferencesInTitles(html: string): NoteReference[] {
-	return referenceLinks(parseFragment(html)).flatMap(({ link, reference }) => {
-		return isInTitle(link) && textOf(link).trim() === "" ? [reference] : [];
-	});
+	return referenceLinks(parseFragment(html)).flatMap(({ link, reference }) =>
+		isInTitle(link) && textOf(link).trim() === "" ? [reference] : [],
+	);
 }
 
-/**
- * Points each reference at its target. A reference the author gave no words is written as
- * the target's name, kept on one line like the references Typst writes.
- */
 export function linkNoteReferences(
 	html: string,
 	targetOf: (reference: NoteReference) => ReferenceTarget,

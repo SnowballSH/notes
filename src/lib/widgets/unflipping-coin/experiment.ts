@@ -9,20 +9,16 @@ import {
 
 export type Step = { kind: "hadamard" } | { kind: "measurement"; qubit: number; coin: number };
 
-/** The two terms the Hadamard gate adds to give the amplitude of one basis state. */
 export type Terms = readonly [number, number];
 
-/** A qubit and a classical coin taken through the same steps, side by side. */
 export interface Experiment {
 	qubit: Amplitudes;
-	/** The probabilities that the classical coin shows heads (a measured 0) and tails. */
 	coin: readonly number[];
 	steps: readonly Step[];
-	/** For each basis state, what the last step contributed, when that step was a Hadamard gate. */
 	terms?: readonly Terms[];
 }
 
-const definite = (bit: number): number[] => [...basisState(1, bit)];
+const definite = (bit: number): Amplitudes => basisState(1, bit);
 
 export const start: Experiment = { qubit: definite(0), coin: definite(0), steps: [] };
 
@@ -35,7 +31,6 @@ export function hadamardTerms([zero = 0, one = 0]: Amplitudes): [Terms, Terms] {
 	];
 }
 
-/** A fair toss forgets what the coin showed: each face gets half of the total probability. */
 export const toss = (coin: readonly number[]): number[] => {
 	const whole = coin.reduce((sum, probability) => sum + probability, 0);
 	return coin.map(() => whole / coin.length);
@@ -50,7 +45,6 @@ export function applyHadamard(experiment: Experiment): Experiment {
 	};
 }
 
-/** Measures the qubit and looks at the coin; each is left showing what was seen. */
 export function measure(experiment: Experiment, random: Random): Experiment {
 	const qubit = sampleIndex(probabilities(experiment.qubit), random);
 	const coin = sampleIndex(experiment.coin, random);
@@ -68,7 +62,6 @@ export const definiteBit = (state: Amplitudes): number | undefined => {
 	return bit === -1 ? undefined : bit;
 };
 
-/** The name of a state this experiment can reach: a definite bit or one of the two fair coins. */
 export function stateName(state: Amplitudes): string {
 	const bit = definiteBit(state);
 	if (bit !== undefined) return ket(String(bit));
@@ -82,11 +75,9 @@ export const formatTerms = (terms: Terms): string => terms.map(formatAmplitude).
 
 export const faces = ["heads", "tails"] as const;
 
-/** The face a coin shows, or "tossed" while nobody has looked at it. */
 export const coinName = (coin: readonly number[]): string =>
 	faces[coin.findIndex(isCertain)] ?? "tossed";
 
-/** The state of both sides in a few words, for screen readers. */
 export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 	const last = steps.at(-1);
 	const cancelled = terms?.findIndex(cancels) ?? -1;
@@ -99,7 +90,6 @@ export function summarise({ qubit, coin, steps, terms }: Experiment): string {
 	return `${qubitNow}; coin ${coinName(coin)}.`;
 }
 
-/** What the caption shows: the outcome when the last step was a measurement, and nothing otherwise. */
 export function result({ steps }: Experiment): string {
 	const last = steps.at(-1);
 	return last?.kind === "measurement" ? `Measured ${last.qubit}` : "";

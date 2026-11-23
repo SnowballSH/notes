@@ -2,7 +2,7 @@ import type { NotesOutline } from "./types";
 
 export const walshHadamard: NotesOutline = {
 	title: "The Walsh-Hadamard Transform",
-	description: "The transform on bitstrings and its classical and quantum applications.",
+	description: "From Fourier analysis of Boolean functions to Grover's quantum search algorithm.",
 	chapters: [
 		{
 			title: "Introduction",
@@ -10,7 +10,7 @@ export const walshHadamard: NotesOutline = {
 				{
 					title: "Overview and prerequisites",
 					summary:
-						"What these notes cover, what you need to know first, and how the parts fit together.",
+						"What the notes cover, what to know before you start, and how the sections connect.",
 					note: "overview",
 				},
 			],
@@ -20,17 +20,18 @@ export const walshHadamard: NotesOutline = {
 			sections: [
 				{
 					title: "Boolean functions and Fourier expansions",
-					summary: "Writing any function on bitstrings as a sum of parity functions.",
+					summary: "Writing any function on bitstrings as a combination of parity functions.",
 					note: "boolean-functions",
 				},
 				{
 					title: "The Walsh-Hadamard transform",
-					summary: "The matrix behind the transform and a fast way to apply it.",
+					summary:
+						"The matrices that compute Fourier coefficients, and a fast way to multiply by them.",
 					note: "walsh-hadamard",
 				},
 				{
 					title: "XOR convolution",
-					summary: "Combining two functions on bitstrings quickly, using the fast transform.",
+					summary: "Computing the XOR convolution of two functions quickly, using the transform.",
 					note: "xor-convolution",
 				},
 			],
@@ -40,14 +41,13 @@ export const walshHadamard: NotesOutline = {
 			sections: [
 				{
 					title: "Qubits, measurement, and the Hadamard gate",
-					summary:
-						"Quantum states from linear algebra, and the gate that applies the transform to qubits.",
+					summary: "The basics of quantum computing, and the gate that performs the transform.",
 					note: "qubits",
 				},
 				{
 					title: "Quantum oracles and Fourier sampling",
 					summary:
-						"How a quantum computer queries a function, then applies the transform and measures.",
+						"How a quantum computer asks about an unknown function, and what one question can reveal.",
 					note: "oracles",
 				},
 			],
@@ -57,7 +57,7 @@ export const walshHadamard: NotesOutline = {
 			sections: [
 				{
 					title: "Grover's algorithm",
-					summary: "Searching for a marked item with far fewer queries than a classical search.",
+					summary: "Finding a marked item with far fewer questions than any classical search.",
 					note: "grover",
 				},
 			],

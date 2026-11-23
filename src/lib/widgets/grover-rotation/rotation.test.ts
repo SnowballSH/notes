@@ -5,11 +5,11 @@ import {
 	caption,
 	chanceLabel,
 	clampMarked,
-	describe,
 	describePicture,
 	formatProbability,
 	lastIteration,
 	mostMarked,
+	spokenSummary,
 	stateAngle,
 	turnLabel,
 } from "./rotation.ts";
@@ -104,23 +104,37 @@ suite("chanceLabel", () => {
 	});
 });
 
-suite("describe", () => {
+suite("spokenSummary", () => {
 	it("follows eight inputs up to the best count and past it", () => {
-		expect(describe(3, 1, 0)).toBe("N = 8, t = 0 of T = 2: angle θ ≈ 0.36, probability 0.125.");
-		expect(describe(3, 1, 1)).toBe("N = 8, t = 1 of T = 2: angle 3θ ≈ 1.08, probability 0.781.");
-		expect(describe(3, 1, 2)).toBe("N = 8, t = 2 of T = 2: angle 5θ ≈ 1.81, probability 0.945.");
-		expect(describe(3, 1, 3)).toBe("N = 8, t = 3 of T = 2: angle 7θ ≈ 2.53, probability 0.330.");
-		expect(describe(3, 1, 4)).toBe("N = 8, t = 4 of T = 2: angle 9θ ≈ 3.25, probability 0.012.");
+		expect(spokenSummary(3, 1, 0)).toBe(
+			"N = 8, t = 0 of T = 2: angle θ ≈ 0.36, probability 0.125.",
+		);
+		expect(spokenSummary(3, 1, 1)).toBe(
+			"N = 8, t = 1 of T = 2: angle 3θ ≈ 1.08, probability 0.781.",
+		);
+		expect(spokenSummary(3, 1, 2)).toBe(
+			"N = 8, t = 2 of T = 2: angle 5θ ≈ 1.81, probability 0.945.",
+		);
+		expect(spokenSummary(3, 1, 3)).toBe(
+			"N = 8, t = 3 of T = 2: angle 7θ ≈ 2.53, probability 0.330.",
+		);
+		expect(spokenSummary(3, 1, 4)).toBe(
+			"N = 8, t = 4 of T = 2: angle 9θ ≈ 3.25, probability 0.012.",
+		);
 	});
 
 	it("reaches the marked axis exactly with four inputs", () => {
-		expect(describe(2, 1, 0)).toBe("N = 4, t = 0 of T = 1: angle θ ≈ 0.52, probability 0.250.");
-		expect(describe(2, 1, 1)).toBe("N = 4, t = 1 of T = 1: angle 3θ ≈ 1.57, probability 1.");
-		expect(describe(2, 1, 2)).toBe("N = 4, t = 2 of T = 1: angle 5θ ≈ 2.62, probability 0.250.");
+		expect(spokenSummary(2, 1, 0)).toBe(
+			"N = 4, t = 0 of T = 1: angle θ ≈ 0.52, probability 0.250.",
+		);
+		expect(spokenSummary(2, 1, 1)).toBe("N = 4, t = 1 of T = 1: angle 3θ ≈ 1.57, probability 1.");
+		expect(spokenSummary(2, 1, 2)).toBe(
+			"N = 4, t = 2 of T = 1: angle 5θ ≈ 2.62, probability 0.250.",
+		);
 	});
 
 	it("counts twelve iterations for one marked input of 256", () => {
-		expect(describe(8, 1, 12)).toBe(
+		expect(spokenSummary(8, 1, 12)).toBe(
 			"N = 256, t = 12 of T = 12: angle 25θ ≈ 1.56, probability 1.000.",
 		);
 	});

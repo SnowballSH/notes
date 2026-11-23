@@ -3,7 +3,6 @@ import type { Snippet } from "svelte";
 
 interface Props {
 	number: string;
-	/** Omitted or null for a section that has no note to open. */
 	href?: string | null;
 	children: Snippet;
 }

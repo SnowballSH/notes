@@ -11,7 +11,6 @@ import {
 
 export type Bit = 0 | 1;
 
-/** The values of a function from bitstrings to bits, indexed by its inputs read as binary numbers. */
 export type TruthTable = readonly Bit[];
 
 export const presetNames = ["and", "parity", "constant", "balanced", "one-marked"] as const;
@@ -44,7 +43,6 @@ export const sameTable = (first: TruthTable, second: TruthTable): boolean =>
 const markedInputs = (table: TruthTable): Set<number> =>
 	new Set(table.flatMap((value, input) => (value === 1 ? [input] : [])));
 
-/** The state after each step of Fourier sampling, which starts from all zeros. */
 export interface Stages {
 	afterHadamard: Amplitudes;
 	afterQuery: Amplitudes;
@@ -67,7 +65,7 @@ export const emptyTally = (outcomes: number): readonly number[] =>
 export const recorded = (tally: readonly number[], outcome: number): readonly number[] =>
 	tally.with(outcome, (tally[outcome] ?? 0) + 1);
 
-/** One measurement in words; the running count makes a repeated outcome a new sentence. */
+// The running count makes a repeated outcome a new sentence, so that it is announced again.
 export const describeMeasurement = (
 	label: string,
 	tally: readonly number[],
@@ -78,11 +76,10 @@ export const describeMeasurement = (
 export const measure = (state: Amplitudes, random: Random): number =>
 	sampleIndex(probabilities(state), random);
 
-/** How far the most negative amplitude of the state reaches below zero. */
 export const depthBelowZero = (state: Amplitudes): number =>
 	Math.max(0, ...state.map((amplitude) => -amplitude));
 
-/** A probability of a state of Fourier sampling as an exact fraction: each is a whole number over 4^n. */
+// Every probability in Fourier sampling is a whole number over 4^n.
 export function formatExactProbability(chance: number, qubits: number): string {
 	let denominator = 4 ** qubits;
 	let numerator = Math.round(chance * denominator);
@@ -95,7 +92,6 @@ export function formatExactProbability(chance: number, qubits: number): string {
 
 const tolerance = 1e-9;
 
-/** One line on what measuring the state gives: its likeliest outcomes and their probability. */
 export function describeOutcomes(state: Amplitudes): string {
 	const chances = probabilities(state);
 	const highest = Math.max(...chances);

@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Overview and prerequisites",
-  summary: "Beginning of a fun journey towards Grover's algorithm through befriending the Walsh-Hadamard matrices.",
+  summary: "The start of a journey to Grover's algorithm by way of the Walsh-Hadamard matrices.",
 )
 
 = What These Notes Are About
@@ -16,13 +16,13 @@ Let's embark on a journey where, before tackling difficult complexity theory pro
 
 = Prerequisites
 
-In the following chapters, we will assume you have a good level of mathematical maturity. We will be using multi-dimensional linear algebra and basic probability theory extensively, so you are expected to remember the foundational definitions and theorems on these topics. In particular, you should be familiar with the concept of abstract vector spaces and be open to exploring inner product spaces that feel very different from $RR^n$. You should remember the properties of probabilities and expected values. Finally, on the mathematics side, we will also use trigonometry to prove the complexity of Grover's algorithm, so you should be familiar with various trigonometry identities.
+In the following chapters, we will assume you have a good level of mathematical maturity. We will be using multi-dimensional linear algebra and basic probability theory extensively, so you are expected to remember the foundational definitions and theorems on these topics. In particular, you should be familiar with the concept of abstract vector spaces and be open to exploring inner product spaces that feel very different from $RR^n$. You should remember the properties of probabilities and expected values. Finally, on the mathematics side, we will also use trigonometry to prove the complexity of Grover's algorithm, so you should be familiar with various trigonometric identities.
 
 Since the chapters often discuss topics in time complexity and query complexity, you are expected to understand the basics of complexity theory (at least be able to reason about the time complexity of algorithms and solve work recurrence relations).
 
 You do *not* need any prior knowledge about Fourier transforms or quantum computation. We will walk through the minimal set of definitions and propositions we need in these topics to prove all the claims we want to prove.
 
-Furthermore, because I (the author) enjoy viewing computer science problems through abstract composition of algorithms as well as competitive programming, some of the material and applications will be geared towards an audience who enjoys "problem-solving" examples rather than real applications of the algorithms in real life (unfortunately, at the time of writing, I have not directly worked with signals or real quantum computers). Therefore, some examples might feel "contrived" or "competitive programming style," so you may want to be ready for these kinds of examples.
+Furthermore, because I (the author) enjoy viewing computer science problems through abstract composition of algorithms as well as competitive programming, some of the material and applications will be geared towards an audience who enjoys "problem-solving" examples rather than applications of the algorithms in real life (unfortunately, at the time of writing, I have not directly worked with signals or real quantum computers). Therefore, some examples might feel "contrived" or "competitive programming style," so you may want to be ready for these kinds of examples.
 
 = Roadmap
 

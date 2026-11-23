@@ -11,7 +11,6 @@ const definitionModules = import.meta.glob<WidgetDefinition>("./*/definition.ts"
 
 const componentLoaders = import.meta.glob<WidgetComponent>("./*/*.svelte", { import: "default" });
 
-/** Every widget by the name a note uses, which is the name of its directory. */
 export const widgetDefinitions: Readonly<Record<string, WidgetDefinition>> = Object.fromEntries(
 	Object.entries(definitionModules)
 		.map(([path, definition]) => [path.split("/")[1] ?? "", definition] as const)

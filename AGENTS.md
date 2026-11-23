@@ -6,19 +6,19 @@ Hosting is documented in [`README.md`](README.md).
 
 ## Commands
 
-| Command | What |
-|---|---|
-| `pnpm install` | Install dependencies |
-| `pnpm run dev` | Dev server on :5173 |
-| `pnpm run check` | Typecheck the Svelte and TypeScript sources |
-| `pnpm run lint` | Check formatting and lint with Biome |
-| `pnpm run format` | Format and apply safe lint fixes |
-| `pnpm run test` | Run the unit tests with Vitest |
-| `pnpm run test:e2e` | Build the site and check it in Chromium and Firefox with Playwright |
-| `pnpm run build` | Static production build to `build/` |
+| Command                                        | What                                                                                                                   |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`                                 | Install dependencies                                                                                                   |
+| `pnpm run dev`                                 | Dev server on :5173                                                                                                    |
+| `pnpm run check`                               | Typecheck the Svelte and TypeScript sources                                                                            |
+| `pnpm run lint`                                | Check formatting and lint with Biome                                                                                   |
+| `pnpm run format`                              | Format and apply safe lint fixes                                                                                       |
+| `pnpm run test`                                | Run the unit tests with Vitest                                                                                         |
+| `pnpm run test:e2e`                            | Build the site and check it in Chromium and Firefox with Playwright                                                    |
+| `pnpm run build`                               | Static production build to `build/`                                                                                    |
 | `pnpm run new:note <course> <slug> <title...>` | Create `notes/<course>/<slug>.typ` as a draft from a template; add `--new-course` for a course that does not exist yet |
-| `pnpm run new:widget <name>` | Create a widget in `src/lib/widgets/<name>/`; see [`docs/widgets.md`](docs/widgets.md) |
-| `scripts/smoke-image.sh IMAGE [ENGINE]` | Smoke-test a built container image |
+| `pnpm run new:widget <name>`                   | Create a widget in `src/lib/widgets/<name>/`; see [`docs/widgets.md`](docs/widgets.md)                                 |
+| `scripts/smoke-image.sh IMAGE [ENGINE]`        | Smoke-test a built container image                                                                                     |
 
 Notes are Typst files under `notes/`, compiled to HTML at build time by the
 `typst` CLI, which must be on `PATH` at the version pinned in

@@ -14,7 +14,6 @@ function slug(text: string): string {
 	return words === "" ? "section" : words;
 }
 
-/** Gives every section heading an id to link to, and returns the headings in order. */
 export function identifyHeadings(root: ParentNode, addresses: Addresses): NoteHeading[] {
 	return elementsNamed(root, ...Object.keys(levels)).map((heading) => {
 		const text = textOf(heading).trim();

@@ -1,5 +1,4 @@
 export interface Category {
-	/** The first segment of the address of every course outline in the category. */
 	slug: string;
 	title: string;
 }

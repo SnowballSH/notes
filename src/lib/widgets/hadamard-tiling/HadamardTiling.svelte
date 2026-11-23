@@ -1,5 +1,6 @@
 <script lang="ts">
 import { flushSync, onDestroy, untrack } from "svelte";
+import { prefersReducedMotion } from "svelte/motion";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
@@ -46,7 +47,7 @@ onDestroy(() => {
 });
 
 const order = $derived(2 ** exponent);
-/** The height of an entry as a fraction of the board, which is its size in units of the matrix of order 1. */
+// The font size of an entry as a fraction of the board.
 const entrySize = 0.055;
 const resting = $derived(stage === Stage.Whole || stage === Stage.Flipped);
 const gridLevel = $derived(stage === Stage.Flipped ? level + 1 : level);
@@ -62,7 +63,6 @@ const pause = (milliseconds: number) =>
 			resolve();
 		};
 	});
-const prefersStillness = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function regroup(nextLevel: number, nextStage: Stage): void {
 	still = true;
@@ -77,7 +77,7 @@ function regroup(nextLevel: number, nextStage: Stage): void {
 
 async function play(steps: readonly Step[]): Promise<void> {
 	const last = steps.at(-1)?.stage ?? stage;
-	if (prefersStillness()) {
+	if (prefersReducedMotion.current) {
 		stage = last;
 		return;
 	}
@@ -103,7 +103,7 @@ async function animate(by: 1 | -1): Promise<void> {
 	}
 }
 
-/** A press during an animation jumps to its end and then starts the move just asked for. */
+// A press during an animation jumps to its end, then starts the new move.
 async function move(by: 1 | -1): Promise<void> {
 	const target = exponent + by;
 	if (target < 0 || target > highest) return;
@@ -218,8 +218,8 @@ svg {
 }
 svg.resting {
 	opacity: 1;
-	/* The delay is the time the tiles take to enlarge, so the lines never cross moving tiles. */
-	transition: opacity 200ms ease-out 1000ms;
+	/* Waits for the tiles to enlarge, so the lines never cross moving tiles. */
+	transition: opacity 200ms ease-out var(--move);
 }
 text {
 	fill: black;

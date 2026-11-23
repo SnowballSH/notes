@@ -34,13 +34,12 @@ export interface Tick {
 
 const rounded = (value: number): number => Number(value.toFixed(2));
 
-/** At most a quarter of the inputs are marked, so that the best count is at least one iteration. */
+// At most a quarter of the inputs are marked, so that the best count is at least one iteration.
 export const mostMarked = (size: number): number => Math.max(1, Math.floor(size / 4));
 
 export const clampMarked = (marked: number, size: number): number =>
 	clamp(Math.round(marked), 1, mostMarked(size));
 
-/** The right end of the horizontal axis: far enough past the best count for the curve to come back down. */
 export const lastQuery = (size: number, marked: number): number =>
 	Math.max(fewestQueriesShown, bestCountsShown * bestIterations(size, marked));
 
@@ -49,7 +48,6 @@ export const xOf = (queries: number, last: number): number =>
 
 export const yOf = (chance: number): number => rounded(plot.top + innerHeight * (1 - chance));
 
-/** No classical algorithm with t queries finds the one marked input with a better chance than this. */
 export const classicalBound = (size: number, queries: number): number =>
 	Math.min(1, (queries + 1) / size);
 
@@ -62,10 +60,7 @@ export const groverPoints = (size: number, marked: number, last: number): QueryP
 export const linePath = (points: readonly Point[]): string =>
 	points.map(({ x, y }, index) => `${index === 0 ? "M" : "L"}${x},${y}`).join("");
 
-/**
- * The success probability between the whole numbers of queries too, as the curve sin²((2t + 1)θ).
- * Each query is cut into the same number of samples, so the curve passes through every dot.
- */
+// Each query is cut into the same number of samples, so the curve passes through every dot.
 export function curvePath(size: number, marked: number, last: number): string {
 	const samplesPerQuery = Math.ceil(innerWidth / last);
 	const samples = Array.from({ length: last * samplesPerQuery + 1 }, (_, index) => {
@@ -75,7 +70,6 @@ export function curvePath(size: number, marked: number, last: number): string {
 	return linePath(samples);
 }
 
-/** The classical bound as a straight line that stops rising when it reaches certainty. */
 export function classicalPath(size: number, last: number): string {
 	const certain = size - 1;
 	const corner = Math.min(last, certain);
@@ -86,14 +80,10 @@ export function classicalPath(size: number, last: number): string {
 	return linePath(certain < last ? [...rise, { x: xOf(last, last), y: yOf(1) }] : rise);
 }
 
-/** Where Grover's curve first comes back down to zero, which is rarely a whole number of queries. */
 export const troughQuery = (size: number, marked: number): number =>
 	Math.PI / (2 * groverAngle(size, marked)) - 0.5;
 
-/**
- * The middle of the word "classical": over the trough of Grover's curve, above the bound's line
- * along the whole word and above the sides of the trough.
- */
+// Over the trough of Grover's curve, above the bound's line along the whole word.
 export function classicalLabel(size: number, last: number): Point {
 	const halfWidth = (classicalHalfWidth * last) / innerWidth;
 	const centre = clamp(troughQuery(size, 1), halfWidth, last - halfWidth);
@@ -103,10 +93,6 @@ export function classicalLabel(size: number, last: number): Point {
 
 export const chanceSymbol: Point = { x: plot.left - 5, y: plot.top - 13 };
 
-/**
- * The font size in the picture's own units that is at least 12px on screen, for a picture shown
- * at the given width in pixels; a picture not yet measured takes the size of a wide one.
- */
 export const textSize = (shownWidth: number): number =>
 	shownWidth > 0
 		? rounded(clamp((smallestTextShown * plot.width) / shownWidth, textSizes.least, textSizes.most))
@@ -129,15 +115,12 @@ export const chanceTicks: readonly Tick[] = [0, 0.5, 1].map((value) => ({
 	at: yOf(value),
 }));
 
-/** Dots shrink as more of them share the axis, down to a size that still reads as a dot. */
 export const dotRadius = (last: number): number =>
 	rounded(clamp((0.3 * innerWidth) / last, 1.2, 3));
 
-/** The whole number of queries nearest to a horizontal position in the picture's own units. */
 export const queryAt = (x: number, last: number): number =>
 	clamp(Math.round(((x - plot.left) / innerWidth) * last), 0, last);
 
-/** The number of queries a key pressed on the plot moves to, if the key means anything there. */
 export function keyedQuery(queries: number, key: string, last: number): number | undefined {
 	const moved = (by: number): number => clamp(queries + by, 0, last);
 	switch (key) {
@@ -160,14 +143,14 @@ export function keyedQuery(queries: number, key: string, last: number): number |
 	}
 }
 
-/** To three decimals, after rounding noise is removed so that 3/16 is 0.188 and not 0.187. */
+// Rounding noise is removed first, so that 3/16 is 0.188 and not 0.187.
 export const formatChance = (chance: number): string => Number(chance.toFixed(10)).toFixed(3);
 
 const countQueries = (queries: number): string =>
 	`${queries} ${queries === 1 ? "query" : "queries"}`;
 
-/** The highlighted values in one line; the classical bound holds only for a single marked input. */
-export function describe(size: number, marked: number, queries: number): string {
+// The classical bound holds only for a single marked input.
+export function spokenSummary(size: number, marked: number, queries: number): string {
 	const search = marked === 1 ? `N = ${size}` : `N = ${size}, ${marked} marked`;
 	const grover = `Grover ${formatChance(successProbability(size, marked, queries))}`;
 	const classical =

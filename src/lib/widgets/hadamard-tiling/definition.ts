@@ -1,7 +1,7 @@
 import { defineWidget } from "../contract.ts";
 
-/** A larger matrix would give an entry less than a whole pixel of the 320px board. */
-export const largestLevel = 6;
+// A larger matrix would give an entry less than a pixel of the 320px board.
+const largestLevel = 6;
 
 export default defineWidget({
 	props: {

@@ -9,13 +9,13 @@ import type definition from "./definition.ts";
 import {
 	caption as captionText,
 	defaultMarked,
-	describe,
 	describeColumn,
 	meanLabel,
 	nextStep,
 	plotScale,
 	type Step,
 	shownAmplitude,
+	spokenSummary,
 	stateAfter,
 } from "./steps.ts";
 
@@ -87,7 +87,7 @@ function take(step: Step): void {
 		</div>
 	</div>
 	{#snippet caption()}
-		<p class="spoken">{describe(qubits, marked, steps)}</p>
+		<p class="spoken">{spokenSummary(qubits, marked, steps)}</p>
 		<p class="shown" aria-hidden="true">{captionText(qubits, marked, steps)}</p>
 	{/snippet}
 </WidgetFrame>
@@ -125,6 +125,11 @@ label:has(:focus-visible) {
 }
 .crowded .amplitude {
 	letter-spacing: -0.03em;
+}
+@media (width < 25rem) {
+	.figure.crowded {
+		--number-size: 0.5625rem;
+	}
 }
 .chart,
 .marking {
@@ -195,7 +200,7 @@ label.chosen {
 	color: var(--fui-accent-strong);
 	font-weight: 700;
 }
-/* The radio button itself is invisible but covers its label, so that it is what a click lands on. */
+/* The invisible radio button covers its label, so that a click lands on it. */
 input {
 	position: absolute;
 	inset: 0;

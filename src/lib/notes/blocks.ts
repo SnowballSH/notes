@@ -1,6 +1,5 @@
 import type { Attachment } from "svelte/attachments";
 
-/** Which collapsible blocks of a page were open, in document order, and where the page was scrolled. */
 export interface SavedBlocks {
 	open: boolean[];
 	scroll: number;
@@ -36,7 +35,6 @@ function write(path: string, saved: SavedBlocks): void {
 	} catch {}
 }
 
-/** The collapsible blocks of a note, leaving out the copy a reference preview shows. */
 export const blocksIn = (container: Element): HTMLDetailsElement[] => [
 	...container.querySelectorAll<HTMLDetailsElement>("details:not(.reference-preview *)"),
 ];
@@ -47,24 +45,19 @@ export function setAllBlocks(container: Element, open: boolean): void {
 
 let documentJustLoaded = true;
 
-/** Whether the document was loaded at this very page by a reload or by going back or forward. */
 function cameBackToThisPage(): boolean {
 	const [entry] = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
 	if (!entry || new URL(entry.name).pathname !== location.pathname) return false;
 	return entry.type === "reload" || entry.type === "back_forward";
 }
 
-/**
- * Proofs the reader opened stay open for the session: when they come back to the page, and
- * when it reloads. After a reload the browser restores the scroll position before the
- * proofs reopen, so the position is restored again once the page has settled.
- */
 export const rememberBlocks: Attachment = (container) => {
 	const path = location.pathname;
 	const saved = read(path);
 	const blocks = blocksIn(container);
 	if (saved?.open.length === blocks.length) {
 		for (const [index, block] of blocks.entries()) block.open = saved.open[index] ?? block.open;
+		// The browser restored the scroll before the blocks reopened and shifted the page.
 		if (documentJustLoaded && cameBackToThisPage()) {
 			requestAnimationFrame(() => window.scrollTo(0, saved.scroll));
 		}
@@ -98,10 +91,6 @@ function closeButtonFor(block: HTMLDetailsElement): HTMLButtonElement {
 	return button;
 }
 
-/**
- * A long proof can otherwise only be closed from its heading, a scroll away. An open block
- * taller than most of the window gets a button at its end that closes it.
- */
 export const closableBlocks: Attachment = (container) => {
 	const offerClosing = (block: HTMLDetailsElement) => {
 		const existing = block.querySelector(":scope > .close-block");

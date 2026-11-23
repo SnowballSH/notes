@@ -6,7 +6,6 @@ import type { RequestHandler } from "./$types";
 
 export const prerender = true;
 
-/** Every published page: the home page, each course outline and each note that is not a draft. */
 export const GET: RequestHandler = async () => {
 	const paths = ["/", ...courses.map(outlineHref), ...(await publishedNotes()).map(noteHref)];
 	const urls = paths.map((path) => `  <url><loc>${siteOrigin}${path}</loc></url>`).join("\n");

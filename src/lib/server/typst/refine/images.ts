@@ -1,5 +1,7 @@
 import {
+	ancestors,
 	attribute,
+	childElements,
 	type Element,
 	elementsNamed,
 	type ParentNode,
@@ -7,25 +9,12 @@ import {
 	textOf,
 } from "./dom";
 
-function enclosingFigure(image: Element): Element | undefined {
-	for (let node = image.parentNode; node && "tagName" in node; node = node.parentNode) {
-		if (node.tagName === "figure") return node;
-	}
-	return undefined;
-}
-
 function captionOf(image: Element): string | undefined {
-	const caption = enclosingFigure(image)?.childNodes.find(
-		(child): child is Element => "tagName" in child && child.tagName === "figcaption",
-	);
+	const figure = ancestors(image).find((node) => node.tagName === "figure");
+	const caption = figure && childElements(figure).find((child) => child.tagName === "figcaption");
 	return caption ? textOf(caption).trim() : undefined;
 }
 
-/**
- * An image the author gave no description is announced by its address, which for an
- * embedded image is a long run of data. It takes its figure's caption as its text, or
- * none, which tells a screen reader to pass over it.
- */
 export function describeImages(root: ParentNode): void {
 	for (const image of elementsNamed(root, "img")) {
 		if (attribute(image, "alt") === undefined) setAttribute(image, "alt", captionOf(image) ?? "");

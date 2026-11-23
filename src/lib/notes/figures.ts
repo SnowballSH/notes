@@ -2,7 +2,6 @@ import type { Attachment } from "svelte/attachments";
 
 const zoomable = "figure img:not(a img, .reference-preview *, .figure-zoom *)";
 
-/** The width the dialog shows an image at; an image already that wide gains nothing from it. */
 const enlargedWidth = (): number =>
 	Math.min(0.8 * window.innerWidth, 0.72 * window.innerHeight, 768);
 
@@ -38,7 +37,6 @@ function enlarged(image: HTMLImageElement, caption: string): HTMLDialogElement {
 
 const buttonAttributes = { role: "button", tabindex: "0" } as const;
 
-/** Makes an image a control when the dialog would show it larger, and an ordinary image when not. */
 function mark(image: HTMLImageElement): void {
 	const width = image.getBoundingClientRect().width;
 	const enlarges = width > 0 && width < enlargedWidth();
@@ -57,12 +55,6 @@ function mark(image: HTMLImageElement): void {
 	}
 }
 
-/**
- * A figure in a gallery is small, and a detailed one is unreadable at that size. A figure's
- * image that the dialog would show larger opens enlarged in it, by click or from the
- * keyboard. Which images those are is decided again when the window or a proof changes
- * size. An image inside a link keeps the link.
- */
 export const zoomableFigures: Attachment = (container) => {
 	if (!(container instanceof HTMLElement)) return;
 	const markAll = () => {

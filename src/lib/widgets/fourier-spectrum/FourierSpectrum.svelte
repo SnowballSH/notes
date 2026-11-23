@@ -9,7 +9,6 @@ import {
 	coefficientSymbol,
 	describeSpectrum,
 	flipped,
-	formatValue,
 	inputLabel,
 	matchingPreset,
 	polynomialTerms,
@@ -48,11 +47,11 @@ const chosen = $derived(matchingPreset(table));
 				type="button"
 				class="tile"
 				class:negative={value < 0}
-				aria-label="f({inputLabel(index)}) = {formatValue(value)}"
+				aria-label="f({inputLabel(index)}) = {formatAmplitude(value)}"
 				onclick={() => (table = flipped(table, index))}
 			>
 				<span class="input">{inputLabel(index)}</span>
-				<span class="value">{formatValue(value)}</span>
+				<span class="value">{formatAmplitude(value)}</span>
 			</button>
 		{/each}
 	</div>

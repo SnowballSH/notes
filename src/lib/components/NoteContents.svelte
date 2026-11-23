@@ -12,10 +12,8 @@ function toTop(event: MouseEvent): void {
 	window.scrollTo({ top: 0 });
 }
 
-/** A heading counts as reached once it is this close to the top of the window. */
 const reachedWithin = 120;
 let current = $state<string>();
-/** While the reader moves down the page the corner button steps aside, so it never covers the line being read. */
 let steppedAside = $state(false);
 const scrollStep = 4;
 
@@ -108,11 +106,6 @@ ol a[aria-current] {
 	outline: 2px solid var(--fui-accent);
 	outline-offset: -2px;
 }
-/*
- * Below the width that has room for the pinned list, a button in the corner opens the same
- * list from anywhere on the page. On a phone it stands in for the list under the title,
- * which would fill most of the first screen.
- */
 .jump-button {
 	position: fixed;
 	right: 1rem;
@@ -166,7 +159,6 @@ ol a[aria-current] {
 		display: block;
 	}
 }
-/* Wide windows have room beside the text column, so the list stays in view there. */
 @media (min-width: 80rem) {
 	.on-this-page {
 		position: fixed;

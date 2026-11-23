@@ -62,7 +62,7 @@ const dot = $derived(selected % 2);
 	min-width: 2.75rem;
 	color: var(--fui-ink-secondary);
 }
-/* Restating the resting border and background keeps the frame's hover style off these toggles. */
+/* Restates the resting look so that the frame's hover style does not stick after a tap. */
 button {
 	width: 2.75rem;
 	height: 2.75rem;

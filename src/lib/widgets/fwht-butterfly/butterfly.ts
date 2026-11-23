@@ -8,27 +8,25 @@ export const levels = Math.log2(defaultInput.length);
 const smallest = -3;
 const largest = 3;
 
-/** An entry of the array as it stands after a level; level 0 is the input. */
 export interface Node {
 	level: number;
 	index: number;
 }
 
-/** The two entries of the previous level that one entry is made from: upper + sign × lower. */
-export interface Butterfly {
+interface Butterfly {
 	upper: number;
 	lower: number;
 	sign: 1 | -1;
 }
 
-export interface Wire {
+interface Wire {
 	level: number;
 	from: number;
 	to: number;
 	sign: 1 | -1;
 }
 
-export const halfAt = (level: number): number => 2 ** (level - 1);
+const halfAt = (level: number): number => 2 ** (level - 1);
 
 export function butterflyInto({ level, index }: Node): Butterfly {
 	const half = halfAt(level);
@@ -36,7 +34,6 @@ export function butterflyInto({ level, index }: Node): Butterfly {
 	return { upper, lower: upper | half, sign: index === upper ? 1 : -1 };
 }
 
-/** The input, then the array after each pass of the fast Walsh-Hadamard transform. */
 export function butterflyColumns(input: readonly number[]): number[][] {
 	const columns = [[...input]];
 	for (let level = 1; halfAt(level) < input.length; level++) {
@@ -64,7 +61,7 @@ export const allWires = (size: number): Wire[] =>
 		Array.from({ length: size }, (_, index) => wiresInto({ level: pass + 1, index })),
 	).flat(2);
 
-/** Plus wires first, so that no solid wire is drawn over the dashes of a minus wire. */
+// Plus wires first, so that no solid wire is drawn over the dashes of a minus wire.
 export const minusOnTop = (wires: readonly Wire[]): Wire[] =>
 	wires.toSorted((first, second) => second.sign - first.sign);
 
@@ -87,7 +84,6 @@ export const describeLevel = (level: number): string =>
 export const describeInput = (values: readonly number[]): string =>
 	`Input: ${values.map(formatSigned).join(", ")}.`;
 
-/** The line of the algorithm that set one entry, with the numbers it used. */
 export function equation(columns: readonly (readonly number[])[], node: Node): string {
 	const value = formatSigned(columns[node.level]?.[node.index] ?? 0);
 	if (node.level === 0) return `f[${node.index}] = ${value}`;
@@ -99,7 +95,6 @@ export function equation(columns: readonly (readonly number[])[], node: Node): s
 	return `f[${node.index}] = ${names} = ${numbers} = ${value}`;
 }
 
-/** Where an arrow key takes the focus among the computed entries, if the key is an arrow. */
 export function movedNode(
 	{ level, index }: Node,
 	key: string,

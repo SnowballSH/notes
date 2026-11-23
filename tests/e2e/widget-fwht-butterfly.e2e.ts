@@ -90,7 +90,6 @@ const levelCount = 3;
 const parsed = (text: string): number => Number(text.replace("−", "-"));
 const written = (value: number): string => String(value).replace("-", "−");
 
-/** The array after each pass of the fast Walsh-Hadamard transform, computed apart from the widget. */
 function passes(input: readonly number[]): number[][] {
 	const columns: number[][] = [];
 	let values = [...input];

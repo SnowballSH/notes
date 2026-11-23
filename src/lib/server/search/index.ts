@@ -1,10 +1,11 @@
+import { noteHref } from "#lib/notes/names.ts";
 import type { CompiledNote } from "#lib/notes/types.ts";
 import type { SearchEntry } from "#lib/search/types.ts";
 import { compileNote, publishedNotes } from "#lib/server/typst/notes.ts";
 import { findCourse } from "#lib/site/courses.ts";
 
 export function entriesOf(note: CompiledNote, courseTitle: string): SearchEntry[] {
-	const href = `/${note.course}/${note.slug}`;
+	const href = noteHref(note);
 	const title = note.meta.title;
 	return [
 		{ label: title, context: courseTitle, href, kind: "note" },
@@ -27,7 +28,6 @@ export function entriesOf(note: CompiledNote, courseTitle: string): SearchEntry[
 	];
 }
 
-/** Everything a reader can jump to, across every published note. */
 export async function searchIndex(): Promise<SearchEntry[]> {
 	const notes = await Promise.all((await publishedNotes()).map(compileNote));
 	return notes.flatMap((note) =>

@@ -3,7 +3,6 @@ import { Link } from "foundationui/svelte";
 
 interface Crumb {
 	label: string;
-	/** Omitted for a level that has no page of its own. */
 	href?: string;
 }
 

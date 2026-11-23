@@ -3,7 +3,7 @@ import "../app.css";
 import { Footer, Header, Link, ThemeToggle } from "foundationui/svelte";
 import SearchDialog from "#lib/components/SearchDialog.svelte";
 
-let { children } = $props();
+const { children } = $props();
 </script>
 
 <Header>

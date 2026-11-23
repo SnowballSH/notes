@@ -1,6 +1,6 @@
 import { addClass, attribute, descendants, elementsNamed, type ParentNode } from "./dom";
 
-/** The colours of Typst's built-in syntax theme, by the kind of token each one marks. */
+// The colours of Typst's built-in syntax theme.
 const tokenKinds: Readonly<Record<string, string>> = {
 	"#d73948": "keyword",
 	"#4b69c6": "function",
@@ -13,10 +13,6 @@ const tokenKinds: Readonly<Record<string, string>> = {
 
 const inlineColour = /^color: (#[0-9a-f]{6})$/;
 
-/**
- * Typst colours code with fixed colours meant for a white page. Each known colour becomes
- * a class, so that the stylesheet can colour the token for either theme.
- */
 export function classifyCodeTokens(root: ParentNode): void {
 	for (const code of elementsNamed(root, "code")) {
 		for (const token of descendants(code).filter((element) => element.tagName === "span")) {

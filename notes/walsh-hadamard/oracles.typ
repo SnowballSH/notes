@@ -32,7 +32,7 @@ Let's look at an example of a problem in the query model, on a classical compute
   $
   so three queries reveal $sigma$. In general, this takes $n$ queries.
 
-  Intuitively, we cannot hope to do better, since each query gives us a single bit of information, and $sigma$ has $n$ bits. This intuition is correct: the answers to $k$ queries are $k$ bits, so they can take at most $2^k$ different values, and a deterministic algorithm that sees the same answers must give the same output. Since there are $2^n$ possible values of $sigma$, a deterministic algorithm that always finds $sigma$ needs at least $n$ queries in the worst case. Randomness does not help: an algorithm that is always correct stays correct when its random choices are fixed in advance. But while we are talking about quantum computation, perhaps we all need to free our minds from the classical model of computation.
+  Intuitively, we cannot hope to do better, since each query gives us a single bit of information, and $sigma$ has $n$ bits. This intuition is correct. The answers to $k$ queries are $k$ bits, so they can take at most $2^k$ different values, and a deterministic algorithm that sees the same answers must give the same output. Since there are $2^n$ possible values of $sigma$, a deterministic algorithm that always finds $sigma$ needs at least $n$ queries in the worst case. Randomness does not help either (exercise: why?). But while we are talking about quantum computation, perhaps we all need to free our minds from the classical model of computation.
 ] <ex-classical-parity>
 
 Keep this example in mind. By the end of this chapter, we will show that a quantum computer can solve the same problem with a single query.

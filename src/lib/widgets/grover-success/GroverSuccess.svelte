@@ -14,7 +14,6 @@ import {
 	classicalLabel,
 	classicalPath,
 	curvePath,
-	describe,
 	describePicture,
 	dotRadius,
 	groverPoints,
@@ -24,6 +23,7 @@ import {
 	plot,
 	queryAt,
 	queryTicks,
+	spokenSummary,
 	textSize,
 	xOf,
 	yOf,
@@ -34,7 +34,7 @@ const props: WidgetProps<typeof definition> = $props();
 let qubits = $state(untrack(() => props.qubits));
 let marked = $state(untrack(() => clampMarked(props.marked, 2 ** props.qubits)));
 let queries = $state(untrack(() => bestIterations(2 ** props.qubits, marked)));
-let announcement = $state(untrack(() => describe(2 ** props.qubits, marked, queries)));
+let announcement = $state(untrack(() => spokenSummary(2 ** props.qubits, marked, queries)));
 let dragging = $state(false);
 let picture = $state<SVGSVGElement>();
 let shownWidth = $state(0);
@@ -45,21 +45,20 @@ const last = $derived(lastQuery(size, marked));
 const points = $derived(groverPoints(size, marked, last));
 const curve = $derived(curvePath(size, marked, last));
 const chosen = $derived(points[queries] ?? { queries: 0, chance: 0, x: xOf(0, last), y: yOf(0) });
-const summary = $derived(describe(size, marked, queries));
+const summary = $derived(spokenSummary(size, marked, queries));
 const classicalAt = $derived(classicalLabel(size, last));
 const bestAt = $derived(xOf(best, last));
 const baseline = yOf(0);
 
-/** A new search starts at its best count, where the curve peaks. */
 function search(nextQubits: number, nextMarked: number): void {
 	const nextSize = 2 ** nextQubits;
 	qubits = nextQubits;
 	marked = clampMarked(nextMarked, nextSize);
 	queries = bestIterations(nextSize, marked);
-	announcement = describe(nextSize, marked, queries);
+	announcement = spokenSummary(nextSize, marked, queries);
 }
 
-/** The slider speaks its own value, so the caption falls silent instead of repeating it. */
+// The slider speaks its own value, so the caption falls silent.
 function choose(next: number): void {
 	if (next === queries) return;
 	queries = next;
@@ -307,7 +306,7 @@ svg {
 	font-family: var(--fui-font-sans);
 	fill: var(--fui-ink-muted);
 	text-anchor: middle;
-	/* A halo in the page colour keeps the word readable where the curve passes behind it. */
+	/* A halo keeps the word readable where the curve passes behind it. */
 	stroke: var(--fui-surface-base);
 	stroke-width: 3;
 	paint-order: stroke;
@@ -316,7 +315,7 @@ svg {
 	cursor: pointer;
 	/* A sideways drag picks a number of queries; an up or down one still scrolls the page. */
 	touch-action: pan-y;
-	/* The .ring circle is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
+	/* .ring is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
 	outline: none;
 }
 .chooser.dragging {

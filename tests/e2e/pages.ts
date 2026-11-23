@@ -6,8 +6,7 @@ const internalLink = /href="(\/(?!\/)[^"#?]*)["#?]/g;
 const sitemapAddress = /<loc>https?:\/\/[^/]+(\/[^<]*)<\/loc>/g;
 const isPage = (path: string): boolean => !path.startsWith("/_app/") && !/\.[a-z0-9]+$/.test(path);
 
-/** No page of the built site has what a test looks for; any other failure is a broken site. */
-export class NoSuchPageError extends Error {
+class NoSuchPageError extends Error {
 	override readonly name = "NoSuchPageError";
 }
 
@@ -28,8 +27,7 @@ const attribute = (tag: string, name: string): string | undefined =>
 		.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1]
 		?.replace(/&(?:quot|#34|#39|lt|gt|amp);/g, (entity) => entities[entity] ?? entity);
 
-/** The props each placement of a widget was written with, in the order of the page. */
-export function placedProps(html: string, name: string): PlacedProps[] {
+function placedProps(html: string, name: string): PlacedProps[] {
 	return (html.match(widgetTag) ?? [])
 		.filter((tag) => attribute(tag, "name") === name)
 		.map((tag): PlacedProps => {
@@ -38,7 +36,6 @@ export function placedProps(html: string, name: string): PlacedProps[] {
 		});
 }
 
-/** Every page of the built site: those the sitemap lists, and those its own links lead to. */
 export async function sitePages(request: APIRequestContext): Promise<string[]> {
 	const sitemap = await request.get("/sitemap.xml");
 	const listed = [...(await sitemap.text()).matchAll(sitemapAddress)].flatMap(
@@ -55,7 +52,6 @@ export async function sitePages(request: APIRequestContext): Promise<string[]> {
 	return [...found];
 }
 
-/** The first page whose HTML contains every marker, such as a proof or a widget. */
 export async function pageWith(request: APIRequestContext, ...markers: string[]): Promise<string> {
 	for (const path of await sitePages(request)) {
 		const html = await (await request.get(path)).text();
@@ -66,7 +62,6 @@ export async function pageWith(request: APIRequestContext, ...markers: string[])
 
 interface Placement {
 	path: string;
-	/** The position of the placement among the widgets of the same name on its page. */
 	index: number;
 }
 
@@ -83,10 +78,6 @@ async function placementOf(
 	throw new NoSuchPageError(`no page of the site has the ${name} widget looked for`);
 }
 
-/**
- * Opens the first page that places a widget, optionally only a placement with certain props, and
- * returns that widget. The test is skipped when no page places one, and fails on any other error.
- */
 export async function openWidget(
 	page: Page,
 	request: APIRequestContext,
@@ -118,14 +109,12 @@ export const markers = {
 	contents: 'class="jump-button',
 } as const;
 
-/** Opens every proof, as a reader revising would, so that checks cover what is inside them. */
 export async function openAllBlocks(page: Page): Promise<void> {
 	await page.evaluate(() => {
 		for (const block of document.querySelectorAll("details")) block.open = true;
 	});
 }
 
-/** Records what would tell a reader something is broken: script errors and failed requests. */
 export function watchForProblems(page: Page): string[] {
 	const problems: string[] = [];
 	page.on("pageerror", (error) => problems.push(String(error)));

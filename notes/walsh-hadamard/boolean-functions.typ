@@ -5,7 +5,7 @@
   order: 1,
 )
 
-Every Boolean function can be written as a polynomial, and the coefficients of that polynomial tell us a lot about the function. This chapter sets up that polynomial, the _Fourier expansion_, and the tools for working with its coefficients.
+Every Boolean function can be written as a polynomial, and the coefficients of that polynomial tell us a lot about the function. This chapter introduces that polynomial, the _Fourier expansion_, and the tools for working with its coefficients.
 
 = Boolean Functions
 
@@ -16,7 +16,7 @@ Every Boolean function can be written as a polynomial, and the coefficients of t
 We will write the two bits in whichever way is most convenient:
 
 - As elements of the field $FF_2$, so that the inputs form the vector space $FF_2^n$ and adding two inputs is taking their bitwise XOR.
-- As the signs $1$ and $-1$, where the bit $b in FF_2$ becomes $(-1)^b$. So $0$ (false) becomes $1$, and $1$ (true) becomes $-1$.
+- As the signs $1$ and $-1$, where the bit $b in FF_2$ becomes $(-1)^b$. In other words, $0$ (false) becomes $1$, and $1$ (true) becomes $-1$.
 
 The sign encoding turns addition in $FF_2$ into multiplication of real numbers, since $(-1)^(a + b) = (-1)^a (-1)^b$. This is what lets us write Boolean functions as polynomials. For that reason, we will mostly work with functions
 $
@@ -72,7 +72,7 @@ There are $2^n$ parity functions, one for each subset of $[n]$. It makes sense, 
 ] <thm-fourier-expansion>
 
 #proof[
-  We first show that such a polynomial exists, by interpolation. For each point $alpha in {-1, 1}^n$, consider the polynomial
+  We first show that such a polynomial exists by interpolation. For each point $alpha in {-1, 1}^n$, consider the polynomial
   $
     1_alpha (x) = product_(i=1)^n (1 + alpha_i x_i) / 2.
   $
@@ -145,7 +145,7 @@ Under this inner product, the parity functions are as nice as a basis can be.
   $
     chevron.l chi_S, chi_T chevron.r = EE_x [chi_S (x) chi_T (x)] = EE_x [chi_(S Delta T) (x)],
   $
-  which is $1$ if $S Delta T = emptyset$ and $0$ otherwise. $S Delta T = emptyset$ if and only if $S = T$. $square$
+  which is $1$ if $S Delta T = emptyset$, that is, if $S = T$, and $0$ otherwise. $square$
 ]
 
 Orthonormality gives a direct formula for each Fourier coefficient.

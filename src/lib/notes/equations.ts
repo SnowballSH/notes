@@ -1,7 +1,6 @@
 import type { Attachment } from "svelte/attachments";
 import { reachIfScrolling } from "./scrolling.ts";
 
-/** An equation this much too wide is shrunk to fit; a wider one scrolls sideways instead. */
 const smallestScale = 0.82;
 
 function shrinkToFit(equation: HTMLElement): void {
@@ -29,11 +28,6 @@ function settle(equation: HTMLElement): void {
 	reachIfScrolling(equation);
 }
 
-/**
- * On a narrow screen many display equations miss the width by a few pixels. Those are set
- * slightly smaller so that they show whole, which leaves sideways scrolling to the
- * equations that are really too wide, which the keyboard can then reach and scroll.
- */
 export const fitEquations: Attachment = (container) => {
 	const equations = () => [...container.querySelectorAll<HTMLElement>(".equation")];
 	const fitAll = () => {

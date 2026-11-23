@@ -1,7 +1,7 @@
 import { formatAmplitude, ket, minusSign } from "../../quantum/format.ts";
 import { type Amplitudes, settled } from "../../quantum/state.ts";
 
-/** The state is kept as a whole number of steps of π/24 round the circle, so that H never drifts. */
+// The state is a whole number of steps round the circle, so that repeated H never drifts.
 export const stepsPerTurn = 48;
 const stepAngle = (2 * Math.PI) / stepsPerTurn;
 const quarterTurn = stepsPerTurn / 4;
@@ -14,11 +14,9 @@ export const wrapStep = (step: number): number =>
 
 export const angleOf = (step: number): number => step * stepAngle;
 
-/** The real qubit state (cos φ, sin φ) at a step round the circle. */
 export const stateAt = (step: number): Amplitudes =>
 	settled([Math.cos(angleOf(step)), Math.sin(angleOf(step))]);
 
-/** H reflects across the line at π/8, which sends the angle φ to π/4 − φ. */
 export const reflectStep = (step: number): number => wrapStep(eighthTurn - step);
 
 export const mirrorAngle = Math.PI / 8;
@@ -30,11 +28,9 @@ export const namedStates = [
 	{ name: ket(minusSign), step: stepsPerTurn - eighthTurn },
 ] as const;
 
-/** The step nearest the direction (across, up) from the centre of the circle. */
 export const nearestStep = (across: number, up: number): number =>
 	wrapStep(Math.round(Math.atan2(up, across) / stepAngle));
 
-/** Where a key pressed on the handle moves the state, if the key means anything there. */
 export function keyedStep(step: number, key: string): number | undefined {
 	switch (key) {
 		case "ArrowUp":

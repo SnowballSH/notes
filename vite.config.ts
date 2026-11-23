@@ -6,7 +6,6 @@ import { defineConfig, type Plugin } from "vite";
 
 const notesDirectory = resolve("notes");
 
-/** Reloads the page when a note, the library or an image a note uses is saved, added or removed. */
 const reloadOnNoteChange: Plugin = {
 	name: "notes-typst-reload",
 	configureServer({ watcher, ws }) {

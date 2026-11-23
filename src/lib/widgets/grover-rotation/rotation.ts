@@ -3,21 +3,16 @@ import { clamp } from "../../quantum/numbers.ts";
 
 const tolerance = 1e-9;
 
-/** With more than a quarter of the inputs marked, one iteration already overshoots the marked axis. */
+// With more than a quarter of the inputs marked, one iteration already overshoots the marked axis.
 export const mostMarked = (qubits: number): number => 2 ** qubits / 4;
 
 export const clampMarked = (marked: number, qubits: number): number =>
 	clamp(marked, 1, mostMarked(qubits));
 
-/** The angle of the state above the unmarked axis after the given number of iterations. */
 export const stateAngle = (size: number, marked: number, iterations: number): number =>
 	(2 * iterations + 1) * groverAngle(size, marked);
 
-/**
- * Iterating stops at the state nearest the negative unmarked axis, a half turn from where the arrow
- * would start with nothing marked: the t whose angle (2t + 1)θ is within θ of π, above or below the
- * axis, and the earlier of the two when θ = π/6 puts them equally near.
- */
+// The t whose angle (2t + 1)θ is nearest π, the earlier of two equally near.
 export const lastIteration = (size: number, marked: number): number =>
 	Math.ceil(Math.PI / (2 * groverAngle(size, marked)) - 1 - tolerance);
 
@@ -36,7 +31,7 @@ export const chanceLabel = (probability: number): string => `P = ${formatProbabi
 export const caption = (qubits: number, iterations: number): string =>
 	`N = ${2 ** qubits}, t = ${iterations}`;
 
-export function describe(qubits: number, marked: number, iterations: number): string {
+export function spokenSummary(qubits: number, marked: number, iterations: number): string {
 	const size = 2 ** qubits;
 	const angle = stateAngle(size, marked, iterations).toFixed(2);
 	const probability = formatProbability(successProbability(size, marked, iterations));

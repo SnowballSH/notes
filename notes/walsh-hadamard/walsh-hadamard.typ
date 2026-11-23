@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "The Walsh-Hadamard transform",
-  summary: "The Walsh-Hadamard matrices, their relationship with the Fourier coefficients, and an algorithm to compute the coefficients efficiently.",
+  summary: "The Walsh-Hadamard matrices, how they give the Fourier coefficients, and a fast algorithm to compute all of them.",
   order: 2,
 )
 
@@ -28,9 +28,11 @@
   )
 }
 
-To compute Fourier coefficients efficiently, we can discuss a specific family of matrices that are closely related to Boolean functions.
+We are now ready to enter the world of Walsh-Hadamard transform. We will discuss a simple family of matrices that are closely related to Boolean functions. We will see that, surprisingly, this matrix exposes the Fourier coefficients of any Boolean function.
 
 = Hadamard Matrix
+
+To motivate the definition, recall that in the previous chapter, we repeated applied the idea of orthogonalality of parity functions. In our proofs, often times we can show that most terms in a summation vanish because of interactions between orthogonal parity functions. Let's continue exploiting the idea of orthogonality.
 
 #definition(title: "Hadamard Matrix")[
   A _Hadamard matrix_ is a square matrix with entries in ${-1,1}$ whose rows are mutually orthogonal.
@@ -67,6 +69,8 @@ This definition seems a bit difficult to work with, so let us prove an alternati
 
 = The Walsh-Hadamard Matrices
 
+Now, it's still not very clear how to construct a family of such matrices. Fortunately, there is a simple recursively defined family of matrices that might fit the above definition.
+
 #definition(title: "The Walsh-Hadamard Matrices")[
   The _Walsh-Hadamard matrices_ $(H_(2^n))_(n >= 0)$ are a sequence of matrices defined recursively, with $H_1 = [1]$ and
   $
@@ -87,7 +91,7 @@ Interestingly, families of Hadamard matrices were actually first constructed by 
 
 The rows of the Walsh-Hadamard matrices, when viewed as Boolean functions, were used by electrical engineers in the 1890s to find transpositions of wires that minimized crosstalk, and Walsh introduced the idea formally into mathematics in 1923.
 
-Despite being called the Walsh-Hadamard matrices, it is not entirely obvious that they are even Hadamard matrices. We can show that this is indeed true.
+Despite their name, it is not entirely obvious that the Walsh-Hadamard matrices are even Hadamard matrices. We can show that this is indeed true.
 
 #proposition(title: "The Walsh-Hadamard Matrices are Hadamard Matrices")[
   For all $n >= 0$, $H_(2^n)$ is a Hadamard matrix.
@@ -125,7 +129,7 @@ Let us analyze the entries of the Walsh-Hadamard matrices. Before doing so, we n
 
 Furthermore, when analyzing row $i$ of $H_(2^n)$, we would like to case on whether $i$ is in the first or second half of the indices, because the definition of the row differs in the recursive definition based on which half $i$ is in. Casing on whether $i <= 2^(n-1)$ and constructing the sub-index $i' = i$ in the first case and $i' = i - 2^(n-1)$ in the second seems quite annoying and unintuitive.
 
-But not all hope is lost, and a natural but interesting idea surfaces. First, we will use $0$-based indexing, so the indices for the rows and columns of $H_(2^n)$ are from $0$ to $2^n - 1$. For an index $i in {0, 1, ..., 2^n - 1}$, let us write $i$ as a sequence of bits: $arrow(i) = (i_0, i_1, ..., i_(n-1))$, where $i_0$ is the least significant bit and $i_(n-1)$ is the most significant bit. For example, if $i=6$ and $n=3$, we can write $arrow(i) = (0, 1, 1)$, since $6_(10) = 110_2$.
+But not all hope is lost, and a natural but interesting idea surfaces. First, we will use zero-based indexing, so the indices for the rows and columns of $H_(2^n)$ are from $0$ to $2^n - 1$. For an index $i in {0, 1, ..., 2^n - 1}$, let us write $i$ as a sequence of bits: $arrow(i) = (i_0, i_1, ..., i_(n-1))$, where $i_0$ is the least significant bit and $i_(n-1)$ is the most significant bit. For example, if $i=6$ and $n=3$, we can write $arrow(i) = (0, 1, 1)$, since $6_(10) = 110_2$.
 
 With this notation, given an index $arrow(i) = (i_0, i_1, ..., i_(n-1))$, to get the index $i'$ for the submatrix from the previous iteration of the recursive definition, we can simply drop the most significant bit and write
 $
@@ -214,7 +218,7 @@ $
   f(x) = 1/2^n sum_(alpha in {-1, 1}^n) f(alpha) product_(i=1)^n (1 + alpha_i x_i).
 $
 
-Let's analyze the time complexity of this naive method. We will assume that we are given as input the output (a relatively small number) of each of the $2^n$ inputs. Therefore, the input consists of $2^n$ small numbers, so it is convenient to write $N = "length of input" = 2^n$.
+Let's analyze the time complexity of this naive method. We will assume that we are given as input the output (a relatively small number) on each of the $2^n$ inputs. Therefore, the input consists of $2^n$ small numbers, so it is convenient to write $N = "length of input" = 2^n$.
 
 #proposition(title: "Time Complexity of the Naive Method")[
   The naive method of computing the Fourier expansion of a function $f : {-1, 1}^n -> RR$ takes $O(N^2) = O(2^(2n))$ time.
@@ -234,7 +238,7 @@ For real-world scenarios where $n >= 20$, this algorithm is hopelessly slow.
 
 Fortunately, it seems like our Walsh-Hadamard transform is very sophisticated, and perhaps it can compute the Fourier expansion with less time cost?
 
-We can use the Walsh-Hadamard transform to reduce the problem of Fourier expansion into computing the vector $H_(2^n) f$. Unfortunately, $H_(2^n)$ has dimensions $2^n times 2^n$, so it seems that using normal matrix-vector multiplication algorithms, this would take $O(2^(2n)) = O(N^2)$ time, which is no better than the naive algorithm.
+We can use the Walsh-Hadamard transform to reduce the problem of Fourier expansion to computing the vector $H_(2^n) f$. Unfortunately, $H_(2^n)$ has dimensions $2^n times 2^n$, so it seems that using normal matrix-vector multiplication algorithms, this would take $O(2^(2n)) = O(N^2)$ time, which is no better than the naive algorithm.
 
 Again, not all hope is lost. The matrices $H_(2^n)$ are defined recursively using only two different kinds of matrices from the previous iteration, so there may be some structure that allows us to cleverly compute $H_(2^n) f$ without bashing out the entire multiplication.
 
@@ -303,7 +307,7 @@ void fwht(vector<long long>& f) {
 }
 ```
 
-The proof works from the top down: it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
+The proof works from the top down, i.e., it splits the array into two halves, recurses on each half, then merges. The code does the same merges from the bottom up, which avoids the recursion. It first merges blocks of size $1$ into blocks of size $2$, then blocks of size $2$ into blocks of size $4$, and so on, until the whole array is one block.
 
 Here is a small interactive widget that runs the code on eight values, one round of the outer loop at a time.
 
@@ -311,9 +315,9 @@ Here is a small interactive widget that runs the code on eight values, one round
   The interactive diagram of the fast transform needs JavaScript.
 ]
 
-A block of size $1$ is already its own transform, since $H_1 = [1]$. So whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
+A block of size $1$ is already its own transform, since $H_1 = [1]$. Whenever the code merges two neighboring blocks of size `half`, each of them already holds its own transform, and they play the roles of $v_0$ and $v_1$ in the proof. The innermost loop then overwrites them with $v_0 + v_1$ and $v_0 - v_1$, one entry at a time, exactly as in the proof. This happens in place, so the code needs no extra memory.
 
-The outer loop runs $n$ times, once for each level of the recursion, and each round touches every entry of the array once. So the running time is $O(n 2^n) = O(N log N)$, which agrees with @thm-fwht. The code assumes that the values of $f$ are integers, so every entry stays an integer. To obtain the Fourier coefficients of $f$, we divide every entry of the result by $N$, which may no longer give integers.
+The outer loop runs $n$ times, once for each level of the recursion, and each round touches every entry of the array once. The running time is therefore $O(n 2^n) = O(N log N)$, which agrees with @thm-fwht. The code assumes that the values of $f$ are integers, so every entry stays an integer. To obtain the Fourier coefficients of $f$, we divide every entry of the result by $N$, which may no longer give integers.
 
 = Conclusion
 

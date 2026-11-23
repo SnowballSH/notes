@@ -56,6 +56,7 @@ const pixels = (height: number): string => `${Math.round(height * 100) / 100}px`
 const jump = $derived(
 	takenHeight !== undefined && reservedHeight !== undefined ? takenHeight - reservedHeight : 0,
 );
+const jumps = $derived(Math.abs(jump) > 0.5);
 </script>
 
 <section id={name} class="bench">
@@ -102,13 +103,13 @@ const jump = $derived(
 		</article>
 	{/key}
 
-	<p class="quiet" class:warning={Math.abs(jump) > 0.5}>
+	<p class="quiet" class:warning={jumps}>
 		{#if definition.height === undefined}
 			Takes {pixels(takenHeight ?? 0)} here and reserves nothing, so the text below it jumps when
 			it loads. Declare <code>height</code> in its definition to prevent that.
 		{:else}
 			Takes {pixels(takenHeight ?? 0)} here and reserves {pixels(reservedHeight ?? 0)}.
-			{#if Math.abs(jump) > 0.5}
+			{#if jumps}
 				The text below it will jump by {pixels(Math.abs(jump))} when it loads: correct
 				<code>height</code> in its definition.
 			{/if}

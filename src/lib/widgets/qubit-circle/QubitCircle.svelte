@@ -34,7 +34,6 @@ let step = $state(0);
 let announcement = $state(describeState(stateAt(0)));
 let dragging = $state(false);
 let picture = $state<SVGSVGElement>();
-/** The arrow as drawn: it slides along the chord to its mirror image when H is applied. */
 const shown = new Tween<Amplitudes>(stateAt(0), { easing: cubicInOut });
 
 const current = $derived(stateAt(step));
@@ -51,7 +50,7 @@ function moveTo(next: number, duration = 0): void {
 	shown.set(stateAt(next), { duration });
 }
 
-/** A button says where it went; the handle speaks its own value, so moveTo leaves the caption silent. */
+// The handle speaks its own value, so only the buttons announce the state.
 function jumpTo(next: number, duration = 0): void {
 	moveTo(next, duration);
 	announcement = describeState(stateAt(next));
@@ -224,7 +223,7 @@ button.apply {
 	border-color: var(--fui-accent);
 	font-weight: 600;
 }
-/* A hover that outlasts the click must not look like a pressed preset, so H thickens its outline instead of filling. */
+/* A hover that outlasts the click must not look like a pressed state button. */
 button.apply:hover {
 	border-color: var(--fui-accent);
 	background: transparent;
@@ -271,7 +270,7 @@ p {
 .symbols .negative {
 	color: var(--fui-code-warm);
 }
-/* Narrower than the circle, the gap and the bars together, the bars wrap under the circle. */
+/* 27rem is the circle, the gap and the bars side by side. */
 @container (width < 27rem) {
 	.circle {
 		margin-inline: auto;
@@ -340,7 +339,7 @@ p {
 	font-weight: 700;
 	text-anchor: middle;
 	dominant-baseline: central;
-	/* A halo in the page colour, so the mirror line and the chord break around the letter near |+⟩. */
+	/* A halo, so the mirror line and the chord break around the letter. */
 	paint-order: stroke;
 	stroke: var(--fui-surface-base);
 	stroke-width: 4;
@@ -357,7 +356,7 @@ p {
 .handle {
 	cursor: grab;
 	touch-action: none;
-	/* The .ring circle is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
+	/* .ring is the focus ring: an outline on an SVG group follows its bounding box unreliably. */
 	outline: none;
 }
 .handle.dragging {

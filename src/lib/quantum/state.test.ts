@@ -14,10 +14,9 @@ import {
 const sum = (values: readonly number[]): number =>
 	values.reduce((total, value) => total + value, 0);
 
-/** Built from the recursive definition: H_1 = [1] and H_2N = [[H_N, H_N], [H_N, -H_N]]. */
-function walshHadamard(level: number): number[][] {
+function sylvesterMatrix(level: number): number[][] {
 	if (level === 0) return [[1]];
-	const smaller = walshHadamard(level - 1);
+	const smaller = sylvesterMatrix(level - 1);
 	return [
 		...smaller.map((row) => [...row, ...row]),
 		...smaller.map((row) => [...row, ...row.map((entry) => -entry)]),
@@ -70,7 +69,7 @@ describe("hadamardOnEveryQubit", () => {
 	});
 
 	it.each([1, 2, 3])("is the Walsh-Hadamard matrix of %i qubits over sqrt(2^n)", (qubits) => {
-		const matrix = walshHadamard(qubits);
+		const matrix = sylvesterMatrix(qubits);
 		const size = 2 ** qubits;
 		const drawn = Array.from({ length: size }, (_, index) => Math.sin(3 * index + 1));
 		const length = Math.hypot(...drawn);

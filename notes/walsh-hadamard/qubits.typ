@@ -1,7 +1,7 @@
 #import "/lib/notes.typ": *
 #show: note.with(
   title: "Qubits, measurement, and the Hadamard gate",
-  summary: "Basics of quantum computing: states, measurement, gates as unitary matrices, and the Hadamard gate as a Walsh-Hadamard matrix.",
+  summary: "The basics of quantum computing: states, measurement, gates, and the Hadamard gate as a Walsh-Hadamard matrix.",
   order: 4,
 )
 
@@ -54,7 +54,7 @@ We cannot look at the amplitudes of a state directly. The only way to get inform
   Measuring the state $ket(psi) = sum_(x in FF_2^n) alpha_x ket(x)$ outputs the bitstring $x$ with probability $abs(alpha_x)^2$. After the measurement, the state is $ket(x)$.
 ] <def-measurement>
 
-The requirement that the squares of the amplitudes sum to $1$ is exactly what makes these probabilities sum to $1$. Notice that measuring destroys the state: we get a single bitstring, and all of the other amplitudes are gone.
+The requirement that the squares of the amplitudes sum to $1$ is exactly what makes these probabilities sum to $1$. Notice that measuring destroys the state.
 
 #example(title: "Two Fair Coins")[
   Consider the two states
@@ -74,7 +74,7 @@ Before measuring, we are allowed to change the state. The operations we may perf
   A _gate_ on $n$ qubits is a $2^n times 2^n$ unitary matrix $U$. Applying the gate to the state $ket(psi)$ produces the state $U ket(psi)$.
 ] <def-gate>
 
-Recall from linear algebra that $U$ is called a _unitary matrix_ if $U^dagger U = I$, where $U^dagger$ is the conjugate transpose of $U$. For a real matrix, $U^dagger = U^"T"$, so a real matrix is unitary exactly when $U^"T" U = I$.
+Recall from linear algebra that $U$ is called a _unitary matrix_ if $U^dagger U = I$, where $U^dagger$ is the conjugate transpose of $U$. For a real matrix, $U^dagger = U^"T"$, so a real matrix is unitary if and only if $U^"T" U = I$.
 
 Let's be a bit careful with this definition. Why do we only allow gates to be unitary matrices, rather than any matrix?
 
@@ -165,7 +165,9 @@ The matrix on the right-hand side should look extremely familiar to you. In fact
   $
 ]
 
-This motivates us to make lots of connections between what we learned about Walsh-Hadamard matrices and Hadamard gates: everything we proved about $H_(2^n)$ now tells us something about $Hn$. In fact, we have been calling $Hn$ a Hadamard "gate" without ever proving it is actually a gate! Let's now prove some properties about $Hn$.
+This motivates us to make lots of connections between what we learned about Walsh-Hadamard matrices and Hadamard gates: everything we proved about $H_(2^n)$ now tells us something about $Hn$.
+
+Let's now prove some properties about $Hn$. We should especially note that we have been calling $Hn$ a Hadamard "gate" without ever proving it is actually a gate.
 
 #proposition(title: "Properties of the Hadamard Gates")[
   For all $n >= 1$:

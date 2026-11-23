@@ -28,7 +28,7 @@ const byTransform = (f: Values, g: Values): number[] => {
 	return walshHadamard(products).map((value) => value / f.length + 0);
 };
 
-/** Every table of four values from −3 to 3 whose code in base 7 is a multiple of the stride. */
+// Every table of four values from −3 to 3 whose code in base 7 is a multiple of the stride.
 const sampleTables = (stride: number): Values[] =>
 	Array.from({ length: Math.ceil(7 ** 4 / stride) }, (_, step) =>
 		inputs.map((position) => (Math.floor((step * stride) / 7 ** position) % 7) - 3),

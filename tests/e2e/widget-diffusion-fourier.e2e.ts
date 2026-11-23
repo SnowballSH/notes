@@ -3,15 +3,12 @@ import { openWidget } from "./pages";
 
 interface Expected {
 	average: string;
-	/** The spoken text of each Fourier column after its label, before D is applied. */
 	coefficients: string[];
 	afterDiffusion: string[];
-	/** What the sliders of the first and the last amplitude say once D has been applied. */
 	firstAmplitude: string;
 	lastAmplitude: string;
 }
 
-/** What the widget shows for its default state, by the number of qubits it was placed with. */
 const expected: Record<number, Expected> = {
 	2: {
 		average: "1/4",
