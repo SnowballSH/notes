@@ -174,9 +174,9 @@ vector<long long> xor_convolution(vector<long long> f, vector<long long> g) {
 In this chapter, we defined the XOR convolution $f * g$ and found a fast way to compute it. The Walsh-Hadamard transform is its own inverse up to a factor of $2^n$, so we can move between a function and its Fourier coefficients in $O(N log N)$ time in both directions. In Fourier coefficient space, the XOR convolution is just a product of coefficients. Together, these give an $O(N log N)$ algorithm in place of the $O(N^2)$ brute-force one, where $N = 2^n$.
 
 #remark[
-  The XOR convolution theorem follows Section 1.5 of O'Donnell's _Analysis of Boolean Functions_. O'Donnell defines the convolution as an average instead of a sum, which is why the factor $2^n$ does not appear there. See @exr-averaged-convolution for the relationship between the two definitions.
+  The XOR convolution theorem follows Section 1.5 of O'Donnell's _Analysis of Boolean Functions_. O'Donnell defines the convolution as an average instead of a sum, which is why the factor $2^n$ does not appear there. See @exr-averaged-convolution for the relationship between the two definitions. The inverse Walsh-Hadamard transform is part (d) of Exercise 1.12 there.
 
-  The algorithm is a standard tool in competitive programming. See, for example, #link("https://codeforces.com/blog/entry/127823")[a Codeforces blog on XOR Convolutions] and
+  The algorithm is a standard tool in competitive programming. See, for example, #link("https://codeforces.com/blog/entry/127823")[a Codeforces tutorial on XOR convolution] and
   #link("https://oi-wiki.org/math/poly/fwt/")[OI Wiki's article on the fast Walsh-Hadamard transform].
 ]
 

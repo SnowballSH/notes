@@ -1,7 +1,7 @@
 /**
  * The roadmap is a grid with a flow axis, along which sections follow one another (down a
  * narrow note, across a wide one), and a cross axis that holds the main chain, the side
- * branch and a rail for the arrow that skips layers. Everything here is in grid lines, so
+ * branch and a rail for an arrow that skips layers, when there is one. Everything here is in grid lines, so
  * the stylesheet can turn the same layout either way.
  */
 export type Lane = "main" | "branch";
@@ -43,7 +43,6 @@ export const placements: Readonly<Record<string, Placement>> = {
 	"3.1": { layer: 3, lane: "main" },
 	"2.3": { layer: 3, lane: "branch" },
 	"3.2": { layer: 4, lane: "main" },
-	"2.4": { layer: 4, lane: "branch" },
 	"4.1": { layer: 5, lane: "main" },
 };
 

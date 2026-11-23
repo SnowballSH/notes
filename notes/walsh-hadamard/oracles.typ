@@ -253,7 +253,7 @@ Sometimes we do not even need to know where all of the coefficients are. A singl
 
   Therefore, we run Fourier sampling once and answer "constant" if the output is the all-zeros bitstring and "balanced" otherwise. A single query answers the question with certainty. This is the _Deutsch-Jozsa algorithm_.
 
-  It is important to note that unfortunately, this speedup is less dramatic than it looks. A classical algorithm that is allowed to error with a small probability only needs a few queries, because using $k >= 1$ queries will lower the error probability to $epsilon <= 2^(1-k)$.
+  It is important to note that unfortunately, this speedup is less dramatic than it looks. A classical algorithm that is allowed to err with a small probability only needs a few queries, because using $k >= 1$ queries will lower the error probability to $epsilon <= 2^(1-k)$.
 ] <ex-deutsch-jozsa>
 
 = Conclusion
@@ -264,6 +264,8 @@ In the next chapter, we will use the sign oracle and the Hadamard gates again to
 
 #remark[
   The query model is from Lecture 5 of O'Donnell and Wright's _Quantum Computation_ lecture notes, and the sign oracle is from Section 2.3 of Lecture 4. The theorem that the Hadamard gates compute the Fourier coefficients is Claim 2.5 in Lecture 6, and the Fourier sampling procedure appears there in Section 2.4.1.
+
+  The problem of finding a hidden parity function and its one-query algorithm are due to Bernstein and Vazirani in _Quantum Complexity Theory_ (1997); the Fourier coefficients of a parity function used there are Example 2.4 of Lecture 6. The constant-versus-balanced problem and its algorithm are due to Deutsch and Jozsa in _Rapid Solution of Problems by Quantum Computation_ (1992), and appear in Section 4.4 of Lecture 5, together with the classical bounds, and in Section 2.4.1 of Lecture 6.
 ]
 
 = Exercises

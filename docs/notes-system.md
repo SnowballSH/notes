@@ -328,7 +328,11 @@ a positioned box and sets its `inset`, with a rule on `:global(.bar)`.
 column: a `SignedBar` on an axis, the amplitude written under it with its
 sign, and a cell that darkens with the probability, which is why two
 amplitudes of opposite sign get the same cell; `showProbabilityCells={false}`
-leaves the cells out. Given an `ondraw` handler the bars become sliders.
+leaves the cells out. `showProbabilityValues` writes each probability in its
+cell, tinted lightly enough to read, and labels the row "Pr" as
+fourier-sampling does. The label hangs in a gutter left of the columns, as
+wide as `--chart-gutter` (1rem unless the widget sets it), so a widget that
+lines something up with the columns leaves the same gutter. Given an `ondraw` handler the bars become sliders.
 `highlighted` underlines the named columns and sets their labels in bold, and
 `level` draws a dashed line at an amplitude with a label such as μ. Its
 hidden descriptions use the frame's `.spoken` class, so it is only used
@@ -373,9 +377,6 @@ inside a `WidgetFrame`.
   from each section to those that need it. A box links to its note once
   `/search.json` lists that note, so drafts and planned sections stay plain.
   The dependencies are in `roadmap/dependencies.ts`, keyed by section number.
-
-The last five have no published note yet: their browser tests skip until the
-overview and the note on Grover's algorithm are published.
 
 Drawing: press on a bar's plot and drag, up for positive and down for
 negative; dragging sideways draws on the bars passed over. The plot has

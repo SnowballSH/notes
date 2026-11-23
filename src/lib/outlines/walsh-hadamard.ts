@@ -33,10 +33,6 @@ export const walshHadamard: NotesOutline = {
 					summary: "Combining two functions on bitstrings quickly, using the fast transform.",
 					note: "xor-convolution",
 				},
-				{
-					title: "Classical applications",
-					summary: "Linearity testing, and an error-correcting code built from parity functions.",
-				},
 			],
 		},
 		{
@@ -62,26 +58,43 @@ export const walshHadamard: NotesOutline = {
 				{
 					title: "Grover's algorithm",
 					summary: "Searching for a marked item with far fewer queries than a classical search.",
+					note: "grover",
 				},
 			],
 		},
 	],
 	sources: [
 		{
-			work: "Ryan O'Donnell, Analysis of Boolean Functions, especially Chapters 1-3",
+			work: "Ryan O'Donnell, Analysis of Boolean Functions, especially Chapter 1",
 			chapters: "2",
 		},
+		{ work: 'Wolfram MathWorld, "Hadamard Matrix" and "Walsh Function"', chapters: "2" },
 		{
-			work: "O'Donnell and Wright, Quantum Computation lecture notes, especially Lectures 1-10",
+			work: "O'Donnell and Wright, Quantum Computation lecture notes, Lectures 1, 2 and 4-6",
 			chapters: "3-4",
 		},
 		{
-			work: 'John Watrous, IBM Quantum Learning, "Quantum query algorithms"',
-			chapters: "3-4",
+			work: 'Ethan Bernstein and Umesh Vazirani, "Quantum Complexity Theory", 1997',
+			chapters: "3",
 		},
-		{ work: 'IBM Quantum Learning, "Grover\'s algorithm"', chapters: "4" },
 		{
-			work: "Andrew Childs, Lecture Notes on Quantum Algorithms, especially Chapters 4-6 and 19",
+			work: 'David Deutsch and Richard Jozsa, "Rapid Solution of Problems by Quantum Computation", 1992',
+			chapters: "3",
+		},
+		{
+			work: 'Lov Grover, "A Fast Quantum Mechanical Algorithm for Database Search", 1996',
+			chapters: "4",
+		},
+		{
+			work: 'Michel Boyer, Gilles Brassard, Peter Høyer and Alain Tapp, "Tight Bounds on Quantum Searching", 1998',
+			chapters: "4",
+		},
+		{
+			work: 'Charles Bennett, Ethan Bernstein, Gilles Brassard and Umesh Vazirani, "Strengths and Weaknesses of Quantum Computing", 1997',
+			chapters: "4",
+		},
+		{
+			work: 'Robert Beals, Harry Buhrman, Richard Cleve, Michele Mosca and Ronald de Wolf, "Quantum Lower Bounds by Polynomials", 2001',
 			chapters: "4",
 		},
 	],

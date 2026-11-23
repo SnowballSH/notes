@@ -320,10 +320,9 @@ The outer loop runs $n$ times, once for each level of the recursion, and each ro
 In this chapter, we defined the Walsh-Hadamard matrices $H_(2^n)$ recursively and showed that they are Hadamard matrices. Their entries are $(-1)^(arrow(gamma) dot arrow(x))$, which are exactly the values of the parity functions, so multiplying the vector of values of $f$ by $H_(2^n)$ and dividing by $2^n$ gives the Fourier coefficients of $f$. Finally, the recursive structure of $H_(2^n)$ lets us compute this product in $O(N log N)$ time instead of $O(N^2)$, where $N = 2^n$.
 
 #remark[
-  Much of the material from this chapter is taken from
-  #link("https://mathworld.wolfram.com/HadamardMatrix.html")[MathWorld's article on Hadamard matrices], and the history of the Walsh functions is from #link("https://mathworld.wolfram.com/WalshFunction.html")[MathWorld's article on Walsh functions].
+  The definition of Hadamard matrices, the criterion $H H^"T" = N I_N$, the history of Sylvester and Hadamard, and the recursive construction are from #link("https://mathworld.wolfram.com/HadamardMatrix.html")[MathWorld's article on Hadamard matrices]. The history of the Walsh functions is from #link("https://mathworld.wolfram.com/WalshFunction.html")[MathWorld's article on Walsh functions].
 
-  The propositions are from Exercise 1.12 of O'Donnell's _Analysis of Boolean Functions_.
+  The formula for the entries of the Walsh-Hadamard matrices, the Walsh-Hadamard transform and the fast Walsh-Hadamard transform are parts (a) to (c) of Exercise 1.12 of O'Donnell's _Analysis of Boolean Functions_.
 ]
 
 = Exercises

@@ -43,25 +43,33 @@ describe("the layout of the roadmap", () => {
 			"3.1": "5 / 6 | 1 / 2",
 			"2.3": "5 / 6 | 3 / 4",
 			"3.2": "7 / 8 | 1 / 2",
-			"2.4": "7 / 8 | 3 / 4",
 			"4.1": "9 / 10 | 1 / 2",
 		});
 	});
 
-	it("draws every dependency, the skipping one around the outside", () => {
+	it("draws every dependency", () => {
 		expect(
 			drawn.map((piece) => `${piece.from}>${piece.to} ${piece.shape} ${brief(piece)}`),
 		).toEqual([
 			"2.1>2.2 step 2 / 3 | 1 / 2",
 			"2.2>2.3 branch-start 4 / 5 | 1 / 2",
 			"2.2>2.3 branch-end 4 / 5 | 3 / 4",
-			"2.1>2.4 skip-start 1 / 2 | 2 / 5",
-			"2.1>2.4 skip-rail 2 / 7 | 4 / 5",
-			"2.1>2.4 skip-end 7 / 8 | 4 / 5",
-			"2.3>2.4 step 6 / 7 | 3 / 4",
 			"2.2>3.1 step 4 / 5 | 1 / 2",
 			"3.1>3.2 step 6 / 7 | 1 / 2",
 			"3.2>4.1 step 8 / 9 | 1 / 2",
+		]);
+	});
+
+	it("draws an arrow that skips layers around the outside", () => {
+		const places = { ...placements, "9.9": { layer: 4, lane: "branch" } } as const;
+		const skipping = connectors({ "9.9": ["2.1", "2.3"] }, places);
+		expect(
+			skipping.map((piece) => `${piece.from}>${piece.to} ${piece.shape} ${brief(piece)}`),
+		).toEqual([
+			"2.1>9.9 skip-start 1 / 2 | 2 / 5",
+			"2.1>9.9 skip-rail 2 / 7 | 4 / 5",
+			"2.1>9.9 skip-end 7 / 8 | 4 / 5",
+			"2.3>9.9 step 6 / 7 | 3 / 4",
 		]);
 	});
 

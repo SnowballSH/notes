@@ -12,7 +12,6 @@ describe("the sections of the roadmap", () => {
 			"2.1 Boolean functions and Fourier expansions",
 			"2.2 The Walsh-Hadamard transform",
 			"2.3 XOR convolution",
-			"2.4 Classical applications",
 			"3.1 Qubits, measurement, and the Hadamard gate",
 			"3.2 Quantum oracles and Fourier sampling",
 			"4.1 Grover's algorithm",
@@ -42,7 +41,7 @@ describe("the sections of the roadmap", () => {
 	});
 
 	it("carries what each section needs", () => {
-		expect(sections.find(({ number }) => number === "2.4")?.needs).toEqual(["2.1", "2.3"]);
+		expect(sections.find(({ number }) => number === "2.3")?.needs).toEqual(["2.2"]);
 	});
 
 	it("says what a section needs", () => {

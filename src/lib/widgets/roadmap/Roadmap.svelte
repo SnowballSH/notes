@@ -14,6 +14,7 @@ const sections = roadmapSections(walshHadamard, dependencies).map((section) => (
 }));
 const arrows = connectors(dependencies);
 const gaps = layerCount(placements) - 1;
+const skipsLayers = arrows.some((arrow) => arrow.shape.startsWith("skip"));
 
 let published = $state<ReadonlySet<string>>(new Set());
 
@@ -28,7 +29,7 @@ onMount(() => {
 
 <WidgetFrame>
 	<div class="roadmap">
-		<div class="chart" style:--gaps={gaps}>
+		<div class="chart" class:railed={skipsLayers} style:--gaps={gaps}>
 			<ol class="sections" role="list" aria-label="Course roadmap">
 				{#each sections as { number, title, href, cell, spoken } (number)}
 					{@const linked = href !== null && published.has(href)}
@@ -75,7 +76,7 @@ onMount(() => {
 	--stroke: 1.5px;
 	--flow-gap: 1.5rem;
 	--cross-gap: 1rem;
-	--rail: 1.5rem;
+	--rail: 0rem;
 	--rail-inset: 0.5rem;
 	--head-width: 0.5625rem;
 	--head-length: 0.4375rem;
@@ -85,6 +86,9 @@ onMount(() => {
 	max-width: 26rem;
 	font-size: 0.8125rem;
 	line-height: 1.3;
+}
+.chart.railed {
+	--rail: 1.5rem;
 }
 .chart .sections,
 .chart .arrows {

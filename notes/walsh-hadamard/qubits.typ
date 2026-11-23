@@ -217,7 +217,7 @@ In this chapter, we introduced the three ingredients of a quantum computation. A
 In the next chapter, we will see how to load a function into the amplitudes of a state, so that this transform tells us something about the function.
 
 #remark[
-  This chapter follows Lectures 1 and 2 of O'Donnell and Wright's _Quantum Computation_ lecture notes, which cover states, measurement and gates in much more depth. The relationship between the Hadamard gates and the Fourier coefficients is from Section 2.3 of Lecture 6.
+  This chapter follows Lectures 1 and 2 of O'Donnell and Wright's _Quantum Computation_ lecture notes, which cover states, measurement and gates in much more depth. That a matrix sending every state to a state must be unitary is shown in Section 3 of Lecture 2. The relationship between the Hadamard gates and the Fourier coefficients is from Section 2.3 of Lecture 6.
 ]
 
 = Exercises
