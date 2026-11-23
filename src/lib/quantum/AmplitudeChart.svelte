@@ -10,6 +10,7 @@ interface Props {
 	probabilities: readonly number[];
 	/** Left out for something that has probabilities but no amplitudes, such as a coin. */
 	amplitudes?: readonly number[];
+	/** Writes each probability in its cell and labels the row of cells "Pr". */
 	showProbabilityValues?: boolean;
 	/** Makes the bars drawable: called with a column and the amplitude the pointer is at. */
 	ondraw?: (index: number, amplitude: number) => void;
@@ -76,6 +77,8 @@ function pressKey(event: KeyboardEvent, index: number): void {
 	if (onkey?.(index, event.key)) event.preventDefault();
 }
 
+const labelled = $derived(showProbabilityCells && showProbabilityValues);
+
 const isHighlighted = (index: number): boolean => highlighted?.includes(index) ?? false;
 
 const describe = (index: number): string =>
@@ -100,10 +103,12 @@ const describe = (index: number): string =>
 		</span>
 	{/if}
 	{#if showProbabilityCells}
-		<span class="chance" style:--chance={probabilities[index] ?? 0} aria-hidden="true"></span>
-	{/if}
-	{#if showProbabilityValues}
-		<span class="chance-value" aria-hidden="true">{formatDyadic(probabilities[index] ?? 0)}</span>
+		<span
+			class="chance"
+			class:chance-value={showProbabilityValues}
+			style:--chance={probabilities[index] ?? 0}
+			aria-hidden="true">{showProbabilityValues ? formatDyadic(probabilities[index] ?? 0) : ""}</span
+		>
 	{/if}
 	<span class="label" aria-hidden="true">{labels[index]}</span>
 {/snippet}
@@ -113,6 +118,7 @@ const describe = (index: number): string =>
 	class:drawable={ondraw !== undefined}
 	class:drawing={stroke !== undefined}
 	class:crowded={labels.length > 4}
+	class:labelled
 	bind:this={chart}
 	style:--columns={labels.length}
 	role={ondraw ? "group" : "list"}
@@ -147,6 +153,9 @@ const describe = (index: number): string =>
 			</div>
 		{/if}
 	{/each}
+	{#if labelled}
+		<span class="row-label" aria-hidden="true">Pr</span>
+	{/if}
 	{#if level && amplitudes}
 		<span class="level" style:--down={plotPosition(level.value)} aria-hidden="true">
 			<span class="level-label">{level.label}</span>
@@ -165,6 +174,12 @@ const describe = (index: number): string =>
 	font-size: 0.6875rem;
 	line-height: 1.5;
 	color: var(--fui-ink);
+}
+/* The row label hangs in a gutter left of the columns, so it never shifts them off the bars. */
+.labelled {
+	--gutter: var(--chart-gutter, 1rem);
+	width: min(100% - var(--gutter), var(--columns) * 3.25rem);
+	margin-inline-start: var(--gutter);
 }
 .column {
 	position: relative;
@@ -223,7 +238,29 @@ const describe = (index: number): string =>
 	transition: background-color 250ms ease-out;
 }
 .chance-value {
+	width: calc(100% - 4px);
+	height: auto;
+	min-height: 1.375rem;
+	display: grid;
+	place-items: center;
+	border: 0;
+	background: color-mix(in oklab, var(--fui-ink) calc(var(--chance) * 25%), transparent);
 	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.crowded .chance-value {
+	font-size: 0.625rem;
+	letter-spacing: -0.03em;
+}
+/* Level with the cells: above the padding, the line of labels and the gap that lie under them. */
+.row-label {
+	position: absolute;
+	inset: auto 100% calc(1.5em + 0.25rem) auto;
+	height: 1.375rem;
+	display: grid;
+	place-items: center;
+	padding-inline-end: 0.125rem;
+	color: var(--fui-ink-secondary);
 }
 .label {
 	color: var(--fui-ink-secondary);

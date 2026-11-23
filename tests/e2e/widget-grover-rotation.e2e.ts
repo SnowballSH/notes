@@ -61,7 +61,7 @@ test("the Grover rotation climbs to the best count and falls to the far side of 
 	await back.click();
 	await back.click();
 	await expect(caption).toHaveText("N = 8, t = 2");
-	await widget.getByRole("button", { name: "Reset", exact: true }).click();
+	await widget.getByRole("button", { name: "Start over", exact: true }).click();
 	await expect(caption).toHaveText("N = 8, t = 0");
 	await expect(chance).toHaveText("P = 0.125");
 });

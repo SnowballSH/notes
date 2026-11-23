@@ -29,6 +29,7 @@ const history = $derived([
 	...(experiment.steps.length > shownSteps ? ["…"] : []),
 	...experiment.steps.slice(-shownSteps).map(describeStep),
 ]);
+const outcome = $derived(result(experiment));
 const interfering = $derived(
 	(experiment.terms ?? []).some((terms) => terms.every((term) => term !== 0)),
 );
@@ -36,7 +37,9 @@ const interfering = $derived(
 
 <WidgetFrame>
 	<div class="controls">
-		<button type="button" onclick={() => (experiment = applyHadamard(experiment))}>Apply H</button>
+		<button type="button" class="apply" onclick={() => (experiment = applyHadamard(experiment))}>
+			Apply H
+		</button>
 		<button type="button" onclick={() => (experiment = measure(experiment, Math.random))}>
 			Measure
 		</button>
@@ -48,11 +51,7 @@ const interfering = $derived(
 			Start over
 		</button>
 	</div>
-	<p class="history">
-		{#if experiment.steps.length > 0}
-			<span class="spoken">Steps so far: </span>{history.join(" \u2192 ")}
-		{/if}
-	</p>
+	<p class="history"><span class="spoken">Steps so far: </span>{history.join(" \u2192 ")}</p>
 	<div class="sides">
 		<div class="side" role="group" aria-label="Qubit">
 			<p class="name">Qubit {stateName(experiment.qubit)}</p>
@@ -79,18 +78,22 @@ const interfering = $derived(
 			/>
 		</div>
 	</div>
-	<p class="terms">
-		{#if interfering}
-			{#each experiment.terms ?? [] as terms, bit (bit)}
-				<span class:cancelled={cancels(terms)}>
-					{kets[bit]}: {formatTerms(terms)} = {formatAmplitude(experiment.qubit[bit] ?? 0)}
-				</span>
-			{/each}
-		{/if}
-	</p>
+	{#if outcome === ""}
+		<p class="terms">
+			{#if interfering}
+				{#each experiment.terms ?? [] as terms, bit (bit)}
+					<span class:cancelled={cancels(terms)}>
+						{kets[bit]}: {formatTerms(terms)} = {formatAmplitude(experiment.qubit[bit] ?? 0)}
+					</span>
+				{/each}
+			{/if}
+		</p>
+	{/if}
 	{#snippet caption()}
 		<p class="spoken">{summarise(experiment)}</p>
-		<p class="result" aria-hidden="true">{result(experiment)}</p>
+		{#if outcome !== ""}
+			<p class="result" aria-hidden="true">{outcome}</p>
+		{/if}
 	{/snippet}
 </WidgetFrame>
 
@@ -105,6 +108,10 @@ button {
 	padding: 0 1rem;
 	border-color: var(--fui-line);
 	background: transparent;
+}
+button.apply {
+	border-color: var(--fui-accent);
+	font-weight: 600;
 }
 @media (hover: hover) {
 	button:not([aria-disabled="true"]):hover {
@@ -122,7 +129,6 @@ p {
 	line-height: 1.5;
 }
 .history {
-	min-height: 1.5em;
 	color: var(--fui-ink);
 	overflow-wrap: anywhere;
 }
@@ -136,6 +142,7 @@ p {
 	--chart-unit: 2.5rem;
 	--chart-text: 0.75rem;
 	--chart-width: 6.5rem;
+	--chart-gutter: 1rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -156,8 +163,9 @@ p {
 .tally {
 	display: grid;
 	grid-template: 100% / repeat(2, minmax(0, 1fr));
-	width: min(100%, var(--chart-width));
+	width: min(100% - var(--chart-gutter), var(--chart-width));
 	height: calc(2 * var(--chart-unit));
+	margin-inline-start: var(--chart-gutter);
 	/* Leaves the room the qubit's row of amplitudes takes, so both sets of bars rise from one line. */
 	margin-bottom: calc(1.5 * var(--chart-text) - 0.25rem);
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
@@ -178,14 +186,12 @@ p {
 	font-weight: 600;
 	color: var(--fui-ink);
 }
-.result {
-	min-height: 1.5em;
-}
 .terms {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0 1.5rem;
-	min-height: 3em;
+	/* One line is kept for the terms; a measurement's result takes its place in the caption. */
+	min-height: 1.5em;
 	align-content: start;
 	color: var(--fui-ink-secondary);
 }

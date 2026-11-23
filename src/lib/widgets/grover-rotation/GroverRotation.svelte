@@ -108,7 +108,7 @@ function changeMarked(by: 1 | -1): void {
 				Back
 			</button>
 			<button type="button" aria-disabled={iterations === 0} onclick={() => goTo(0)}>
-				Reset
+				Start over
 			</button>
 		</div>
 		<div class="row settings">

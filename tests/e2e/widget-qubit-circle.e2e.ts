@@ -16,7 +16,7 @@ test("the Hadamard gate reflects a qubit on the circle, and twice returns it", a
 
 	await expect(widget.locator(".symbols span")).toHaveText(["α", "β"]);
 	await expect(widget.locator(".bars .label")).toHaveText(["|0⟩", "|1⟩"]);
-	await expect(widget.locator(".chance").first()).toBeHidden();
+	await expect(widget.locator(".bars .row-label")).toHaveText("Pr");
 	await expect(
 		widget.getByRole("list", { name: "Amplitudes and measurement probabilities" }),
 	).toContainText("|0⟩: amplitude +1, probability 1");

@@ -188,7 +188,6 @@ function pressKey(event: KeyboardEvent): void {
 				amplitudes={current}
 				probabilities={probabilities(current)}
 				showProbabilityValues
-				showProbabilityCells={false}
 			/>
 		</div>
 	</div>
@@ -222,14 +221,14 @@ button.state[aria-pressed="true"] {
 	font-weight: 700;
 }
 button.apply {
-	border-color: var(--fui-code-violet);
+	border-color: var(--fui-accent);
 	font-weight: 600;
 }
 /* A hover that outlasts the click must not look like a pressed preset, so H thickens its outline instead of filling. */
 button.apply:hover {
-	border-color: var(--fui-code-violet);
+	border-color: var(--fui-accent);
 	background: transparent;
-	box-shadow: inset 0 0 0 1px var(--fui-code-violet);
+	box-shadow: inset 0 0 0 1px var(--fui-accent);
 }
 p {
 	margin: 0;
@@ -252,12 +251,14 @@ p {
 	user-select: none;
 }
 .bars {
-	flex: 0 0 6.5rem;
+	--chart-gutter: 1rem;
+	flex: 0 0 calc(6.5rem + var(--chart-gutter));
 	display: grid;
 	justify-items: center;
 }
 .symbols {
-	width: min(100%, 6.5rem);
+	width: min(100% - var(--chart-gutter), 6.5rem);
+	margin-inline-start: var(--chart-gutter);
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	justify-items: center;
@@ -270,16 +271,8 @@ p {
 .symbols .negative {
 	color: var(--fui-code-warm);
 }
-.bars :global(.chance-value) {
-	min-width: 64%;
-	margin-block: 0.125rem;
-	padding: 0 0.25rem;
-	border: 1px solid var(--fui-ink-muted);
-	border-radius: var(--fui-radius-xs);
-	text-align: center;
-}
 /* Narrower than the circle, the gap and the bars together, the bars wrap under the circle. */
-@container (width < 26rem) {
+@container (width < 27rem) {
 	.circle {
 		margin-inline: auto;
 	}

@@ -94,7 +94,7 @@ function pressKey(index: number, key: string): boolean {
 	</div>
 	<div class="charts">
 		<div class="panel" class:crowded={count > 2}>
-			<p class="title">a(x)</p>
+			<p class="title">&alpha;(x)</p>
 			<div class="plots">
 				<AmplitudeChart
 					name="Amplitudes of the state, drawable"
@@ -111,7 +111,7 @@ function pressKey(index: number, key: string): boolean {
 			</div>
 		</div>
 		<div class="panel" class:crowded={count > 2}>
-			<p class="title">&radic;N&middot;&acirc;(&gamma;)</p>
+			<p class="title">&radic;N&middot;&alpha;&#770;(&gamma;)</p>
 			<div class="plots">
 				<AmplitudeChart
 					name="Fourier coefficients of the amplitudes, times √N"

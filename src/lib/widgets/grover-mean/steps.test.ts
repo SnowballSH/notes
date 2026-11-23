@@ -6,7 +6,9 @@ import {
 	describe,
 	describeColumn,
 	iterationsDone,
+	meanLabel,
 	nextStep,
+	plotScale,
 	shownAmplitude,
 	stateAfter,
 } from "./steps";
@@ -97,23 +99,62 @@ suite("caption", () => {
 		expect(caption(4, 15, 2)).toBe("P(1111) = 0.47");
 	});
 
-	it("is the average between the query and the diffusion", () => {
-		expect(caption(3, 5, 1)).toBe("μ = 0.27");
-		expect(caption(2, 3, 1)).toBe("μ = 1/4");
-		expect(caption(4, 15, 1)).toBe("μ = 0.22");
-		expect(caption(3, 5, 5)).toBe("μ = −0.20");
+	it("stays the same between the query and the diffusion", () => {
+		expect(caption(3, 5, 1)).toBe("P(101) = 1/8");
+		expect(caption(2, 3, 1)).toBe("P(11) = 1/4");
+		expect(caption(3, 5, 3)).toBe("P(101) = 0.78");
+	});
+});
+
+suite("meanLabel", () => {
+	it("is the average, exact where the bars are", () => {
+		expect(meanLabel(stateAfter(3, 5, 0))).toBe("μ = 1/√8");
+		expect(meanLabel(stateAfter(3, 5, 1))).toBe("μ = 0.27");
+		expect(meanLabel(stateAfter(2, 3, 0))).toBe("μ = 1/2");
+		expect(meanLabel(stateAfter(2, 3, 1))).toBe("μ = 1/4");
+		expect(meanLabel(stateAfter(2, 3, 2))).toBe("μ = 1/4");
+		expect(meanLabel(stateAfter(3, 5, 5))).toBe("μ = −0.20");
+	});
+});
+
+suite("plotScale", () => {
+	it("is 1/2 while no bar is longer than that", () => {
+		expect([0, 1].map((steps) => plotScale(stateAfter(3, 5, steps)))).toEqual([0.5, 0.5]);
+		expect([0, 1].map((steps) => plotScale(stateAfter(2, 3, steps)))).toEqual([0.5, 0.5]);
+	});
+
+	it("is 1 once the marked bar outgrows 1/2", () => {
+		expect([2, 3, 4, 5, 6].map((steps) => plotScale(stateAfter(3, 5, steps)))).toEqual([
+			1, 1, 1, 1, 1,
+		]);
+		expect([2, 3].map((steps) => plotScale(stateAfter(2, 3, steps)))).toEqual([1, 1]);
+	});
+
+	it("holds every bar of every state the widget can reach", () => {
+		for (const qubits of [2, 3])
+			for (let steps = 0; steps <= 12; steps++) {
+				const state = stateAfter(qubits, 1, steps);
+				const scale = plotScale(state);
+				for (const amplitude of state)
+					expect(Math.abs(amplitude)).toBeLessThanOrEqual(scale + 1e-9);
+			}
 	});
 });
 
 suite("shownAmplitude", () => {
-	it("is two decimals without a plus sign", () => {
-		expect(stateAfter(3, 5, 0).map(shownAmplitude)).toEqual(Array(8).fill("0.35"));
+	it("is exact where there is a short exact form, without a plus sign", () => {
+		expect(stateAfter(3, 5, 0).map(shownAmplitude)).toEqual(Array(8).fill("1/√8"));
+		expect(stateAfter(2, 2, 0).map(shownAmplitude)).toEqual(Array(4).fill("1/2"));
+	});
+
+	it("is two decimals otherwise", () => {
 		expect(shownAmplitude(stateAfter(3, 5, 2)[5] ?? 0)).toBe("0.88");
 		expect(shownAmplitude(stateAfter(3, 5, 2)[0] ?? 0)).toBe("0.18");
 	});
 
 	it("keeps the minus sign", () => {
-		expect(shownAmplitude(stateAfter(3, 5, 1)[5] ?? 0)).toBe("−0.35");
+		expect(shownAmplitude(stateAfter(3, 5, 1)[5] ?? 0)).toBe("−1/√8");
+		expect(shownAmplitude(stateAfter(2, 2, 1)[2] ?? 0)).toBe("−1/2");
 		expect(shownAmplitude(stateAfter(3, 5, 4)[0] ?? 0)).toBe("−0.09");
 		expect(shownAmplitude(stateAfter(3, 5, 3)[5] ?? 0)).toBe("−0.88");
 	});
@@ -122,7 +163,6 @@ suite("shownAmplitude", () => {
 		expect(stateAfter(2, 2, 2).map(shownAmplitude)).toEqual(["0", "0", "1", "0"]);
 		expect(shownAmplitude(stateAfter(2, 2, 3)[2] ?? 0)).toBe("−1");
 		expect(shownAmplitude(-0.004)).toBe("0");
-		expect(shownAmplitude(0.5)).toBe("0.50");
 	});
 });
 

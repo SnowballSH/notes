@@ -81,8 +81,8 @@ test("D keeps the Fourier coefficient at zero, negates the others, and undoes it
 
 	await expect(average).toBeVisible();
 	await expect(spokenAverage).toBeAttached();
-	await expect(widget.getByText("a(x)", { exact: true })).toBeVisible();
-	await expect(widget.getByText("√N·â(γ)", { exact: true })).toBeVisible();
+	await expect(widget.getByText("α(x)", { exact: true })).toBeVisible();
+	await expect(widget.getByText("√N·α̂(γ)", { exact: true })).toBeVisible();
 	await expect(widget.getByText("√N·μ", { exact: true })).toBeVisible();
 	await expect(widget.locator(".chance").first()).toBeHidden();
 	await expect(ghosts).toHaveCount(0);

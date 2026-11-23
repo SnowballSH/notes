@@ -168,7 +168,8 @@ test("two Hadamard gates unflip the qubit but not the coin, unless it is measure
 	const applyGate = widget.getByRole("button", { name: "Apply H" });
 	const measure = widget.getByRole("button", { name: "Measure" });
 
-	await expect(widget.locator(".history")).toHaveText("");
+	await expect(widget.locator(".history")).toHaveText(/^Steps so far:\s*\|0⟩$/);
+	await expect(qubit.locator(".row-label")).toHaveText("Pr");
 	await expect(coin.locator(".name")).toHaveText("Coin heads");
 	await expect(coin.locator(".label")).toHaveText(["heads", "tails"]);
 	await applyGate.click();
@@ -180,7 +181,7 @@ test("two Hadamard gates unflip the qubit but not the coin, unless it is measure
 	await expect(qubit.locator(".chance-value")).toHaveText(["1", "0"]);
 	await expect(coin.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
 	await expect(coin.locator(".name")).toHaveText("Coin tossed");
-	await expect(widget.locator("figcaption .result")).toHaveText("");
+	await expect(widget.locator("figcaption .result")).toHaveCount(0);
 	await measure.click();
 	await expect(widget.locator("figcaption .result")).toHaveText("Measured 0");
 
@@ -190,7 +191,7 @@ test("two Hadamard gates unflip the qubit but not the coin, unless it is measure
 	await applyGate.click();
 	await expect(qubit.locator(".amplitude")).toHaveText([/^\+1\/√2$/, /^[+−]1\/√2$/]);
 	await expect(qubit.locator(".chance-value")).toHaveText(["1/2", "1/2"]);
-	await expect(widget.locator("figcaption .result")).toHaveText("");
+	await expect(widget.locator("figcaption .result")).toHaveCount(0);
 });
 
 test("a drawn state gets a Hadamard gate on every qubit, and a second one returns it", async ({

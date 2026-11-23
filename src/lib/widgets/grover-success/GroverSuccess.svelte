@@ -219,6 +219,7 @@ function pressKey(event: KeyboardEvent): void {
 .value {
 	min-width: 6ch;
 	font-family: var(--fui-font-mono);
+	font-size: 0.875rem;
 	font-variant-numeric: tabular-nums;
 	color: var(--fui-ink);
 }

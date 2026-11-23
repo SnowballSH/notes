@@ -57,8 +57,11 @@ function anchorTo(id: string, name: string): Element {
 	return anchor;
 }
 
+/** Keeps the link on the line of the last word of a heading, so it never wraps onto an empty line of its own. */
+const noBreakSpace = "\u00a0";
+
 function appendAnchor(target: Element, id: string, name: string): void {
-	const space: ChildNode = { nodeName: "#text", value: " ", parentNode: null };
+	const space: ChildNode = { nodeName: "#text", value: noBreakSpace, parentNode: null };
 	append(target, space, anchorTo(id, name));
 }
 

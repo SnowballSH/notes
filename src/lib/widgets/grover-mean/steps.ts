@@ -1,4 +1,4 @@
-import { formatAmplitude, formatDyadic, minusSign } from "../../quantum/format.ts";
+import { formatAmplitude, formatDyadic } from "../../quantum/format.ts";
 import {
 	groverIteration,
 	mean,
@@ -31,12 +31,8 @@ export function stateAfter(qubits: number, marked: number, steps: number): Ampli
 const countIterations = (count: number): string =>
 	count === 1 ? "1 iteration" : `${count} iterations`;
 
-/** The caption: the chance of measuring the marked input, or mid-iteration the average. */
+/** The caption: the chance of measuring the marked input, which a query alone leaves as it was. */
 export function caption(qubits: number, marked: number, steps: number): string {
-	if (nextStep(steps) === "diffuse") {
-		const average = formatAmplitude(mean(stateAfter(qubits, marked, steps)));
-		return `μ = ${average.replace(/^\+/, "")}`;
-	}
 	const chance = formatDyadic(successProbability(2 ** qubits, 1, iterationsDone(steps)));
 	return `P(${bitstring(marked, qubits)}) = ${chance}`;
 }
@@ -54,13 +50,21 @@ export function describe(qubits: number, marked: number, steps: number): string 
 	return `${when}, ${label} is measured with probability ${chance}.`;
 }
 
-/** The number under a bar: two decimals, with a sign only when negative, since the bar shows the direction. */
-export function shownAmplitude(amplitude: number): string {
-	const hundredths = Math.round(Math.abs(amplitude) * 100);
-	if (hundredths === 0) return "0";
-	const magnitude =
-		hundredths % 100 === 0 ? String(hundredths / 100) : (hundredths / 100).toFixed(2);
-	return `${amplitude < 0 ? minusSign : ""}${magnitude}`;
+/** The number under a bar: exact where it is short, with a sign only when negative, since the bar shows the direction. */
+export const shownAmplitude = (amplitude: number): string =>
+	formatAmplitude(amplitude).replace(/^\+/, "");
+
+/** The label on the line of the average. */
+export const meanLabel = (state: Amplitudes): string => `μ = ${shownAmplitude(mean(state))}`;
+
+export const plotScales = [0.5, 1] as const;
+
+const scaleTolerance = 1e-9;
+
+/** The amplitude drawn at the full height of the plot: the smallest of the fixed scales that holds every bar. */
+export function plotScale(state: Amplitudes): number {
+	const largest = Math.max(...state.map(Math.abs));
+	return plotScales.find((scale) => largest <= scale + scaleTolerance) ?? 1;
 }
 
 /** One bar in words, for a screen reader, with its exact amplitude. */

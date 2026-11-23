@@ -104,7 +104,7 @@ function applyGates(): void {
 			<button type="button" onclick={() => choose("alternating")}>+ &minus; + &minus;</button>
 		</div>
 		<button type="button" class="apply" onclick={applyGates}>
-			Apply H<sup>&otimes;{count}</sup>
+			Apply H<sup class="power">&otimes;{count}</sup>
 		</button>
 	</div>
 	<div class="states">
@@ -132,7 +132,7 @@ function applyGates(): void {
 			</div>
 		</div>
 		<div class="state">
-			<p class="title">H<sup>&otimes;{count}</sup>{ket("ψ")}</p>
+			<p class="title">H<sup class="power">&otimes;{count}</sup>{ket("ψ")}</p>
 			<AmplitudeChart
 				name="Amplitudes after a Hadamard gate on every qubit"
 				{labels}
@@ -184,8 +184,11 @@ button.apply {
 		background: var(--fui-surface-raised);
 	}
 }
-sup {
-	font-size: 0.75em;
+.power {
+	font-family: "STIX Two Math", math;
+	font-size: 0.85em;
+	font-weight: 400;
+	line-height: 0;
 }
 .states {
 	width: 100%;
@@ -198,6 +201,8 @@ sup {
 	gap: 0.5rem;
 	justify-items: center;
 	align-content: start;
+	/* Narrower than the label it holds, which runs into the padding: eight columns need the width. */
+	--chart-gutter: 0.75rem;
 	padding: 0.75rem 0.5rem;
 	border: 1px solid var(--fui-line);
 	border-radius: var(--fui-radius-md);
@@ -212,14 +217,14 @@ sup {
 .sketch {
 	--chart-unit: 4.5rem;
 	position: relative;
-	width: min(100%, var(--columns) * 3.25rem);
+	width: min(100%, var(--columns) * 3.25rem + var(--chart-gutter));
 }
 .sketch :global(.chart.drawable .column:hover) {
 	background: transparent;
 }
 .grip {
 	position: absolute;
-	left: calc(var(--across) * 100%);
+	left: calc(var(--chart-gutter) + var(--across) * (100% - var(--chart-gutter)));
 	top: calc(var(--down) * 2 * var(--chart-unit));
 	width: 0.75rem;
 	height: 0.25rem;

@@ -11,7 +11,9 @@ import {
 	defaultMarked,
 	describe,
 	describeColumn,
+	meanLabel,
 	nextStep,
+	plotScale,
 	type Step,
 	shownAmplitude,
 	stateAfter,
@@ -27,6 +29,7 @@ const size = $derived(2 ** qubits);
 const labels = $derived(bitstrings(qubits));
 const current = $derived(stateAfter(qubits, marked, steps));
 const next = $derived(nextStep(steps));
+const scale = $derived(plotScale(current));
 
 function take(step: Step): void {
 	if (step === next) steps += 1;
@@ -54,6 +57,7 @@ function take(step: Step): void {
 	<div class="figure" class:crowded={size > 4} style:--columns={size}>
 		<div
 			class="chart"
+			data-scale={scale}
 			role="list"
 			aria-label="Amplitudes of the {size} inputs, with the marked input highlighted"
 		>
@@ -62,15 +66,15 @@ function take(step: Step): void {
 				<div class="column" class:marked={marked === index} role="listitem">
 					<span class="spoken">{describeColumn(label, amplitude, marked === index)}</span>
 					<span class="plot" aria-hidden="true">
-						<SignedBar {amplitude} tone={marked === index ? "accent" : "neutral"} />
+						<SignedBar amplitude={amplitude / scale} tone={marked === index ? "accent" : "neutral"} />
 					</span>
 					<span class="amplitude" class:negative={amplitude < 0} aria-hidden="true">
 						{shownAmplitude(amplitude)}
 					</span>
 				</div>
 			{/each}
-			<span class="level" style:--level={mean(current)} aria-hidden="true">
-				<span class="level-label">μ</span>
+			<span class="level" style:--level={mean(current) / scale} aria-hidden="true">
+				<span class="level-label">{meanLabel(current)}</span>
 			</span>
 		</div>
 		<div class="marking" role="radiogroup" aria-label="Marked input">
@@ -106,8 +110,8 @@ label:has(:focus-visible) {
 	outline-offset: 2px;
 }
 .figure {
-	--unit: 4.5rem;
-	--gutter: 0.875rem;
+	--unit: 3.5rem;
+	--gutter: 4.5rem;
 	--number-size: 0.6875rem;
 	width: min(100%, var(--columns) * 3.25rem + var(--gutter));
 	display: grid;
@@ -118,6 +122,9 @@ label:has(:focus-visible) {
 }
 .figure.crowded {
 	--number-size: 0.625rem;
+}
+.crowded .amplitude {
+	letter-spacing: -0.03em;
 }
 .chart,
 .marking {
@@ -153,17 +160,19 @@ label:has(:focus-visible) {
 }
 .level {
 	position: absolute;
-	inset: calc((1 - var(--level)) * var(--unit)) 0 auto;
+	inset: calc((1 - var(--level)) * var(--unit)) var(--gutter) auto 0;
 	border-top: 1px dashed var(--fui-ink-secondary);
 	pointer-events: none;
 	transition: top 250ms ease-out;
 }
 .level-label {
 	position: absolute;
-	right: 0.125rem;
-	bottom: 0.125rem;
-	color: var(--fui-ink-secondary);
-	line-height: 1;
+	inset: 0 auto auto 100%;
+	transform: translateY(-50%);
+	padding-inline-start: 0.375rem;
+	font-size: 0.75rem;
+	color: var(--fui-ink);
+	white-space: nowrap;
 }
 label {
 	position: relative;
