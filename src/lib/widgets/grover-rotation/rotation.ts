@@ -45,7 +45,8 @@ export function describe(qubits: number, marked: number, iterations: number): st
 
 export function describePicture(qubits: number, marked: number, iterations: number): string {
 	const size = 2 ** qubits;
-	const height = Math.sin(stateAngle(size, marked, iterations)).toFixed(2);
+	const sine = Math.sin(stateAngle(size, marked, iterations));
+	const height = `${Math.abs(sine).toFixed(2)} ${sine < 0 ? "below" : "above"} the unmarked axis`;
 	const probability = formatProbability(successProbability(size, marked, iterations));
-	return `Upper half of the unit circle, with the unmarked inputs along the horizontal axis and the marked inputs along the vertical axis. The state after ${iterations} iterations is the arrow at angle ${angleMultiple(iterations)}, of height ${height}; the square on that height has area ${probability}, the probability of a marked input. The best count T = ${bestIterations(size, marked)} is ticked on the circle.`;
+	return `Unit circle, with the unmarked inputs along the horizontal axis and the marked inputs along the vertical axis. The state after ${iterations} iterations is the arrow at angle ${angleMultiple(iterations)}, ${height}; the square on that height has area ${probability}, the probability of a marked input. The best count T = ${bestIterations(size, marked)} is ticked on the circle.`;
 }

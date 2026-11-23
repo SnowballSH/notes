@@ -11,7 +11,7 @@ test("the Grover rotation climbs to the best count and falls to the far side of 
 	const iterate = widget.getByRole("button", { name: "Iterate", exact: true });
 	const back = widget.getByRole("button", { name: "Back", exact: true });
 	const fewer = widget.getByRole("button", { name: "Fewer marked inputs" });
-	const picture = widget.getByRole("img", { name: /^Upper half of the unit circle/ });
+	const picture = widget.getByRole("img", { name: /^Unit circle/ });
 	const chance = picture.locator(".chance");
 
 	await widget.getByRole("slider", { name: "Number of qubits n" }).fill("3");
@@ -72,7 +72,7 @@ test("the Grover rotation keeps its labels apart and readable on a phone", async
 }) => {
 	await page.setViewportSize(phone);
 	const widget = await openWidget(page, request, "grover-rotation");
-	const picture = widget.getByRole("img", { name: /^Upper half of the unit circle/ });
+	const picture = widget.getByRole("img", { name: /^Unit circle/ });
 	const slider = widget.getByRole("slider", { name: "Number of qubits n" });
 	const stepper = widget.getByRole("group", { name: "Number of marked inputs k" });
 

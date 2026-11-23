@@ -129,14 +129,14 @@ suite("describe", () => {
 suite("describePicture", () => {
 	it("gives the height and its square", () => {
 		expect(describePicture(3, 1, 2)).toContain(
-			"The state after 2 iterations is the arrow at angle 5θ, of height 0.97; the square on that height has area 0.945,",
+			"The state after 2 iterations is the arrow at angle 5θ, 0.97 above the unmarked axis; the square on that height has area 0.945,",
 		);
 		expect(describePicture(3, 1, 2)).toContain("The best count T = 2 is ticked on the circle.");
 	});
 
-	it("gives a negative height once the arrow is under the unmarked axis", () => {
+	it("says the arrow is below the unmarked axis once it has passed it", () => {
 		expect(describePicture(3, 1, 4)).toContain(
-			"The state after 4 iterations is the arrow at angle 9θ, of height -0.11; the square on that height has area 0.012,",
+			"The state after 4 iterations is the arrow at angle 9θ, 0.11 below the unmarked axis; the square on that height has area 0.012,",
 		);
 	});
 });
