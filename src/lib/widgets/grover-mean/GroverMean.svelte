@@ -126,6 +126,11 @@ label:has(:focus-visible) {
 .crowded .amplitude {
 	letter-spacing: -0.03em;
 }
+@media (width < 25rem) {
+	.figure.crowded {
+		--number-size: 0.5625rem;
+	}
+}
 .chart,
 .marking {
 	display: grid;
