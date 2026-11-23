@@ -28,11 +28,11 @@
   )
 }
 
-We are now ready to enter the world of Walsh-Hadamard transform. We will discuss a simple family of matrices that are closely related to Boolean functions. We will see that, surprisingly, this matrix exposes the Fourier coefficients of any Boolean function.
+We are now ready to enter the world of the Walsh-Hadamard transform. We will discuss a simple family of matrices that are closely related to Boolean functions. We will see that, surprisingly, these matrices expose the Fourier coefficients of any Boolean function.
 
 = Hadamard Matrix
 
-To motivate the definition, recall that in the previous chapter, we repeated applied the idea of orthogonalality of parity functions. In our proofs, often times we can show that most terms in a summation vanish because of interactions between orthogonal parity functions. Let's continue exploiting the idea of orthogonality.
+To motivate the definition, recall that in the previous chapter, we repeatedly applied the idea of orthogonality of parity functions. In our proofs, we often can show that most terms in a summation vanish because of interactions between orthogonal parity functions. Let's continue exploiting the idea of orthogonality.
 
 #definition(title: "Hadamard Matrix")[
   A _Hadamard matrix_ is a square matrix with entries in ${-1,1}$ whose rows are mutually orthogonal.
