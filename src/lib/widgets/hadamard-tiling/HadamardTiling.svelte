@@ -46,7 +46,8 @@ onDestroy(() => {
 });
 
 const order = $derived(2 ** exponent);
-const drawnLevel = $derived(stage === Stage.Whole ? level : level + 1);
+const resting = $derived(stage === Stage.Whole || stage === Stage.Flipped);
+const gridLevel = $derived(stage === Stage.Flipped ? level + 1 : level);
 
 let queued: 1 | -1 | undefined;
 let endPause: (() => void) | undefined;
@@ -159,8 +160,13 @@ function moveByArrowKey(event: KeyboardEvent): void {
 		{#each quarters as quarter (quarter)}
 			<canvas class={quarter} {@attach hadamardTile(level)}></canvas>
 		{/each}
-		<svg viewBox="0 0 {2 ** drawnLevel} {2 ** drawnLevel}" preserveAspectRatio="none" aria-hidden="true">
-			<path d={gridPath(drawnLevel)} />
+		<svg
+			class:resting
+			viewBox="0 0 {2 ** gridLevel} {2 ** gridLevel}"
+			preserveAspectRatio="none"
+			aria-hidden="true"
+		>
+			<path d={gridPath(gridLevel)} />
 		</svg>
 	</div>
 	{#snippet caption()}
@@ -198,6 +204,12 @@ svg {
 	inset: 0;
 	width: 100%;
 	height: 100%;
+	opacity: 0;
+}
+svg.resting {
+	opacity: 1;
+	/* The delay is the time the tiles take to enlarge, so the lines never cross moving tiles. */
+	transition: opacity 200ms ease-out 1000ms;
 }
 path {
 	fill: none;
@@ -236,7 +248,8 @@ canvas {
 	filter: invert(1);
 }
 @media (prefers-reduced-motion: reduce) {
-	canvas {
+	canvas,
+	svg.resting {
 		transition: none;
 	}
 }
