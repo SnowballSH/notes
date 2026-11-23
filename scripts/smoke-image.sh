@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Runs the image the way SnowSys does (read-only root, tmpfs, no capabilities)
-# and asserts what the deployment depends on.
+# Runs the image with a read-only root, tmpfs mounts and no capabilities, and
+# checks what a deployment depends on.
 #   scripts/smoke-image.sh <image> [container engine]
 
 image="$1"

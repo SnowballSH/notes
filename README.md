@@ -19,5 +19,4 @@ pnpm run check && pnpm run lint && pnpm run test && pnpm run build
 
 Pushing to `main` publishes `ghcr.io/snowballsh/notes`. The image is Caddy
 serving the static build on port 8080, with `/health/live` and `/health/ready`.
-It runs as `10001:10001` with a read-only root. SnowSys deploys it through
-snowdeploy (`deploy/manifests/notes.yaml` in the snowsys repository).
+It runs as `10001:10001` with a read-only root.
