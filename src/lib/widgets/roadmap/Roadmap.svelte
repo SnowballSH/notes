@@ -75,7 +75,8 @@ onMount(() => {
 	--stroke: 1.5px;
 	--flow-gap: 1.5rem;
 	--cross-gap: 1rem;
-	--rail: 1rem;
+	--rail: 1.5rem;
+	--rail-inset: 0.5rem;
 	--head-width: 0.5625rem;
 	--head-length: 0.4375rem;
 	display: grid;
@@ -196,17 +197,17 @@ onMount(() => {
 		clip-path: polygon(0 0, 100% 0, 50% 100%);
 	}
 	.skip-start::before {
-		inset: calc(50% - var(--stroke)) 0 0 0;
+		inset: calc(50% - var(--stroke)) var(--rail-inset) 0 0;
 		border-top-width: var(--stroke);
 		border-right-width: var(--stroke);
 		border-top-right-radius: var(--fui-radius-sm);
 	}
 	.skip-rail::before {
-		inset: 0;
+		inset: 0 var(--rail-inset) 0 0;
 		border-right-width: var(--stroke);
 	}
 	.skip-end::before {
-		inset: 0 0 50% 0;
+		inset: 0 var(--rail-inset) 50% 0;
 		border-right-width: var(--stroke);
 		border-bottom-width: var(--stroke);
 		border-bottom-right-radius: var(--fui-radius-sm);

@@ -11,22 +11,26 @@ import {
 	arcPath,
 	arrowBase,
 	arrowHead,
+	axisOverhang,
 	centre,
-	height,
+	chanceLabelPoint,
 	heightSquare,
 	labelAcrossAxisFrom,
 	labelOutside,
+	pictureHeight,
 	pointAt,
 	radius,
+	textSize,
 	turnLabelPoint,
+	unmarkedLabel,
 	width,
 } from "./layout.ts";
 import {
 	caption as captionText,
+	chanceLabel,
 	clampMarked,
 	describe,
 	describePicture,
-	formatProbability,
 	lastIteration,
 	mostMarked,
 	stateAngle,
@@ -38,16 +42,18 @@ const props: WidgetProps<typeof definition> = $props();
 const turnTime = 450;
 const arcDistance = 48;
 const tickReach = 6;
-const axisOverhang = 12;
 
 let qubits = $state(untrack(() => props.qubits));
 let marked = $state(untrack(() => clampMarked(props.marked, props.qubits)));
 let iterations = $state(0);
+let shownWidth = $state(0);
 
 const size = $derived(2 ** qubits);
 const best = $derived(bestIterations(size, marked));
 const last = $derived(lastIteration(size, marked));
 const angle = $derived(stateAngle(size, marked, iterations));
+const lastAngle = $derived(stateAngle(size, marked, last));
+const height = $derived(pictureHeight(lastAngle));
 const turnedFrom = $derived(iterations === 0 ? 0 : stateAngle(size, marked, iterations - 1));
 const earlier = $derived(
 	Array.from({ length: iterations }, (_, done) => stateAngle(size, marked, done)),
@@ -64,6 +70,8 @@ const shown = new Tween(
 const tip = $derived(pointAt(shown.current));
 const shaftEnd = $derived(arrowBase(shown.current));
 const square = $derived(heightSquare(shown.current));
+const fontSize = $derived(textSize(shownWidth));
+const chanceAt = $derived(chanceLabelPoint(square, fontSize));
 const turnLabelAt = $derived(turnLabelPoint(turnedFrom, angle));
 const turnedTo = $derived(Math.min(shown.current, angle));
 
@@ -124,7 +132,7 @@ function changeMarked(by: 1 | -1): void {
 					aria-disabled={marked === 1}
 					onclick={() => changeMarked(-1)}>−</button
 				>
-				<span class="value">k = {marked}, N = {size}</span>
+				<span class="value">k = {marked}</span>
 				<button
 					type="button"
 					aria-label="More marked inputs"
@@ -134,57 +142,64 @@ function changeMarked(by: 1 | -1): void {
 			</div>
 		</div>
 	</div>
-	<svg
-		class="picture"
-		viewBox="0 0 {width} {height}"
-		role="img"
-		aria-label={describePicture(qubits, marked, iterations)}
-	>
-		<rect class="square" x={square.x} y={square.y} width={square.side} height={square.side} />
-		<line
-			class="axis"
-			x1={centre.x - radius - axisOverhang}
-			y1={centre.y}
-			x2={centre.x + radius + axisOverhang}
-			y2={centre.y}
-		/>
-		<line class="axis" x1={centre.x} y1={centre.y} x2={centre.x} y2="4" />
-		<path class="unit" d={arcPath(0, Math.PI, radius)} />
-		<text class="axis-label" x={centre.x + radius + axisOverhang} y={height - 8} text-anchor="end">
-			unmarked
-		</text>
-		<text class="axis-label" x={markedLabel.x} y={markedLabel.y} text-anchor={markedLabel.anchor}>
-			marked
-		</text>
-		{#each earlier as past (past)}
-			{@const point = pointAt(past)}
-			<line class="earlier" x1={centre.x} y1={centre.y} x2={point.x} y2={point.y} />
-			<circle class="earlier-dot" cx={point.x} cy={point.y} r="2.5" />
-		{/each}
-		<line
-			class="best"
-			x1={pointAt(bestAngle, radius - tickReach).x}
-			y1={pointAt(bestAngle, radius - tickReach).y}
-			x2={pointAt(bestAngle, radius + tickReach).x}
-			y2={pointAt(bestAngle, radius + tickReach).y}
-		/>
-		<text class="best-label" x={bestLabel.x} y={bestLabel.y} text-anchor={bestLabel.anchor}>
-			T = {best}
-		</text>
-		{#if turnedTo > turnedFrom}
-			<path class="turn" d={arcPath(turnedFrom, turnedTo, arcDistance)} />
-		{/if}
-		<line class="rise" x1={tip.x} y1={centre.y} x2={tip.x} y2={tip.y} />
-		<line class="arrow" x1={centre.x} y1={centre.y} x2={shaftEnd.x} y2={shaftEnd.y} />
-		<polygon class="head" points={arrowHead(shown.current)} />
-		<text class="turn-label" x={turnLabelAt.x} y={turnLabelAt.y}>{turnLabel(iterations)}</text>
-		<text class="chance" x={square.x + square.side / 2} y={centre.y + 14}>
-			{formatProbability(Math.sin(shown.current) ** 2)}
-		</text>
-	</svg>
+	<div class="picture" bind:clientWidth={shownWidth}>
+		<svg
+			viewBox="0 0 {width} {height}"
+			role="img"
+			aria-label={describePicture(qubits, marked, iterations)}
+			style:font-size="{fontSize}px"
+		>
+			<rect class="square" x={square.x} y={square.y} width={square.side} height={square.side} />
+			<line
+				class="axis"
+				x1={centre.x - radius - axisOverhang}
+				y1={centre.y}
+				x2={centre.x + radius + axisOverhang}
+				y2={centre.y}
+			/>
+			<line class="axis" x1={centre.x} y1={centre.y} x2={centre.x} y2="4" />
+			<path class="unit" d={arcPath(0, Math.max(Math.PI, lastAngle), radius)} />
+			<text
+				class="axis-label"
+				x={unmarkedLabel.x}
+				y={unmarkedLabel.y}
+				text-anchor={unmarkedLabel.anchor}
+			>
+				unmarked
+			</text>
+			<text class="axis-label" x={markedLabel.x} y={markedLabel.y} text-anchor={markedLabel.anchor}>
+				marked
+			</text>
+			{#each earlier as past (past)}
+				{@const point = pointAt(past)}
+				<line class="earlier" x1={centre.x} y1={centre.y} x2={point.x} y2={point.y} />
+				<circle class="earlier-dot" cx={point.x} cy={point.y} r="2.5" />
+			{/each}
+			<line
+				class="best"
+				x1={pointAt(bestAngle, radius - tickReach).x}
+				y1={pointAt(bestAngle, radius - tickReach).y}
+				x2={pointAt(bestAngle, radius + tickReach).x}
+				y2={pointAt(bestAngle, radius + tickReach).y}
+			/>
+			<text class="best-label" x={bestLabel.x} y={bestLabel.y} text-anchor={bestLabel.anchor}>
+				T = {best}
+			</text>
+			{#if turnedTo > turnedFrom}
+				<path class="turn" d={arcPath(turnedFrom, turnedTo, arcDistance)} />
+			{/if}
+			<line class="rise" x1={tip.x} y1={centre.y} x2={tip.x} y2={tip.y} />
+			<line class="arrow" x1={centre.x} y1={centre.y} x2={shaftEnd.x} y2={shaftEnd.y} />
+			<polygon class="head" points={arrowHead(shown.current)} />
+			<text class="turn-label" x={turnLabelAt.x} y={turnLabelAt.y}>{turnLabel(iterations)}</text>
+			<text class="chance" x={chanceAt.x} y={chanceAt.y}>
+				{chanceLabel(Math.sin(shown.current) ** 2)}
+			</text>
+		</svg>
+	</div>
 	{#snippet caption()}
 		<p class="spoken">{describe(qubits, marked, iterations)}</p>
-		<p aria-hidden="true">{captionText(qubits, marked, iterations)}</p>
+		<p aria-hidden="true">{captionText(qubits, iterations)}</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -192,7 +207,7 @@ function changeMarked(by: 1 | -1): void {
 .controls {
 	display: grid;
 	gap: 0.5rem;
-	max-width: 100%;
+	width: 100%;
 }
 .row {
 	display: flex;
@@ -201,7 +216,7 @@ function changeMarked(by: 1 | -1): void {
 	gap: 0.5rem;
 }
 .settings {
-	column-gap: 1.25rem;
+	column-gap: 0.75rem;
 }
 button {
 	min-width: 2.75rem;
@@ -221,6 +236,11 @@ input:focus-visible {
 	align-items: center;
 	gap: 0.5rem;
 }
+.qubits {
+	flex: 1 1 6.5rem;
+	min-width: 0;
+	max-width: 11.5rem;
+}
 .stepper button {
 	padding: 0;
 	font-size: 1.125rem;
@@ -233,17 +253,23 @@ input:focus-visible {
 	white-space: nowrap;
 }
 input[type="range"] {
-	width: 7.5rem;
+	flex: 1 1 0;
+	width: 3rem;
+	min-width: 3rem;
 	height: 2.75rem;
 	margin: 0;
 	accent-color: var(--fui-accent);
 	cursor: pointer;
 }
 .picture {
+	width: 100%;
+	max-width: 29.5rem;
+}
+svg {
 	display: block;
 	width: 100%;
-	max-width: 26rem;
 	height: auto;
+	overflow: visible;
 }
 .axis {
 	stroke: var(--fui-line);
@@ -256,7 +282,6 @@ input[type="range"] {
 }
 text {
 	font-family: var(--fui-font-sans);
-	font-size: 11px;
 	dominant-baseline: central;
 	/* A halo in the page colour, so the lines that cross a label break around it. */
 	paint-order: stroke;
@@ -299,7 +324,10 @@ text {
 }
 .square {
 	fill: var(--fui-accent);
-	opacity: 0.16;
+	fill-opacity: 0.16;
+	stroke: var(--fui-accent);
+	stroke-opacity: 0.5;
+	stroke-width: 1;
 }
 .rise {
 	stroke: var(--fui-accent);

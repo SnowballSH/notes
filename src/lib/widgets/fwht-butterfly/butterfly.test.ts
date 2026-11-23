@@ -10,6 +10,7 @@ import {
 	describeLevel,
 	equation,
 	levels,
+	minusOnTop,
 	movedNode,
 	nodeLabel,
 	randomValues,
@@ -90,6 +91,30 @@ describe("wires", () => {
 		expect(wires.filter((wire) => wire.sign === -1).every((wire) => wire.from === wire.to)).toBe(
 			true,
 		);
+	});
+
+	it("draws the minus wires after the plus wires, each kind in its old order", () => {
+		const wires = allWires(4);
+		expect(minusOnTop(wires)).toEqual([
+			{ level: 1, from: 0, to: 0, sign: 1 },
+			{ level: 1, from: 1, to: 0, sign: 1 },
+			{ level: 1, from: 0, to: 1, sign: 1 },
+			{ level: 1, from: 2, to: 2, sign: 1 },
+			{ level: 1, from: 3, to: 2, sign: 1 },
+			{ level: 1, from: 2, to: 3, sign: 1 },
+			{ level: 2, from: 0, to: 0, sign: 1 },
+			{ level: 2, from: 2, to: 0, sign: 1 },
+			{ level: 2, from: 1, to: 1, sign: 1 },
+			{ level: 2, from: 3, to: 1, sign: 1 },
+			{ level: 2, from: 0, to: 2, sign: 1 },
+			{ level: 2, from: 1, to: 3, sign: 1 },
+			{ level: 1, from: 1, to: 1, sign: -1 },
+			{ level: 1, from: 3, to: 3, sign: -1 },
+			{ level: 2, from: 2, to: 2, sign: -1 },
+			{ level: 2, from: 3, to: 3, sign: -1 },
+		]);
+		expect(wires[0]).toEqual({ level: 1, from: 0, to: 0, sign: 1 });
+		expect(wires[3]).toEqual({ level: 1, from: 1, to: 1, sign: -1 });
 	});
 });
 

@@ -14,6 +14,7 @@ import {
 	describeLevel,
 	equation,
 	levels,
+	minusOnTop,
 	movedNode,
 	type Node,
 	nodeId,
@@ -26,17 +27,18 @@ import {
 	headingAt,
 	headingBaseline,
 	heightFor,
+	minWidth,
 	nodeHeight,
 	nodeWidth,
 	reachBox,
 	rowCentre,
-	width,
+	widthFor,
 	wireSegment,
 } from "./layout.ts";
 
 const size = defaultInput.length;
 const height = heightFor(size);
-const wires = allWires(size);
+const wires = minusOnTop(allWires(size));
 const ringOffset = 2;
 
 const { level: startLevel }: WidgetProps<typeof definition> = $props();
@@ -47,6 +49,9 @@ let picked = $state.raw<Node>();
 let focused = $state.raw<Node>();
 let cursor = $state.raw<Node>({ level: 0, index: 0 });
 let diagram = $state<SVGSVGElement>();
+let stage = $state.raw<DOMRectReadOnly>();
+
+const width = $derived(widthFor(stage?.width ?? minWidth));
 
 const columns = $derived(butterflyColumns(input));
 const traced = $derived(picked && picked.level <= level ? picked : undefined);
@@ -106,109 +111,114 @@ function pressKey(event: KeyboardEvent, node: Node): void {
 			onclick={() => (input = randomValues(Math.random, size))}>Random</button
 		>
 	</div>
-	<svg
-		bind:this={diagram}
-		class="diagram"
-		viewBox="0 0 {width} {height}"
-		role="group"
-		aria-label="Butterfly diagram of the fast Walsh-Hadamard transform of {size} values"
-	>
-		<g aria-hidden="true">
-			{#each columns as _, column (column)}
-				{@const heading = headingAt(column, levels)}
-				<text
-					class="heading"
-					class:pending={column > level}
-					x={heading.x}
-					y={headingBaseline}
-					text-anchor={heading.anchor}>{columnName(column)}</text
-				>
-			{/each}
-			{#each wires as wire (`${wire.level}-${wire.from}-${wire.to}`)}
-				{@const segment = wireSegment(wire.level, wire.from, wire.to, levels)}
-				<line
-					class="wire"
-					class:minus={wire.sign === -1}
-					class:pending={wire.level > level}
-					class:lit={traced?.level === wire.level && traced.index === wire.to}
-					class:dimmed={sources !== undefined}
-					{...segment}
-				/>
-			{/each}
-		</g>
-		{#each columns as values, column (column)}
-			{#each values as value, index (index)}
-				{@const node = { level: column, index }}
-				{@const x = columnCentre(column, levels)}
-				{@const y = rowCentre(index)}
-				{#if column <= level}
-					<g
-						class="node"
-						class:positive={value > 0}
-						class:negative={value < 0}
-						class:traced={same(traced, node)}
-						class:source={isSource(node)}
-						role="button"
-						tabindex={same(tabStop, node) ? 0 : -1}
-						aria-label={nodeLabel(node, value)}
-						data-node={nodeId(node)}
-						onfocus={() => focusNode(node)}
-						onblur={() => blurNode(node)}
-						onpointerenter={() => (picked = node)}
-						onpointerleave={() => (picked = focused)}
-						onclick={() => focusNode(node)}
-						onkeydown={(event) => pressKey(event, node)}
+	<div class="stage" bind:contentRect={stage}>
+		<svg
+			bind:this={diagram}
+			class="diagram"
+			viewBox="0 0 {width} {height}"
+			role="group"
+			aria-label="Butterfly diagram of the fast Walsh-Hadamard transform of {size} values"
+		>
+			<g aria-hidden="true">
+				{#each columns as _, column (column)}
+					{@const heading = headingAt(column, levels, width)}
+					<text
+						class="heading"
+						class:pending={column > level}
+						x={heading.x}
+						y={headingBaseline}
+						text-anchor={heading.anchor}>{columnName(column)}</text
 					>
-						<rect class="reach" {...reachBox(column, index, levels)} />
+				{/each}
+				{#each wires as wire (`${wire.level}-${wire.from}-${wire.to}`)}
+					{@const segment = wireSegment(wire.level, wire.from, wire.to, levels, width)}
+					<line
+						class="wire"
+						class:minus={wire.sign === -1}
+						class:pending={wire.level > level}
+						class:lit={traced?.level === wire.level && traced.index === wire.to}
+						class:dimmed={sources !== undefined}
+						{...segment}
+					/>
+				{/each}
+			</g>
+			{#each columns as values, column (column)}
+				{#each values as value, index (index)}
+					{@const node = { level: column, index }}
+					{@const x = columnCentre(column, levels, width)}
+					{@const y = rowCentre(index)}
+					{#if column <= level}
+						<g
+							class="node"
+							class:positive={value > 0}
+							class:negative={value < 0}
+							class:zero={value === 0}
+							class:traced={same(traced, node)}
+							class:source={isSource(node)}
+							role="button"
+							tabindex={same(tabStop, node) ? 0 : -1}
+							aria-label={nodeLabel(node, value)}
+							data-node={nodeId(node)}
+							onfocus={() => focusNode(node)}
+							onblur={() => blurNode(node)}
+							onpointerenter={() => (picked = node)}
+							onpointerleave={() => (picked = focused)}
+							onclick={() => focusNode(node)}
+							onkeydown={(event) => pressKey(event, node)}
+						>
+							<rect class="reach" {...reachBox(column, index, levels, width)} />
+							<rect
+								class="ring"
+								x={x - nodeWidth / 2 - ringOffset}
+								y={y - nodeHeight / 2 - ringOffset}
+								width={nodeWidth + 2 * ringOffset}
+								height={nodeHeight + 2 * ringOffset}
+								rx="6"
+							/>
+							<rect
+								class="box"
+								x={x - nodeWidth / 2}
+								y={y - nodeHeight / 2}
+								width={nodeWidth}
+								height={nodeHeight}
+								rx="4"
+							/>
+							<text class="value" {x} {y}>{formatSigned(value)}</text>
+						</g>
+					{:else}
 						<rect
-							class="ring"
-							x={x - nodeWidth / 2 - ringOffset}
-							y={y - nodeHeight / 2 - ringOffset}
-							width={nodeWidth + 2 * ringOffset}
-							height={nodeHeight + 2 * ringOffset}
-							rx="6"
-						/>
-						<rect
-							class="box"
+							class="box pending"
+							aria-hidden="true"
 							x={x - nodeWidth / 2}
 							y={y - nodeHeight / 2}
 							width={nodeWidth}
 							height={nodeHeight}
 							rx="4"
 						/>
-						<text class="value" {x} {y}>{formatSigned(value)}</text>
-					</g>
-				{:else}
-					<rect
-						class="box pending"
-						aria-hidden="true"
-						x={x - nodeWidth / 2}
-						y={y - nodeHeight / 2}
-						width={nodeWidth}
-						height={nodeHeight}
-						rx="4"
-					/>
-				{/if}
+					{/if}
+				{/each}
 			{/each}
-		{/each}
-	</svg>
-	<p class="legend">
-		<span>
-			<svg class="swatch" viewBox="0 0 24 8" aria-hidden="true">
-				<line class="wire" x1="0" y1="4" x2="24" y2="4" />
-			</svg>
-			+
-		</span>
-		<span>
-			<svg class="swatch" viewBox="0 0 24 8" aria-hidden="true">
-				<line class="wire minus" x1="0" y1="4" x2="24" y2="4" />
-			</svg>
-			&minus;
-		</span>
-	</p>
+		</svg>
+	</div>
 	{#snippet caption()}
 		<p class="spoken"><span>{describeLevel(level)}</span> <span>{describeInput(input)}</span></p>
-		<p class="now">{traced ? equation(columns, traced) : ""}</p>
+		<div class="line">
+			<p class="legend" class:covered={traced !== undefined} aria-hidden="true">
+				<span>
+					<svg class="swatch" viewBox="0 0 24 8">
+						<line class="wire" x1="0" y1="4" x2="24" y2="4" />
+					</svg>
+					+
+				</span>
+				<span>
+					<svg class="swatch" viewBox="0 0 24 8">
+						<line class="wire minus" x1="0" y1="4" x2="24" y2="4" />
+					</svg>
+					&minus;
+				</span>
+			</p>
+			<p class="now">{traced ? equation(columns, traced) : ""}</p>
+		</div>
 	{/snippet}
 </WidgetFrame>
 
@@ -229,15 +239,18 @@ button.primary {
 p {
 	margin: 0;
 }
+.stage {
+	width: 100%;
+	max-width: 480px;
+}
 .diagram {
 	display: block;
 	width: 100%;
-	max-width: 24rem;
 	height: auto;
 }
 .heading {
 	font-family: var(--fui-font-sans);
-	font-size: 10px;
+	font-size: 12px;
 	fill: var(--fui-ink-secondary);
 }
 .heading.pending {
@@ -248,7 +261,7 @@ p {
 	stroke: var(--fui-ink);
 	stroke-width: 1.25;
 	stroke-linecap: round;
-	opacity: 0.75;
+	opacity: 0.6;
 	pointer-events: none;
 	transition:
 		opacity 150ms ease,
@@ -256,7 +269,9 @@ p {
 }
 .wire.minus {
 	stroke: var(--fui-accent);
-	stroke-dasharray: 4 3;
+	stroke-width: 2;
+	stroke-linecap: butt;
+	stroke-dasharray: 5 3;
 	opacity: 1;
 }
 .wire.dimmed {
@@ -286,6 +301,10 @@ p {
 .negative .box {
 	fill: color-mix(in oklab, var(--fui-code-warm) 22%, var(--fui-surface-base));
 	stroke: color-mix(in oklab, var(--fui-code-warm) 60%, var(--fui-surface-base));
+}
+.zero .box {
+	fill: color-mix(in oklab, var(--fui-ink-muted) 22%, var(--fui-surface-base));
+	stroke: color-mix(in oklab, var(--fui-ink-muted) 60%, var(--fui-surface-base));
 }
 .source .box,
 .traced .box {
@@ -317,13 +336,18 @@ p {
 .node:focus-visible .ring {
 	opacity: 1;
 }
+.line {
+	display: grid;
+}
+.line > p {
+	grid-area: 1 / 1;
+}
 .legend {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0 1rem;
-	font-size: 0.875rem;
-	line-height: 1.5;
-	color: var(--fui-ink-secondary);
+	gap: 1rem;
+}
+.legend.covered {
+	visibility: hidden;
 }
 .legend > span {
 	display: inline-flex;
@@ -333,9 +357,6 @@ p {
 .swatch {
 	width: 1.5rem;
 	height: 0.5rem;
-}
-.swatch .wire {
-	stroke-width: 1.5;
 }
 .now {
 	min-height: 1.5em;
