@@ -67,6 +67,14 @@ export const emptyTally = (outcomes: number): readonly number[] =>
 export const recorded = (tally: readonly number[], outcome: number): readonly number[] =>
 	tally.with(outcome, (tally[outcome] ?? 0) + 1);
 
+/** One measurement in words; the running count makes a repeated outcome a new sentence. */
+export const describeMeasurement = (
+	label: string,
+	tally: readonly number[],
+	outcome: number,
+): string =>
+	`Measured ${label}: ${tally[outcome] ?? 0} of ${tally.reduce((total, count) => total + count, 0)} so far.`;
+
 export const measure = (state: Amplitudes, random: Random): number =>
 	sampleIndex(probabilities(state), random);
 
@@ -75,7 +83,7 @@ export const depthBelowZero = (state: Amplitudes): number =>
 	Math.max(0, ...state.map((amplitude) => -amplitude));
 
 /** A probability of a state of Fourier sampling as an exact fraction: each is a whole number over 4^n. */
-export function formatProbability(chance: number, qubits: number): string {
+export function formatExactProbability(chance: number, qubits: number): string {
 	let denominator = 4 ** qubits;
 	let numerator = Math.round(chance * denominator);
 	while (denominator > 1 && numerator % 2 === 0) {
@@ -94,7 +102,7 @@ export function describeOutcomes(state: Amplitudes): string {
 	const likeliest = chances.flatMap((chance, outcome) =>
 		highest - chance < tolerance ? [bitstring(outcome, qubitCount(state))] : [],
 	);
-	const shown = formatProbability(highest, qubitCount(state));
+	const shown = formatExactProbability(highest, qubitCount(state));
 	if (1 - highest < tolerance) return `The outcome is always ${likeliest[0] ?? ""}.`;
 	if (likeliest.length === chances.length) return `Every outcome has probability ${shown}.`;
 	if (likeliest.length === 1)

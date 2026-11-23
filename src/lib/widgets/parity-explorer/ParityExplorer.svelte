@@ -62,25 +62,19 @@ const dot = $derived(selected % 2);
 	min-width: 2.75rem;
 	color: var(--fui-ink-secondary);
 }
+/* Restating the resting border and background keeps the frame's hover style off these toggles. */
 button {
 	width: 2.75rem;
 	height: 2.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
+	border-color: var(--fui-line);
 	background: transparent;
 	color: var(--fui-ink-muted);
-	font: inherit;
-	cursor: pointer;
 }
 button.selected {
 	border-color: var(--fui-accent);
 	background: var(--fui-surface-raised);
 	color: var(--fui-ink);
 	font-weight: 700;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 .result {
 	color: var(--fui-ink);

@@ -1,4 +1,4 @@
-import { formatDyadic, minusSign } from "../../quantum/format.ts";
+import { formatSigned } from "../../quantum/format.ts";
 import { invertAboutMean, mean, signOracle, uniformSuperposition } from "../../quantum/grover.ts";
 import { type Amplitudes, hadamardOnEveryQubit, settled } from "../../quantum/state.ts";
 
@@ -18,11 +18,6 @@ const tolerance = 1e-9;
 export const isSameState = (first: Amplitudes, second: Amplitudes): boolean =>
 	first.length === second.length &&
 	first.every((amplitude, index) => Math.abs(amplitude - (second[index] ?? 0)) < tolerance);
-
-function formatSigned(value: number): string {
-	const magnitude = formatDyadic(Math.abs(value));
-	return value < 0 && magnitude !== "0" ? `${minusSign}${magnitude}` : magnitude;
-}
 
 export const describeAverage = (state: Amplitudes): string =>
 	`The average amplitude is ${formatSigned(mean(state))}.`;

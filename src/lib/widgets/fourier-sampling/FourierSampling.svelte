@@ -1,15 +1,17 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { formatAmplitude, minusSign } from "../../quantum/format.ts";
+import SignedBar from "../../quantum/SignedBar.svelte";
 import type { Random } from "../../quantum/sampling.ts";
-import { type Amplitudes, bitstring } from "../../quantum/state.ts";
+import { type Amplitudes, bitstrings } from "../../quantum/state.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import {
 	depthBelowZero,
+	describeMeasurement,
 	describeOutcomes,
 	emptyTally,
-	formatProbability,
+	formatExactProbability,
 	fourierSampling,
 	measure,
 	type PresetName,
@@ -48,7 +50,7 @@ let table = $state.raw<TruthTable>(untrack(() => presetTable(preset, qubits)));
 let tally = $state.raw(emptyTally(2 ** untrack(() => qubits)));
 let latest = $state<number>();
 
-const labels = $derived(table.map((_, input) => bitstring(input, qubits)));
+const labels = $derived(bitstrings(qubits));
 const stages = $derived(fourierSampling(table));
 const rows = $derived<Stage[]>([
 	{ title: "H", name: "Amplitudes after H", state: stages.afterHadamard },
@@ -62,7 +64,7 @@ const rows = $derived<Stage[]>([
 const dense = $derived(table.length > mostColumnsWithNumbers);
 const crowded = $derived(table.length > mostColumnsAtFullSize);
 
-const chance = (amplitude: number): string => formatProbability(amplitude ** 2, qubits);
+const chance = (amplitude: number): string => formatExactProbability(amplitude ** 2, qubits);
 
 function setTable(next: TruthTable): void {
 	table = next;
@@ -129,8 +131,7 @@ function measureOnce(): void {
 								{labels[outcome]}: amplitude {shown}, probability {chance(amplitude)}
 							</span>
 							<span class="plot" aria-hidden="true">
-								<span class="bar" class:negative={amplitude < 0} style:--amplitude={amplitude}
-								></span>
+								<SignedBar {amplitude} />
 							</span>
 							{#if !dense}
 								<span
@@ -167,7 +168,7 @@ function measureOnce(): void {
 			<div class="measurement">
 				<button type="button" class="measure" onclick={measureOnce}>Measure</button>
 				<p class="spoken" aria-live="polite">
-					{#if latest !== undefined}Measured {labels[latest]}.{/if}
+					{#if latest !== undefined}{describeMeasurement(labels[latest] ?? "", tally, latest)}{/if}
 				</p>
 			</div>
 			<div class="cells tally" role="list" aria-label="Tally of outcomes">
@@ -245,22 +246,7 @@ function measureOnce(): void {
 	gap: 0.375rem;
 }
 button {
-	min-height: 2.75rem;
 	padding: 0 0.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 button[aria-pressed="true"] {
 	border-color: var(--fui-accent);
@@ -328,24 +314,12 @@ p {
 		no-repeat;
 	transition: height 250ms ease-out;
 }
-.bar {
-	position: absolute;
+.plot :global(.bar) {
 	inset: 0 18% auto;
 	height: var(--unit);
-	/* A negative scale mirrors the bar below the axis, so a sign flip animates through zero. */
-	transform: scaleY(var(--amplitude));
-	transform-origin: bottom;
-	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
-	background: var(--fui-accent);
-	transition:
-		transform 250ms ease-out,
-		background-color 250ms ease-out;
 }
-.dense .bar {
+.dense .plot :global(.bar) {
 	inset-inline: 10%;
-}
-.bar.negative {
-	background: var(--fui-code-warm);
 }
 .amplitude {
 	color: var(--fui-accent-strong);
@@ -398,15 +372,6 @@ p {
 	font-weight: 700;
 	box-shadow: 0 2px 0 var(--fui-accent);
 }
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-}
 /* Too narrow for a gutter: each symbol goes above its row, and a crowded row drops its plus signs. */
 @container (width < 30rem) {
 	.row {
@@ -425,7 +390,6 @@ p {
 }
 @media (prefers-reduced-motion: reduce) {
 	.plot,
-	.bar,
 	.chance {
 		transition: none;
 	}
@@ -436,7 +400,6 @@ p {
 		display: none;
 	}
 	.one,
-	.bar,
 	.chance {
 		print-color-adjust: exact;
 	}

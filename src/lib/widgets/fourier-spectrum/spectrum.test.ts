@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
 	describeSpectrum,
 	flipped,
-	formatPolynomial,
 	inputLabel,
 	inputSigns,
 	matchingPreset,
@@ -19,6 +18,9 @@ import {
 } from "./spectrum";
 
 const values = (table: TruthTable): number[] => spectrum(table).map(({ value }) => value);
+
+const polynomial = (coefficients: Parameters<typeof polynomialTerms>[0]): string =>
+	polynomialTerms(coefficients).join(" ");
 
 const everyTable = (): TruthTable[] =>
 	Array.from({ length: 256 }, (_, code) =>
@@ -75,21 +77,21 @@ describe("spectrum", () => {
 
 	it("gives majority 1/2 on each singleton and −1/2 on {1,2,3}", () => {
 		expect(values(presets.majority.table)).toEqual([0, 0.5, 0.5, 0.5, 0, 0, 0, -0.5]);
-		expect(formatPolynomial(spectrum(presets.majority.table))).toBe(
-			"f = 1/2 x₁ + 1/2 x₂ + 1/2 x₃ − 1/2 x₁x₂x₃",
+		expect(polynomial(spectrum(presets.majority.table))).toBe(
+			"1/2 x₁ + 1/2 x₂ + 1/2 x₃ − 1/2 x₁x₂x₃",
 		);
 	});
 
 	it("gives the AND of the first two bits the expansion in the notes", () => {
 		const and2 = tableOf((x1, x2) => Math.max(x1, x2));
 		expect(values(and2)).toEqual([0.5, 0.5, 0.5, 0, -0.5, 0, 0, 0]);
-		expect(formatPolynomial(spectrum(and2))).toBe("f = 1/2 + 1/2 x₁ + 1/2 x₂ − 1/2 x₁x₂");
+		expect(polynomial(spectrum(and2))).toBe("1/2 + 1/2 x₁ + 1/2 x₂ − 1/2 x₁x₂");
 	});
 
 	it("gives the AND of three bits 3/4 and quarters", () => {
 		expect(values(presets.and.table)).toEqual([0.75, 0.25, 0.25, 0.25, -0.25, -0.25, -0.25, 0.25]);
-		expect(formatPolynomial(spectrum(presets.and.table))).toBe(
-			"f = 3/4 + 1/4 x₁ + 1/4 x₂ + 1/4 x₃ − 1/4 x₁x₂ − 1/4 x₁x₃ − 1/4 x₂x₃ + 1/4 x₁x₂x₃",
+		expect(polynomial(spectrum(presets.and.table))).toBe(
+			"3/4 + 1/4 x₁ + 1/4 x₂ + 1/4 x₃ − 1/4 x₁x₂ − 1/4 x₁x₃ − 1/4 x₂x₃ + 1/4 x₁x₂x₃",
 		);
 	});
 
@@ -100,11 +102,11 @@ describe("spectrum", () => {
 
 	it("puts a parity function on its own subset alone", () => {
 		expect(values(presets.parity.table)).toEqual([0, 0, 0, 0, 0, 0, 0, 1]);
-		expect(formatPolynomial(spectrum(presets.parity.table))).toBe("f = x₁x₂x₃");
+		expect(polynomial(spectrum(presets.parity.table))).toBe("x₁x₂x₃");
 		expect(values(presets["first-bit"].table)).toEqual([0, 1, 0, 0, 0, 0, 0, 0]);
-		expect(formatPolynomial(spectrum(presets["first-bit"].table))).toBe("f = x₁");
-		expect(formatPolynomial(spectrum(tableOf((_, x2, x3) => -x2 * x3)))).toBe("f = −x₂x₃");
-		expect(formatPolynomial(spectrum(tableOf(() => -1)))).toBe("f = −1");
+		expect(polynomial(spectrum(presets["first-bit"].table))).toBe("x₁");
+		expect(polynomial(spectrum(tableOf((_, x2, x3) => -x2 * x3)))).toBe("−x₂x₃");
+		expect(polynomial(spectrum(tableOf(() => -1)))).toBe("−1");
 	});
 
 	it("matches the average of f times the parity function on every subset", () => {

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { amplitudeAt, columnAt, plotPosition } from "./drawing.ts";
 import { formatAmplitude, formatDyadic, minusSign } from "./format.ts";
+import SignedBar from "./SignedBar.svelte";
 
 interface Props {
 	/** What the chart shows, for a reader who cannot see it. */
@@ -15,15 +16,12 @@ interface Props {
 	ondrawend?: () => void;
 	/** Called with a column and a key pressed on it; returns whether the key did something. */
 	onkey?: (index: number, key: string) => boolean;
-	/**
-	 * Columns to pick out, such as a marked input. When given, even if empty, only these
-	 * columns have accent-coloured bars and every other bar is neutral, whatever its sign.
-	 */
+	/** Columns to pick out, such as the zero frequency: each is underlined and its label is bold. */
 	highlighted?: readonly number[];
+	/** Whether each column has the cell that darkens with its probability. */
+	showProbabilityCells?: boolean;
 	/** An amplitude to rule across the plots, such as the mean, with a short label. */
 	level?: { value: number; label: string };
-	/** For more columns than have room for text: no numbers under the bars, labels on their side. */
-	dense?: boolean;
 }
 
 const {
@@ -36,8 +34,8 @@ const {
 	ondrawend,
 	onkey,
 	highlighted,
+	showProbabilityCells = true,
 	level,
-	dense = false,
 }: Props = $props();
 
 let chart = $state<HTMLElement>();
@@ -94,17 +92,17 @@ const describe = (index: number): string =>
 	{@const amplitude = amplitudes?.[index]}
 	{#if amplitude !== undefined}
 		<span class="plot" aria-hidden="true">
-			<span class="bar" class:negative={amplitude < 0} style:--amplitude={amplitude}></span>
+			<SignedBar {amplitude} />
 		</span>
-		{#if !dense}
-			{@const shown = formatAmplitude(amplitude)}
-			<span class="amplitude" class:negative={shown.startsWith(minusSign)} aria-hidden="true">
-				{shown}
-			</span>
-		{/if}
+		{@const shown = formatAmplitude(amplitude)}
+		<span class="amplitude" class:negative={shown.startsWith(minusSign)} aria-hidden="true">
+			{shown}
+		</span>
 	{/if}
-	<span class="chance" style:--chance={probabilities[index] ?? 0} aria-hidden="true"></span>
-	{#if showProbabilityValues && !dense}
+	{#if showProbabilityCells}
+		<span class="chance" style:--chance={probabilities[index] ?? 0} aria-hidden="true"></span>
+	{/if}
+	{#if showProbabilityValues}
 		<span class="chance-value" aria-hidden="true">{formatDyadic(probabilities[index] ?? 0)}</span>
 	{/if}
 	<span class="label" aria-hidden="true">{labels[index]}</span>
@@ -115,8 +113,6 @@ const describe = (index: number): string =>
 	class:drawable={ondraw !== undefined}
 	class:drawing={stroke !== undefined}
 	class:crowded={labels.length > 4}
-	class:dense
-	class:highlighting={highlighted !== undefined}
 	bind:this={chart}
 	style:--columns={labels.length}
 	role={ondraw ? "group" : "list"}
@@ -193,14 +189,6 @@ const describe = (index: number): string =>
 	outline: 2px solid var(--fui-accent);
 	outline-offset: 2px;
 }
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-}
 .plot {
 	position: relative;
 	width: 100%;
@@ -208,31 +196,10 @@ const describe = (index: number): string =>
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
 		no-repeat;
 }
-.bar {
-	position: absolute;
+.plot :global(.bar) {
 	inset: 0 18% 50%;
-	/* A negative scale mirrors the bar below the axis, so a sign flip animates through zero. */
-	transform: scaleY(var(--amplitude));
-	transform-origin: bottom;
-	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
-	background: var(--fui-accent);
-	transition:
-		transform 250ms ease-out,
-		background-color 250ms ease-out;
 }
-.bar.negative {
-	background: var(--fui-code-warm);
-}
-.highlighting .bar {
-	background: var(--fui-ink-muted);
-}
-.highlighting .highlighted .bar {
-	background: var(--fui-accent);
-}
-.dense .bar {
-	inset-inline: 10%;
-}
-.drawing .bar {
+.drawing :global(.bar) {
 	transition: none;
 }
 .amplitude {
@@ -258,15 +225,8 @@ const describe = (index: number): string =>
 .chance-value {
 	font-variant-numeric: tabular-nums;
 }
-.dense .chance {
-	width: 80%;
-}
 .label {
 	color: var(--fui-ink-secondary);
-}
-.dense .label {
-	writing-mode: vertical-rl;
-	line-height: 1;
 }
 .highlighted {
 	box-shadow: inset 0 -2px 0 var(--fui-accent);
@@ -291,14 +251,12 @@ const describe = (index: number): string =>
 	white-space: nowrap;
 }
 @media (prefers-reduced-motion: reduce) {
-	.bar,
 	.chance,
 	.level {
 		transition: none;
 	}
 }
 @media print {
-	.bar,
 	.chance {
 		print-color-adjust: exact;
 	}

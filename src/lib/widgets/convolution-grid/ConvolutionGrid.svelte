@@ -1,9 +1,9 @@
 <script lang="ts">
+import { formatSigned } from "../../quantum/format.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import {
 	canStep,
 	defaults,
-	formatInteger,
 	inputLabel,
 	inputs,
 	resultName,
@@ -37,7 +37,7 @@ const convolution = $derived(xorConvolution(f, g));
 {#snippet entry(name: string, value: number)}
 	<span class="entry">
 		<span class="name">{name}</span>
-		<span class="value">{formatInteger(value)}</span>
+		<span class="value">{formatSigned(value)}</span>
 	</span>
 {/snippet}
 
@@ -47,7 +47,7 @@ const convolution = $derived(xorConvolution(f, g));
 			<div class="corner" role="cell">⊕</div>
 			{#each g as value, y (y)}
 				{@const name = `g(${inputLabel(y)})`}
-				<div class="header across" role="columnheader" aria-label="{name} = {formatInteger(value)}">
+				<div class="header across" role="columnheader" aria-label="{name} = {formatSigned(value)}">
 					{@render stepper(name, value, 1, () => (g = stepped(g, y, 1)))}
 					{@render entry(name, value)}
 					{@render stepper(name, value, -1, () => (g = stepped(g, y, -1)))}
@@ -57,14 +57,14 @@ const convolution = $derived(xorConvolution(f, g));
 		{#each f as value, x (x)}
 			{@const name = `f(${inputLabel(x)})`}
 			<div class="row" role="row">
-				<div class="header down" role="rowheader" aria-label="{name} = {formatInteger(value)}">
+				<div class="header down" role="rowheader" aria-label="{name} = {formatSigned(value)}">
 					{@render stepper(name, value, -1, () => (f = stepped(f, x, -1)))}
 					{@render entry(name, value)}
 					{@render stepper(name, value, 1, () => (f = stepped(f, x, 1)))}
 				</div>
 				{#each g as other, y (y)}
 					{@const z = x ^ y}
-					{@const product = formatInteger(value * other)}
+					{@const product = formatSigned(value * other)}
 					<div
 						class="cell"
 						role="cell"
@@ -81,7 +81,7 @@ const convolution = $derived(xorConvolution(f, g));
 	</div>
 	<div class="results" role="group" aria-label="Values of f ∗ g">
 		{#each inputs as z (z)}
-			{@const result = formatInteger(convolution[z] ?? 0)}
+			{@const result = formatSigned(convolution[z] ?? 0)}
 			<button
 				type="button"
 				class="chip"
@@ -105,7 +105,7 @@ const convolution = $derived(xorConvolution(f, g));
 <style>
 .grid,
 .results {
-	--header: 6.25rem;
+	--header: 7.75rem;
 	--gap: 0.25rem;
 	width: min(100%, 24rem);
 	font-family: var(--fui-font-mono);
@@ -141,10 +141,10 @@ const convolution = $derived(xorConvolution(f, g));
 	box-shadow: inset 0 0 0 1px var(--fui-line);
 }
 .header.across {
-	grid-template-rows: 1.75rem 2.25rem 1.75rem;
+	grid-template-rows: 2.75rem 2.25rem 2.75rem;
 }
 .header.down {
-	grid-template-columns: 1.75rem minmax(0, 1fr) 1.75rem;
+	grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
 	min-height: 2.75rem;
 }
 .entry {
@@ -169,16 +169,12 @@ const convolution = $derived(xorConvolution(f, g));
 	font-weight: 700;
 	color: var(--fui-ink);
 }
+/* Steppers and chips are not the frame's bordered buttons, and have hover styles of their own. */
 button {
+	min-height: auto;
 	border: 0;
+	border-radius: 0;
 	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 .step {
 	display: grid;
@@ -302,14 +298,5 @@ button:focus-visible {
 		clip-path: inset(50%);
 		white-space: nowrap;
 	}
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 </style>

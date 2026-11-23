@@ -1,4 +1,5 @@
-import { formatDyadic, minusSign } from "../../quantum/format.ts";
+import { formatSigned, minusSign } from "../../quantum/format.ts";
+import { clamp } from "../../quantum/numbers.ts";
 import type { Random } from "../../quantum/sampling.ts";
 
 export const defaultInput: readonly number[] = [1, 1, 1, -1, 1, -1, -1, -1];
@@ -63,11 +64,8 @@ export const allWires = (size: number): Wire[] =>
 		Array.from({ length: size }, (_, index) => wiresInto({ level: pass + 1, index })),
 	).flat(2);
 
-export const formatValue = (value: number): string =>
-	value < 0 ? `${minusSign}${formatDyadic(-value)}` : formatDyadic(value);
-
 const formatOperand = (value: number): string =>
-	value < 0 ? `(${formatValue(value)})` : formatValue(value);
+	value < 0 ? `(${formatSigned(value)})` : formatSigned(value);
 
 export const columnName = (level: number): string =>
 	level === 0 ? "input" : `half = ${halfAt(level)}`;
@@ -75,27 +73,27 @@ export const columnName = (level: number): string =>
 export const nodeId = ({ level, index }: Node): string => `${level}-${index}`;
 
 export const nodeLabel = (node: Node, value: number): string =>
-	`${node.level === 0 ? "Input" : `After ${columnName(node.level)}`}, f[${node.index}] = ${formatValue(value)}`;
+	`${node.level === 0 ? "Input" : `After ${columnName(node.level)}`}, f[${node.index}] = ${formatSigned(value)}`;
 
 export const describeLevel = (level: number): string =>
 	level === 0
 		? `Level 0 of ${levels}: the input.`
 		: `After level ${level} of ${levels}: blocks of size ${2 * halfAt(level)} are transformed.`;
 
+export const describeInput = (values: readonly number[]): string =>
+	`Input: ${values.map(formatSigned).join(", ")}.`;
+
 /** The line of the algorithm that set one entry, with the numbers it used. */
 export function equation(columns: readonly (readonly number[])[], node: Node): string {
-	const value = formatValue(columns[node.level]?.[node.index] ?? 0);
+	const value = formatSigned(columns[node.level]?.[node.index] ?? 0);
 	if (node.level === 0) return `f[${node.index}] = ${value}`;
 	const { upper, lower, sign } = butterflyInto(node);
 	const previous = columns[node.level - 1] ?? [];
 	const operator = sign === 1 ? "+" : minusSign;
 	const names = `f[${upper}] ${operator} f[${lower}]`;
-	const numbers = `${formatValue(previous[upper] ?? 0)} ${operator} ${formatOperand(previous[lower] ?? 0)}`;
+	const numbers = `${formatSigned(previous[upper] ?? 0)} ${operator} ${formatOperand(previous[lower] ?? 0)}`;
 	return `f[${node.index}] = ${names} = ${numbers} = ${value}`;
 }
-
-const clamp = (value: number, low: number, high: number): number =>
-	Math.min(Math.max(value, low), high);
 
 /** Where an arrow key takes the focus among the computed entries, if the key is an arrow. */
 export function movedNode(

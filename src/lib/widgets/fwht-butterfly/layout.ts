@@ -1,3 +1,5 @@
+import { clamp } from "../../quantum/numbers.ts";
+
 /** The diagram in SVG units; at a note 288px wide one unit is one pixel. */
 export const width = 288;
 export const nodeWidth = 36;
@@ -27,7 +29,7 @@ export interface Box {
 export function reachBox(level: number, index: number, lastLevel: number): Box {
 	const left = columnCentre(level, lastLevel) - reachWidth / 2;
 	return {
-		x: Math.min(Math.max(left, 0), width - reachWidth),
+		x: clamp(left, 0, width - reachWidth),
 		y: rowCentre(index) - rowPitch / 2,
 		width: reachWidth,
 		height: rowPitch,

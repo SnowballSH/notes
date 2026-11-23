@@ -12,7 +12,7 @@ import {
 import { ket, listAmplitudes } from "../../quantum/format.ts";
 import {
 	type Amplitudes,
-	bitstring,
+	bitstrings,
 	hadamardOnEveryQubit,
 	probabilities,
 	qubitCount,
@@ -35,7 +35,7 @@ let announcement = $state("");
 const transform = (state: Amplitudes): Amplitudes => settled(hadamardOnEveryQubit(state));
 
 const count = $derived(qubitCount(drawn));
-const labels = $derived(drawn.map((_, index) => bitstring(index, count)));
+const labels = $derived(bitstrings(count));
 const input = $derived(stroke ?? drawn);
 const output = $derived(transform((stroke && normalise(stroke)) ?? drawn));
 
@@ -45,7 +45,7 @@ function commit(next: readonly number[]): boolean {
 	stroke = undefined;
 	sketch = next;
 	drawn = state;
-	const names = state.map((_, index) => bitstring(index, qubitCount(state)));
+	const names = bitstrings(qubitCount(state));
 	announcement = `State: ${listAmplitudes(names, state)}. After H: ${listAmplitudes(names, transform(state))}.`;
 	return true;
 }
@@ -164,15 +164,11 @@ function applyGates(): void {
 	text-align: center;
 	font-family: var(--fui-font-mono);
 }
+/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
 button {
-	min-height: 2.75rem;
 	padding: 0 0.875rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
+	border-color: var(--fui-line);
 	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 button.square {
 	width: 2.75rem;
@@ -187,16 +183,6 @@ button.apply {
 		border-color: var(--fui-accent);
 		background: var(--fui-surface-raised);
 	}
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 sup {
 	font-size: 0.75em;
@@ -251,15 +237,6 @@ sup {
 	.grip {
 		transition: none;
 	}
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 @media print {
 	button,

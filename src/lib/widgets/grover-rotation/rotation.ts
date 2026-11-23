@@ -1,4 +1,5 @@
 import { bestIterations, groverAngle, successProbability } from "../../quantum/grover.ts";
+import { clamp } from "../../quantum/numbers.ts";
 
 const tolerance = 1e-9;
 
@@ -6,7 +7,7 @@ const tolerance = 1e-9;
 export const mostMarked = (qubits: number): number => 2 ** qubits / 4;
 
 export const clampMarked = (marked: number, qubits: number): number =>
-	Math.min(Math.max(marked, 1), mostMarked(qubits));
+	clamp(marked, 1, mostMarked(qubits));
 
 /** The angle of the state above the unmarked axis after the given number of iterations. */
 export const stateAngle = (size: number, marked: number, iterations: number): number =>

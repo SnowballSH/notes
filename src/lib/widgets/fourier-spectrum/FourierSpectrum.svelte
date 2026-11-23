@@ -1,6 +1,7 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { formatAmplitude } from "../../quantum/format.ts";
+import SignedBar from "../../quantum/SignedBar.svelte";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
@@ -65,7 +66,7 @@ const chosen = $derived(matchingPreset(table));
 			{@const shown = formatAmplitude(value)}
 			<div class="column" style:--coefficient={value}>
 				<span class="plot">
-					<span class="bar" class:negative={value < 0}></span>
+					<SignedBar amplitude={value} />
 					<span class="coefficient" class:negative={value < 0} class:zero={shown === "0"}>
 						{shown}
 					</span>
@@ -90,25 +91,8 @@ const chosen = $derived(matchingPreset(table));
 	flex-wrap: wrap;
 	gap: 0.375rem;
 }
-button {
-	min-height: 2.75rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
-}
 .preset {
 	padding: 0 0.75rem;
-}
-.preset:hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
 }
 .preset[aria-pressed="true"] {
 	border-color: var(--fui-accent);
@@ -176,20 +160,8 @@ button:focus-visible {
 	background: linear-gradient(var(--fui-ink-muted), var(--fui-ink-muted)) center / 100% 1px
 		no-repeat;
 }
-.bar {
-	position: absolute;
+.plot :global(.bar) {
 	inset: var(--label) 18% 50%;
-	/* A negative scale mirrors the bar below the zero line, so a sign change passes through zero. */
-	transform: scaleY(var(--coefficient));
-	transform-origin: bottom;
-	border-radius: var(--fui-radius-xs) var(--fui-radius-xs) 0 0;
-	background: var(--fui-accent);
-	transition:
-		transform 250ms ease-out,
-		background-color 250ms ease-out;
-}
-.bar.negative {
-	background: var(--fui-code-warm);
 }
 .coefficient {
 	position: absolute;
@@ -230,7 +202,6 @@ button:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
 	.tile,
-	.bar,
 	.coefficient {
 		transition: none;
 	}
@@ -239,8 +210,7 @@ button:focus-visible {
 	.presets {
 		display: none;
 	}
-	.tile,
-	.bar {
+	.tile {
 		print-color-adjust: exact;
 	}
 }

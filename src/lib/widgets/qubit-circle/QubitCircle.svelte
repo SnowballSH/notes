@@ -31,6 +31,7 @@ const mirror = {
 };
 
 let step = $state(0);
+let announcement = $state(describeState(stateAt(0)));
 let dragging = $state(false);
 let picture = $state<SVGSVGElement>();
 /** The arrow as drawn: it slides along the chord to its mirror image when H is applied. */
@@ -46,11 +47,18 @@ const beta = $derived(shown.current[1] ?? 0);
 function moveTo(next: number, duration = 0): void {
 	if (next === step) return;
 	step = next;
+	announcement = "";
 	shown.set(stateAt(next), { duration });
 }
 
+/** A button says where it went; the handle speaks its own value, so moveTo leaves the caption silent. */
+function jumpTo(next: number, duration = 0): void {
+	moveTo(next, duration);
+	announcement = describeState(stateAt(next));
+}
+
 function applyHadamard(): void {
-	moveTo(reflectStep(step), prefersReducedMotion.current ? 0 : reflectionTime);
+	jumpTo(reflectStep(step), prefersReducedMotion.current ? 0 : reflectionTime);
 }
 
 function dragTo(event: PointerEvent): void {
@@ -84,7 +92,7 @@ function pressKey(event: KeyboardEvent): void {
 					type="button"
 					class="state"
 					aria-pressed={named.step === step}
-					onclick={() => moveTo(named.step)}>{named.name}</button
+					onclick={() => jumpTo(named.step)}>{named.name}</button
 				>
 			{/each}
 		</div>
@@ -180,11 +188,12 @@ function pressKey(event: KeyboardEvent): void {
 				amplitudes={current}
 				probabilities={probabilities(current)}
 				showProbabilityValues
+				showProbabilityCells={false}
 			/>
 		</div>
 	</div>
 	{#snippet caption()}
-		<p class="spoken">{describeState(current)}</p>
+		<p class="spoken">{announcement}</p>
 	{/snippet}
 </WidgetFrame>
 
@@ -201,15 +210,8 @@ function pressKey(event: KeyboardEvent): void {
 }
 button {
 	min-width: 2.75rem;
-	min-height: 2.75rem;
 	padding: 0 0.625rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
 	font-size: 0.9375rem;
-	cursor: pointer;
 }
 button.state {
 	font-family: var(--fui-font-mono);
@@ -223,19 +225,11 @@ button.apply {
 	border-color: var(--fui-code-violet);
 	font-weight: 600;
 }
-button:hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
 /* A hover that outlasts the click must not look like a pressed preset, so H thickens its outline instead of filling. */
 button.apply:hover {
 	border-color: var(--fui-code-violet);
 	background: transparent;
 	box-shadow: inset 0 0 0 1px var(--fui-code-violet);
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 p {
 	margin: 0;
@@ -275,9 +269,6 @@ p {
 }
 .symbols .negative {
 	color: var(--fui-code-warm);
-}
-.bars :global(.chance) {
-	display: none;
 }
 .bars :global(.chance-value) {
 	min-width: 64%;
@@ -399,14 +390,6 @@ p {
 }
 .handle:focus-visible .ring {
 	opacity: 1;
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 @media print {
 	.controls,

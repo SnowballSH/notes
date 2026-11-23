@@ -6,9 +6,9 @@ import {
 	butterflyInto,
 	columnName,
 	defaultInput,
+	describeInput,
 	describeLevel,
 	equation,
-	formatValue,
 	levels,
 	movedNode,
 	nodeLabel,
@@ -96,12 +96,6 @@ describe("wires", () => {
 describe("wording", () => {
 	const columns = butterflyColumns(defaultInput);
 
-	it("formats values with a true minus sign in at most three characters", () => {
-		expect(formatValue(-24)).toBe("−24");
-		expect(formatValue(0)).toBe("0");
-		expect(formatValue(4)).toBe("4");
-	});
-
 	it("names columns and entries", () => {
 		expect([0, 1, 2, 3].map(columnName)).toEqual(["input", "half = 1", "half = 2", "half = 4"]);
 		expect(nodeLabel({ level: 0, index: 3 }, -1)).toBe("Input, f[3] = −1");
@@ -112,6 +106,11 @@ describe("wording", () => {
 		expect(describeLevel(0)).toBe("Level 0 of 3: the input.");
 		expect(describeLevel(2)).toBe("After level 2 of 3: blocks of size 4 are transformed.");
 		expect(describeLevel(3)).toBe("After level 3 of 3: blocks of size 8 are transformed.");
+	});
+
+	it("lists the input values", () => {
+		expect(describeInput(defaultInput)).toBe("Input: 1, 1, 1, −1, 1, −1, −1, −1.");
+		expect(describeInput([3, -2, 0])).toBe("Input: 3, −2, 0.");
 	});
 
 	it("writes out the line that set an entry", () => {

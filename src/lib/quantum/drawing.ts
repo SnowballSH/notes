@@ -1,11 +1,9 @@
+import { clamp } from "./numbers.ts";
 import type { Amplitudes } from "./state.ts";
 
 const snap = 0.05;
 const smallStep = 0.1;
 const largeStep = 0.5;
-
-const clamp = (value: number, low: number, high: number): number =>
-	Math.min(Math.max(value, low), high);
 
 /** The column under a pointer that is the given fraction of the way across the chart. */
 export const columnAt = (across: number, columns: number): number =>

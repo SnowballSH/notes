@@ -100,31 +100,17 @@ const interfering = $derived(
 	flex-wrap: wrap;
 	gap: 0.5rem;
 }
+/* Restating the resting border and background keeps the frame's hover style off touch screens, where it would stay after a tap. */
 button {
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
+	border-color: var(--fui-line);
 	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 @media (hover: hover) {
 	button:not([aria-disabled="true"]):hover {
 		border-color: var(--fui-accent);
 		background: var(--fui-surface-raised);
 	}
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 p {
 	margin: 0;
@@ -204,14 +190,6 @@ p {
 	color: var(--fui-ink-secondary);
 }
 .terms > span {
-	white-space: nowrap;
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
 	white-space: nowrap;
 }
 .cancelled {

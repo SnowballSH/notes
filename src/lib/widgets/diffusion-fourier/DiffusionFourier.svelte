@@ -4,7 +4,7 @@ import AmplitudeChart from "../../quantum/AmplitudeChart.svelte";
 import { keyEdit, normalise, withAmplitude } from "../../quantum/drawing.ts";
 import { listAmplitudes } from "../../quantum/format.ts";
 import { mean } from "../../quantum/grover.ts";
-import { type Amplitudes, bitstring, probabilities } from "../../quantum/state.ts";
+import { type Amplitudes, bitstrings, probabilities } from "../../quantum/state.ts";
 import type { WidgetProps } from "../contract.ts";
 import WidgetFrame from "../WidgetFrame.svelte";
 import type definition from "./definition.ts";
@@ -22,7 +22,7 @@ import {
 const { qubits }: WidgetProps<typeof definition> = $props();
 const count = untrack(() => qubits);
 const initial = afterQueryingAnd(count);
-const labels = initial.map((_, index) => bitstring(index, count));
+const labels = bitstrings(count);
 const zeroColumn = [0];
 
 /** The drawing as its bars were last set: keys edit it, and the state is its normalisation. */
@@ -101,7 +101,8 @@ function pressKey(index: number, key: string): boolean {
 					{labels}
 					amplitudes={input}
 					probabilities={probabilities(current)}
-					level={{ value: mean(input), label: averageLabel(current) }}
+					showProbabilityCells={false}
+					level={{ value: mean(input), label: averageLabel(input) }}
 					ondraw={draw}
 					ondrawend={finishStroke}
 					onkey={pressKey}
@@ -117,6 +118,7 @@ function pressKey(index: number, key: string): boolean {
 					{labels}
 					amplitudes={coefficients}
 					probabilities={probabilities(coefficients)}
+					showProbabilityCells={false}
 					highlighted={zeroColumn}
 					level={{ value: coefficients[0] ?? 0, label: scaledAverageLabel }}
 				/>
@@ -124,7 +126,7 @@ function pressKey(index: number, key: string): boolean {
 			</div>
 		</div>
 	</div>
-	<p class="spoken" aria-live="polite">{announcement} {describeAverage(current)}</p>
+	<p class="spoken" aria-live="polite">{announcement} {describeAverage(drawn)}</p>
 </WidgetFrame>
 
 <style>
@@ -134,32 +136,11 @@ function pressKey(index: number, key: string): boolean {
 	gap: 0.5rem;
 }
 button {
-	min-height: 2.75rem;
 	padding: 0 1rem;
-	border: 1px solid var(--fui-line);
-	border-radius: var(--fui-radius-sm);
-	background: transparent;
-	color: var(--fui-ink);
-	font: inherit;
-	cursor: pointer;
 }
 button.apply {
 	border-color: var(--fui-accent);
 	font-weight: 600;
-}
-button:not([aria-disabled="true"]):hover {
-	border-color: var(--fui-accent);
-	background: var(--fui-surface-raised);
-}
-button[aria-disabled="true"] {
-	border-style: dashed;
-	color: var(--fui-ink-muted);
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-button:focus-visible {
-	outline: 2px solid var(--fui-accent);
-	outline-offset: 2px;
 }
 p {
 	margin: 0;
@@ -192,16 +173,6 @@ p {
 }
 .plots :global(.chart) {
 	width: 100%;
-}
-.plots :global(.chance) {
-	display: none;
-}
-/* The shared chart greys every bar outside its highlighted columns; here colour is the sign in both panels. */
-.plots :global(.chart.highlighting .column .bar) {
-	background: var(--fui-accent);
-}
-.plots :global(.chart.highlighting .column .bar.negative) {
-	background: var(--fui-code-warm);
 }
 .plots :global(.level-label) {
 	inset: 0 auto auto 100%;
@@ -238,14 +209,6 @@ p {
 		padding-inline: 0.125rem;
 		background: var(--fui-surface-base);
 	}
-}
-.spoken {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
 }
 @media print {
 	button {
