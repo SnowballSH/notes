@@ -294,10 +294,11 @@ and repositions the canvases with transitions switched off, inside the click,
 so the swap is never visible. `max` is capped at 6 so every entry covers a
 whole number of pixels on the 320px board.
 
-The caption under the board names the matrix shown and, during an animation,
-the step being played. The left and right arrow keys move like the buttons
-while either button has focus. Each caption is short enough to stay on one
-line at a window width of 320px, which the reserved height relies on.
+Nothing is written under the board. A visually hidden line names the matrix
+shown and, during an animation, the step being played, for a screen reader.
+Thin lines separate the cells up to n = 3 and appear only while the tiles are
+at rest. The left and right arrow keys move like the buttons while either
+button has focus.
 
 ### The quantum widgets
 
@@ -335,15 +336,16 @@ inside a `WidgetFrame`.
 
 - `#widget("unflipping-coin")` takes one qubit and one classical coin through
   the same steps: "Apply H" also tosses the coin, and "Measure" also looks at
-  it. The coin has only probabilities, so it has cells and no bars. After a
-  gate applied to a superposition the two terms of each amplitude are written
-  out under the two panels, the cancelling pair in bold. `experiment.ts` holds
-  the steps.
+  it. The coin has only probabilities, drawn as grey bars for heads and tails.
+  After a gate applied to a superposition the two terms of each amplitude are
+  written out under the two panels, the cancelling pair in bold. The caption
+  shows only a measurement's result. `experiment.ts` holds the steps.
 - `#widget("hadamard-amplitudes", qubits: 2)` has a drawable state of one to
   three qubits beside the same state with a Hadamard gate on every qubit,
   which follows the drawing as it is made. "Apply H" makes the transformed
-  state the drawing, so pressing it twice returns the original. Three qubits
-  is the most whose eight bars and numbers fit a note 288px wide.
+  state the drawing, so pressing it twice returns the original. The drawable
+  chart sits in a box with a grip on each bar. Three qubits is the most whose
+  eight bars and numbers fit a note 288px wide.
 - `#widget("fourier-spectrum")` has the truth table of a function on three
   bits as eight tiles, the bars of its eight Fourier coefficients, and its
   polynomial.
