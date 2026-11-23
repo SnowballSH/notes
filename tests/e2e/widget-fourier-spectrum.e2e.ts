@@ -1,19 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { openWidget } from "./pages";
 
 test("the Fourier spectrum follows the truth table", async ({ page, request }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="fourier-spectrum"');
-	} catch (error) {
-		const unplaced =
-			error instanceof Error && error.message.startsWith("no page of the site contains");
-		if (!unplaced) throw error;
-		test.skip(true, "no published note uses fourier-spectrum yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="fourier-spectrum"]').first();
+	const widget = await openWidget(page, request, "fourier-spectrum");
 	const polynomial = widget.locator("figcaption");
 	const chart = widget.getByRole("img");
 

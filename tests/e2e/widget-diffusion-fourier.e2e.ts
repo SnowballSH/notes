@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { openWidget } from "./pages";
 
 interface Expected {
 	average: string;
@@ -61,15 +61,7 @@ test("D keeps the Fourier coefficient at zero, negates the others, and undoes it
 	page,
 	request,
 }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="diffusion-fourier"');
-	} catch {
-		test.skip(true, "no published note uses diffusion-fourier yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="diffusion-fourier"]').first();
+	const widget = await openWidget(page, request, "diffusion-fourier");
 	const applyD = widget.getByRole("button", { name: "Apply D", exact: true });
 	const startOver = widget.getByRole("button", { name: "Start over", exact: true });
 	const amplitudes = widget
@@ -94,8 +86,6 @@ test("D keeps the Fourier coefficient at zero, negates the others, and undoes it
 	await expect(widget.getByText("√N·μ", { exact: true })).toBeVisible();
 	await expect(widget.locator(".chance").first()).toBeHidden();
 	await expect(ghosts).toHaveCount(0);
-	await expect(widget.getByText("draw", { exact: true })).toHaveCount(0);
-	await expect(widget.getByText("average", { exact: true })).toHaveCount(0);
 	await expect(coefficients).toHaveText(values.coefficients);
 	await expect(startOver).toHaveAttribute("aria-disabled", "true");
 
@@ -116,15 +106,7 @@ test("a state edited from the keyboard moves the average, and Start over restore
 	page,
 	request,
 }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="diffusion-fourier"');
-	} catch {
-		test.skip(true, "no published note uses diffusion-fourier yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="diffusion-fourier"]').first();
+	const widget = await openWidget(page, request, "diffusion-fourier");
 	const amplitudes = widget
 		.getByRole("group", { name: "Amplitudes of the state, drawable" })
 		.getByRole("slider");

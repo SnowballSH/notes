@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { pageWith } from "./pages";
+import { openWidget } from "./pages";
 
 /** What AND leaves on 00…0 after the second layer of Hadamard gates: 1 − 2/N and its square. */
 const andAtZero: Record<number, string> = {
@@ -12,18 +12,7 @@ test("Fourier sampling follows the truth table and tallies its measurements", as
 	page,
 	request,
 }) => {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="fourier-sampling"');
-	} catch (error) {
-		const unplaced =
-			error instanceof Error && error.message.startsWith("no page of the site contains");
-		if (!unplaced) throw error;
-		test.skip(true, "no published note uses fourier-sampling yet");
-		return;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	const widget = page.locator('notes-widget[name="fourier-sampling"]').first();
+	const widget = await openWidget(page, request, "fourier-sampling");
 	const caption = widget.locator("figcaption .spoken");
 	const preset = (name: string) => widget.getByRole("button", { name, exact: true });
 	const sampled = widget
@@ -69,7 +58,7 @@ test("Fourier sampling follows the truth table and tallies its measurements", as
 	await expect(tally.last().locator(".spoken")).toHaveText(`${ones}: 0`);
 	await expect(tally.last().locator("[aria-hidden]")).toHaveCount(0);
 	await expect(counts).toHaveCount(1);
-	await expect(widget.getByText(`Measured ${zeros}.`)).toHaveCount(1);
+	await expect(widget.getByText(`Measured ${zeros}: 3 of 3 so far.`)).toHaveCount(1);
 
 	await preset("Balanced").click();
 	await expect(tally.first().locator(".spoken")).toHaveText(`${zeros}: 0`);

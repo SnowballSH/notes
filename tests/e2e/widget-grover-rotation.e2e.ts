@@ -1,26 +1,11 @@
-import { type APIRequestContext, expect, type Locator, type Page, test } from "@playwright/test";
-import { pageWith } from "./pages";
-
-async function openWidget(page: Page, request: APIRequestContext): Promise<Locator | undefined> {
-	let path: string;
-	try {
-		path = await pageWith(request, 'name="grover-rotation"');
-	} catch {
-		return undefined;
-	}
-	await page.goto(path, { waitUntil: "networkidle" });
-	return page.locator('notes-widget[name="grover-rotation"]').first();
-}
+import { expect, test } from "@playwright/test";
+import { openWidget } from "./pages";
 
 test("the Grover rotation climbs to the best count and falls after it", async ({
 	page,
 	request,
 }) => {
-	const widget = await openWidget(page, request);
-	if (!widget) {
-		test.skip(true, "no published note uses grover-rotation yet");
-		return;
-	}
+	const widget = await openWidget(page, request, "grover-rotation");
 	const caption = widget.locator('figcaption p[aria-hidden="true"]');
 	const spoken = widget.locator("figcaption .spoken");
 	const iterate = widget.getByRole("button", { name: "Iterate", exact: true });
@@ -64,11 +49,7 @@ test("the Grover rotation finds one of four inputs with certainty in one iterati
 	page,
 	request,
 }) => {
-	const widget = await openWidget(page, request);
-	if (!widget) {
-		test.skip(true, "no published note uses grover-rotation yet");
-		return;
-	}
+	const widget = await openWidget(page, request, "grover-rotation");
 	const caption = widget.locator('figcaption p[aria-hidden="true"]');
 	const spoken = widget.locator("figcaption .spoken");
 	const iterate = widget.getByRole("button", { name: "Iterate", exact: true });
