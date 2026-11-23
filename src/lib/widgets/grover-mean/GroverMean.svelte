@@ -9,13 +9,13 @@ import type definition from "./definition.ts";
 import {
 	caption as captionText,
 	defaultMarked,
-	describe,
 	describeColumn,
 	meanLabel,
 	nextStep,
 	plotScale,
 	type Step,
 	shownAmplitude,
+	spokenSummary,
 	stateAfter,
 } from "./steps.ts";
 
@@ -87,7 +87,7 @@ function take(step: Step): void {
 		</div>
 	</div>
 	{#snippet caption()}
-		<p class="spoken">{describe(qubits, marked, steps)}</p>
+		<p class="spoken">{spokenSummary(qubits, marked, steps)}</p>
 		<p class="shown" aria-hidden="true">{captionText(qubits, marked, steps)}</p>
 	{/snippet}
 </WidgetFrame>

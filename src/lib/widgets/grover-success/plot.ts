@@ -167,7 +167,7 @@ const countQueries = (queries: number): string =>
 	`${queries} ${queries === 1 ? "query" : "queries"}`;
 
 /** The highlighted values in one line; the classical bound holds only for a single marked input. */
-export function describe(size: number, marked: number, queries: number): string {
+export function spokenSummary(size: number, marked: number, queries: number): string {
 	const search = marked === 1 ? `N = ${size}` : `N = ${size}, ${marked} marked`;
 	const grover = `Grover ${formatChance(successProbability(size, marked, queries))}`;
 	const classical =

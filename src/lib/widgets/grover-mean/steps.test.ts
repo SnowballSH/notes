@@ -3,13 +3,13 @@ import { mean } from "../../quantum/grover";
 import {
 	caption,
 	defaultMarked,
-	describe,
 	describeColumn,
 	iterationsDone,
 	meanLabel,
 	nextStep,
 	plotScale,
 	shownAmplitude,
+	spokenSummary,
 	stateAfter,
 } from "./steps";
 
@@ -71,22 +71,34 @@ suite("defaultMarked", () => {
 	});
 });
 
-suite("describe", () => {
+suite("spokenSummary", () => {
 	it("states the chance of the marked input after whole iterations", () => {
-		expect(describe(3, 5, 0)).toBe("Before any query, 101 is measured with probability 1/8.");
-		expect(describe(3, 5, 2)).toBe("After 1 iteration, 101 is measured with probability 0.78.");
-		expect(describe(3, 5, 4)).toBe("After 2 iterations, 101 is measured with probability 0.95.");
-		expect(describe(2, 3, 2)).toBe("After 1 iteration, 11 is measured with probability 1.");
-		expect(describe(4, 15, 2)).toBe("After 1 iteration, 1111 is measured with probability 0.47.");
+		expect(spokenSummary(3, 5, 0)).toBe("Before any query, 101 is measured with probability 1/8.");
+		expect(spokenSummary(3, 5, 2)).toBe(
+			"After 1 iteration, 101 is measured with probability 0.78.",
+		);
+		expect(spokenSummary(3, 5, 4)).toBe(
+			"After 2 iterations, 101 is measured with probability 0.95.",
+		);
+		expect(spokenSummary(2, 3, 2)).toBe("After 1 iteration, 11 is measured with probability 1.");
+		expect(spokenSummary(4, 15, 2)).toBe(
+			"After 1 iteration, 1111 is measured with probability 0.47.",
+		);
 	});
 
 	it("states the average between the query and the diffusion", () => {
-		expect(describe(3, 5, 1)).toBe("Query 1 negates the amplitude of 101: the average μ is +0.27.");
-		expect(describe(2, 3, 1)).toBe("Query 1 negates the amplitude of 11: the average μ is +1/4.");
-		expect(describe(4, 15, 1)).toBe(
+		expect(spokenSummary(3, 5, 1)).toBe(
+			"Query 1 negates the amplitude of 101: the average μ is +0.27.",
+		);
+		expect(spokenSummary(2, 3, 1)).toBe(
+			"Query 1 negates the amplitude of 11: the average μ is +1/4.",
+		);
+		expect(spokenSummary(4, 15, 1)).toBe(
 			"Query 1 negates the amplitude of 1111: the average μ is +0.22.",
 		);
-		expect(describe(3, 5, 5)).toBe(`Query 3 negates the amplitude of 101: the average μ is −0.20.`);
+		expect(spokenSummary(3, 5, 5)).toBe(
+			`Query 3 negates the amplitude of 101: the average μ is −0.20.`,
+		);
 	});
 });
 

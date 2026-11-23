@@ -36,7 +36,7 @@ export const chanceLabel = (probability: number): string => `P = ${formatProbabi
 export const caption = (qubits: number, iterations: number): string =>
 	`N = ${2 ** qubits}, t = ${iterations}`;
 
-export function describe(qubits: number, marked: number, iterations: number): string {
+export function spokenSummary(qubits: number, marked: number, iterations: number): string {
 	const size = 2 ** qubits;
 	const angle = stateAngle(size, marked, iterations).toFixed(2);
 	const probability = formatProbability(successProbability(size, marked, iterations));

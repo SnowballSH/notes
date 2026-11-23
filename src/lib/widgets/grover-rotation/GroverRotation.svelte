@@ -29,10 +29,10 @@ import {
 	caption as captionText,
 	chanceLabel,
 	clampMarked,
-	describe,
 	describePicture,
 	lastIteration,
 	mostMarked,
+	spokenSummary,
 	stateAngle,
 	turnLabel,
 } from "./rotation.ts";
@@ -198,7 +198,7 @@ function changeMarked(by: 1 | -1): void {
 		</svg>
 	</div>
 	{#snippet caption()}
-		<p class="spoken">{describe(qubits, marked, iterations)}</p>
+		<p class="spoken">{spokenSummary(qubits, marked, iterations)}</p>
 		<p aria-hidden="true">{captionText(qubits, iterations)}</p>
 	{/snippet}
 </WidgetFrame>

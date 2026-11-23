@@ -38,7 +38,7 @@ export function caption(qubits: number, marked: number, steps: number): string {
 }
 
 /** The same in a sentence, for a screen reader. */
-export function describe(qubits: number, marked: number, steps: number): string {
+export function spokenSummary(qubits: number, marked: number, steps: number): string {
 	const label = bitstring(marked, qubits);
 	const iterations = iterationsDone(steps);
 	if (nextStep(steps) === "diffuse") {

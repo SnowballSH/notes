@@ -9,7 +9,6 @@ import {
 	classicalLabel,
 	classicalPath,
 	curvePath,
-	describe,
 	describePicture,
 	dotRadius,
 	groverPoints,
@@ -19,6 +18,7 @@ import {
 	mostMarked,
 	queryAt,
 	queryTicks,
+	spokenSummary,
 	textSize,
 	tickStep,
 	troughQuery,
@@ -211,18 +211,18 @@ suite("the keyboard", () => {
 
 suite("the words", () => {
 	it("state the highlighted values", () => {
-		expect(describe(8, 1, 2)).toBe("N = 8, 2 queries: Grover 0.945, classical at most 0.375.");
-		expect(describe(8, 1, 1)).toBe("N = 8, 1 query: Grover 0.781, classical at most 0.250.");
-		expect(describe(8, 1, 4)).toBe("N = 8, 4 queries: Grover 0.012, classical at most 0.625.");
-		expect(describe(4, 1, 1)).toBe("N = 4, 1 query: Grover 1.000, classical at most 0.500.");
-		expect(describe(1024, 1, 25)).toBe(
+		expect(spokenSummary(8, 1, 2)).toBe("N = 8, 2 queries: Grover 0.945, classical at most 0.375.");
+		expect(spokenSummary(8, 1, 1)).toBe("N = 8, 1 query: Grover 0.781, classical at most 0.250.");
+		expect(spokenSummary(8, 1, 4)).toBe("N = 8, 4 queries: Grover 0.012, classical at most 0.625.");
+		expect(spokenSummary(4, 1, 1)).toBe("N = 4, 1 query: Grover 1.000, classical at most 0.500.");
+		expect(spokenSummary(1024, 1, 25)).toBe(
 			"N = 1024, 25 queries: Grover 0.999, classical at most 0.025.",
 		);
 	});
 
 	it("leave the classical bound out when several inputs are marked", () => {
-		expect(describe(8, 2, 1)).toBe("N = 8, 2 marked, 1 query: Grover 1.000.");
-		expect(describe(16, 3, 0)).toBe("N = 16, 3 marked, 0 queries: Grover 0.188.");
+		expect(spokenSummary(8, 2, 1)).toBe("N = 8, 2 marked, 1 query: Grover 1.000.");
+		expect(spokenSummary(16, 3, 0)).toBe("N = 16, 3 marked, 0 queries: Grover 0.188.");
 	});
 
 	it("annotate the figure with the chosen count and Grover's chance", () => {
